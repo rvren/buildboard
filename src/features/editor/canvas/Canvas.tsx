@@ -74,12 +74,19 @@ function ScreensCanvas({ project }: { project: Project }) {
     if (e.ctrlKey || e.metaKey) {
       e.preventDefault();
       zoomAt(e.clientX, e.clientY, e.deltaY < 0 ? 1.08 : 0.92);
-    } else {
-      setViewport({
-        x: viewport.x - e.deltaX,
-        y: viewport.y - e.deltaY,
-      });
+      return;
     }
+    // If the pointer is over a scrollable page element with room to scroll in
+    // this direction, let it scroll natively instead of panning the canvas.
+    if (
+      canScrollNatively(e.target, e.deltaX, e.deltaY, containerRef.current)
+    ) {
+      return;
+    }
+    setViewport({
+      x: viewport.x - e.deltaX,
+      y: viewport.y - e.deltaY,
+    });
   };
 
   const onPointerDown = (e: React.PointerEvent) => {
@@ -233,6 +240,48 @@ function zoomAtCenter(
 
 function clamp(v: number, min: number, max: number) {
   return Math.max(min, Math.min(max, v));
+}
+
+/**
+ * Walk up from the wheel target to (but excluding) the canvas surface. If any
+ * ancestor is a scroll container with room to scroll in the wheel's direction,
+ * the browser should scroll it natively — so the canvas must NOT pan.
+ */
+function canScrollNatively(
+  target: EventTarget | null,
+  deltaX: number,
+  deltaY: number,
+  boundary: HTMLElement | null
+): boolean {
+  let el = target as HTMLElement | null;
+  while (el && el !== boundary) {
+    const style = getComputedStyle(el);
+    if (deltaY !== 0) {
+      const oy = style.overflowY;
+      if (
+        (oy === "auto" || oy === "scroll") &&
+        el.scrollHeight > el.clientHeight
+      ) {
+        const atTop = el.scrollTop <= 0;
+        const atBottom =
+          el.scrollTop + el.clientHeight >= el.scrollHeight - 1;
+        if (!(deltaY < 0 && atTop) && !(deltaY > 0 && atBottom)) return true;
+      }
+    }
+    if (deltaX !== 0) {
+      const ox = style.overflowX;
+      if (
+        (ox === "auto" || ox === "scroll") &&
+        el.scrollWidth > el.clientWidth
+      ) {
+        const atLeft = el.scrollLeft <= 0;
+        const atRight = el.scrollLeft + el.clientWidth >= el.scrollWidth - 1;
+        if (!(deltaX < 0 && atLeft) && !(deltaX > 0 && atRight)) return true;
+      }
+    }
+    el = el.parentElement;
+  }
+  return false;
 }
 
 function isTypingTarget(t: EventTarget | null) {
