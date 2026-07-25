@@ -23,7 +23,7 @@ const LIGHT_HSL: Record<keyof ThemePalette, string> = {
   cardForeground: "224 14% 14%",
   popover: "0 0% 100%",
   popoverForeground: "224 14% 14%",
-  primary: "243 75% 60%",
+  primary: "156 100% 27%",
   primaryForeground: "0 0% 100%",
   secondary: "220 14% 96%",
   secondaryForeground: "224 14% 22%",
@@ -37,9 +37,9 @@ const LIGHT_HSL: Record<keyof ThemePalette, string> = {
   warning: "32 90% 52%",
   border: "220 13% 91%",
   input: "220 13% 90%",
-  ring: "243 75% 60%",
-  brandFrom: "243 75% 60%",
-  brandTo: "275 80% 66%",
+  ring: "156 100% 27%",
+  brandFrom: "156 100% 27%",
+  brandTo: "160 88% 34%",
 };
 
 const DARK_HSL: Record<keyof ThemePalette, string> = {
@@ -49,7 +49,7 @@ const DARK_HSL: Record<keyof ThemePalette, string> = {
   cardForeground: "220 14% 93%",
   popover: "220 7% 13%",
   popoverForeground: "220 14% 93%",
-  primary: "248 90% 72%",
+  primary: "156 62% 48%",
   primaryForeground: "240 30% 10%",
   secondary: "220 6% 17%",
   secondaryForeground: "220 14% 93%",
@@ -63,9 +63,9 @@ const DARK_HSL: Record<keyof ThemePalette, string> = {
   warning: "32 92% 62%",
   border: "220 6% 20%",
   input: "220 6% 22%",
-  ring: "248 90% 72%",
-  brandFrom: "248 85% 66%",
-  brandTo: "278 80% 68%",
+  ring: "156 62% 48%",
+  brandFrom: "156 66% 40%",
+  brandTo: "160 70% 48%",
 };
 
 function paletteFromHsl(src: Record<keyof ThemePalette, string>): ThemePalette {

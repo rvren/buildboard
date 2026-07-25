@@ -11,7 +11,7 @@
     --card-foreground: 224 14% 14%;
     --popover: 0 0% 100%;
     --popover-foreground: 224 14% 14%;
-    --primary: 243 75% 60%;
+    --primary: 156 100% 27%;
     --primary-foreground: 0 0% 100%;
     --secondary: 220 14% 96%;
     --secondary-foreground: 224 14% 22%;
@@ -25,12 +25,12 @@
     --warning: 32 90% 52%;
     --border: 220 13% 91%;
     --input: 220 13% 90%;
-    --ring: 243 75% 60%;
+    --ring: 156 100% 27%;
     --radius: 0.5rem;
     --shadow-color: 220 24% 28%;
-    /* brand gradient endpoints (primary CTAs / accents only) */
-    --brand-from: 243 75% 60%;
-    --brand-to: 275 80% 66%;
+    /* brand gradient endpoints (primary CTAs / accents only) — TechCrunch green (deep) */
+    --brand-from: 156 100% 27%;
+    --brand-to: 160 88% 34%;
   }
 
   .dark {
@@ -41,7 +41,7 @@
     --card-foreground: 220 14% 93%;
     --popover: 220 7% 13%;
     --popover-foreground: 220 14% 93%;
-    --primary: 248 90% 72%;
+    --primary: 156 62% 48%;
     --primary-foreground: 240 30% 10%;
     --secondary: 220 6% 17%;
     --secondary-foreground: 220 14% 93%;
@@ -55,10 +55,11 @@
     --warning: 32 92% 62%;
     --border: 220 6% 20%;
     --input: 220 6% 22%;
-    --ring: 248 90% 72%;
+    --ring: 156 62% 48%;
     --shadow-color: 220 40% 2%;
-    --brand-from: 248 85% 66%;
-    --brand-to: 278 80% 68%;
+    /* TechCrunch green (deep) */
+    --brand-from: 156 66% 40%;
+    --brand-to: 160 70% 48%;
   }
 }
 
