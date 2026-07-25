@@ -44,6 +44,7 @@ import { PropertiesPanel } from "./right/PropertiesPanel";
 import { CodePanel } from "./right/CodePanel";
 import { DragStateContext } from "./canvas/dragContext";
 import { FlowMap } from "./flow/FlowMap";
+import { OverviewView } from "./overview/OverviewView";
 import { SystemLeft, SystemMain } from "./system/SystemView";
 import { ArchLeft, ArchMain } from "./architecture/ArchitectureView";
 import { CommandPalette } from "./CommandPalette";
@@ -273,9 +274,9 @@ export default function EditorPage() {
   );
 }
 
-type EditorView = "design" | "flow" | "system" | "architecture";
+type EditorView = "overview" | "design" | "flow" | "system" | "architecture";
 
-/** The panel body for the active view: Flow is full-width; others are Left | Main | (Right in Design). */
+/** The panel body for the active view: Overview/Flow are full-width; others are Left | Main | (Right in Design). */
 function EditorBody({
   project,
   view,
@@ -283,16 +284,21 @@ function EditorBody({
   project: import("@/types").Project;
   view: EditorView;
 }) {
+  const editingComponentId = useEditor((s) => s.editingComponentId);
+  if (view === "overview") return <OverviewView project={project} />;
   if (view === "flow") return <FlowMap project={project} />;
-  const hasRight = view === "design";
+  // Editing a component definition (launched from Design System) hosts the full
+  // design editing layout in-place, regardless of the active view.
+  const editing = !!editingComponentId;
+  const hasRight = view === "design" || editing;
   return (
     <ResizablePanelGroup direction="horizontal" className="flex-1">
       <ResizablePanel defaultSize={18} minSize={14} maxSize={28}>
-        <LeftPanel project={project} view={view} />
+        <LeftPanel project={project} view={view} editing={editing} />
       </ResizablePanel>
       <ResizableHandle />
       <ResizablePanel defaultSize={hasRight ? 56 : 82}>
-        <MainArea project={project} view={view} />
+        <MainArea project={project} view={view} editing={editing} />
       </ResizablePanel>
       {hasRight && (
         <>
@@ -309,10 +315,19 @@ function EditorBody({
 function MainArea({
   project,
   view,
+  editing,
 }: {
   project: import("@/types").Project;
   view: EditorView;
+  editing: boolean;
 }) {
+  // Component edit mode: the Canvas renders ComponentEditCanvas when editing.
+  if (editing)
+    return (
+      <div className="relative h-full">
+        <Canvas project={project} />
+      </div>
+    );
   if (view === "system") return <SystemMain project={project} />;
   if (view === "architecture") return <ArchMain project={project} />;
   return (
@@ -337,9 +352,11 @@ const TOOL_META: Record<string, { label: string; icon: LucideIcon }> = {
 function LeftPanel({
   project,
   view,
+  editing,
 }: {
   project: import("@/types").Project;
   view: EditorView;
+  editing: boolean;
 }) {
   const leftTool = useEditor((s) => s.leftTool);
   const setLeftTool = useEditor((s) => s.setLeftTool);
@@ -349,15 +366,19 @@ function LeftPanel({
   const setArchTool = useEditor((s) => s.setArchTool);
   const editingComponentId = useEditor((s) => s.editingComponentId);
 
+  // While editing a component, use the design tools (Insert/Layers) regardless
+  // of which view launched the edit.
+  const v: EditorView = editing ? "design" : view;
+
   let tabs: { id: string; onSelect: () => void }[] = [];
   let activeId = "";
-  if (view === "system") {
+  if (v === "system") {
     activeId = systemTool;
     tabs = [
       { id: "tokens", onSelect: () => setSystemTool("tokens") },
       { id: "components", onSelect: () => setSystemTool("components") },
     ];
-  } else if (view === "architecture") {
+  } else if (v === "architecture") {
     activeId = archTool;
     tabs = [
       { id: "services", onSelect: () => setArchTool("services") },
@@ -403,15 +424,15 @@ function LeftPanel({
         })}
       </div>
       <div className="min-h-0 flex-1">
-        {view === "design" && (
+        {v === "design" && (
           <>
             {activeId === "insert" && <PaletteTab />}
             {activeId === "layers" && <LayersTab />}
             {activeId === "data" && <DataTab />}
           </>
         )}
-        {view === "system" && <SystemLeft project={project} />}
-        {view === "architecture" && <ArchLeft project={project} />}
+        {v === "system" && <SystemLeft project={project} />}
+        {v === "architecture" && <ArchLeft project={project} />}
       </div>
     </div>
   );

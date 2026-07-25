@@ -45,8 +45,10 @@ interface EditorState {
   viewport: Viewport;
   previewMode: boolean;
   setPreviewMode: (v: boolean) => void;
-  editorView: "design" | "flow" | "system" | "architecture";
-  setEditorView: (v: "design" | "flow" | "system" | "architecture") => void;
+  editorView: "overview" | "design" | "flow" | "system" | "architecture";
+  setEditorView: (
+    v: "overview" | "design" | "flow" | "system" | "architecture"
+  ) => void;
   leftTool: "insert" | "layers" | "data";
   setLeftTool: (v: "insert" | "layers" | "data") => void;
   /** Design System sub-tool (left rail). */
@@ -123,6 +125,8 @@ interface EditorState {
 
   // ----- design-system components (reusable definitions + instances)
   addComponentDefinition: (name: string) => string;
+  /** Create a component definition whose root is a freshly-seeded node of `type`. */
+  addComponentDefinitionOfType: (name: string, type: NodeType) => string;
   createComponentFromNode: (nodeId: string, name: string) => string | null;
   renameComponentDefinition: (id: string, name: string) => void;
   deleteComponentDefinition: (id: string) => void;
@@ -234,8 +238,10 @@ export const useEditor = create<EditorState>()(
       viewport: { x: 0, y: 0, zoom: 1 },
       previewMode: false,
       setPreviewMode: (v) => set({ previewMode: v, selectedNodeId: null }),
-      editorView: "design",
-      setEditorView: (v) => set({ editorView: v }),
+      editorView: "overview",
+      // Switching top-level views exits component-edit mode so the Insert palette
+      // shows custom components again (create-and-edit re-enters it explicitly after).
+      setEditorView: (v) => set({ editorView: v, editingComponentId: null }),
       leftTool: "insert",
       setLeftTool: (v) => set({ leftTool: v }),
       systemTool: "tokens",
@@ -348,6 +354,7 @@ export const useEditor = create<EditorState>()(
           currentScreenId: project?.screens[0]?.id ?? null,
           selectedNodeId: null,
           viewport: { x: 80, y: 80, zoom: 0.85 },
+          editorView: "overview",
         });
       },
 
@@ -693,6 +700,29 @@ export const useEditor = create<EditorState>()(
           padding: 6,
           width: "fit",
         };
+        set((s) => ({
+          projects: s.projects.map((p) =>
+            p.id === s.currentProjectId
+              ? touch({
+                  ...p,
+                  designSystem: {
+                    ...p.designSystem,
+                    components: [
+                      ...p.designSystem.components,
+                      { id, name: root.name!, root },
+                    ],
+                  },
+                })
+              : p
+          ),
+        }));
+        return id;
+      },
+
+      addComponentDefinitionOfType: (name, type) => {
+        const id = uid("cmp");
+        const root = createNode(type);
+        root.name = name.trim() || root.name || "Component";
         set((s) => ({
           projects: s.projects.map((p) =>
             p.id === s.currentProjectId

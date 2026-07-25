@@ -1,8 +1,9 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Copy, Plus, Trash2, Component, Pencil } from "lucide-react";
 import type { DesignNode, NodeType, Project } from "@/types";
 import { createNode } from "@/lib/factory";
+import { nodeDefList, categoryOrder } from "@/lib/nodeDefs";
 import { StaticNode } from "@/features/editor/canvas/renderTree";
 import { ComponentDefsProvider } from "@/features/editor/canvas/componentDefs";
 import { generateComponentCode } from "@/lib/codegen";
@@ -10,8 +11,97 @@ import { tokenStyle, ensureFontLoaded, DS_FONTS } from "@/lib/designSystem";
 import { useEditor } from "@/store/editorStore";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Dropdown } from "@/features/editor/right/controls";
 import { cn } from "@/lib/utils";
+
+/**
+ * "New component" button + base-type picker. Creating a component seeds it from
+ * a chosen base type and enters inline editing WITHOUT leaving the Design System
+ * view (the editor layout is hosted here while `editingComponentId` is set).
+ */
+function NewComponentButton({
+  count,
+  variant = "brand",
+  className,
+  label = "New component",
+}: {
+  count: number;
+  variant?: "brand" | "outline";
+  className?: string;
+  label?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const addComponentDefinitionOfType = useEditor(
+    (s) => s.addComponentDefinitionOfType
+  );
+  const editComponent = useEditor((s) => s.editComponent);
+
+  const pick = (type: NodeType) => {
+    const id = addComponentDefinitionOfType(`Component ${count + 1}`, type);
+    setOpen(false);
+    // Stay in the Design System view; EditorPage renders the inline editor
+    // whenever `editingComponentId` is set.
+    editComponent(id);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant={variant} className={className}>
+          <Plus className="h-3.5 w-3.5" />
+          {label}
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Start from a base component</DialogTitle>
+          <DialogDescription>
+            Pick a building block to base your component on. You can restyle it
+            and add more inside afterwards.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="max-h-[60vh] space-y-4 overflow-y-auto scrollbar-thin pr-1">
+          {categoryOrder.map((cat) => {
+            const items = nodeDefList.filter((d) => d.category === cat);
+            if (!items.length) return null;
+            return (
+              <div key={cat}>
+                <p className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground/70">
+                  {cat}
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {items.map((d) => {
+                    const Icon = d.icon;
+                    return (
+                      <button
+                        key={d.type}
+                        onClick={() => pick(d.type)}
+                        className="flex items-center gap-2 rounded-lg border border-border/70 bg-card px-3 py-2.5 text-left text-sm transition-colors hover:border-brand hover:bg-muted/40"
+                      >
+                        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-md bg-primary/10 text-primary">
+                          <Icon className="h-4 w-4" />
+                        </span>
+                        <span className="truncate font-medium">{d.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 /* Build a sample node of a type with prop/style overrides. */
 function sample(
@@ -179,19 +269,12 @@ function TokensPanel({ project }: { project: Project }) {
 /** Compact components manager in the left rail (New / edit / insert / delete). */
 function ComponentsPanel({ project }: { project: Project }) {
   const components = project.designSystem.components;
-  const addComponentDefinition = useEditor((s) => s.addComponentDefinition);
   const deleteComponentDefinition = useEditor(
     (s) => s.deleteComponentDefinition
   );
   const createInstance = useEditor((s) => s.createInstance);
   const editComponent = useEditor((s) => s.editComponent);
-  const setEditorView = useEditor((s) => s.setEditorView);
 
-  const createAndEdit = () => {
-    const id = addComponentDefinition(`Component ${components.length + 1}`);
-    editComponent(id);
-    setEditorView("design");
-  };
   const insert = (defId: string) => {
     const root = useEditor.getState().currentRoot();
     if (!root) {
@@ -205,15 +288,7 @@ function ComponentsPanel({ project }: { project: Project }) {
   return (
     <ScrollArea className="h-full">
       <div className="space-y-2 p-3">
-        <Button
-          size="sm"
-          variant="brand"
-          className="h-7 w-full"
-          onClick={createAndEdit}
-        >
-          <Plus className="h-3.5 w-3.5" />
-          New component
-        </Button>
+        <NewComponentButton count={components.length} className="h-7 w-full" />
 
         {components.length === 0 ? (
           <p className="px-1 py-3 text-center text-[11px] text-muted-foreground">
@@ -228,10 +303,7 @@ function ComponentsPanel({ project }: { project: Project }) {
                 className="group flex h-8 items-center gap-2 rounded-md px-2 text-xs hover:bg-muted"
               >
                 <button
-                  onClick={() => {
-                    editComponent(c.id);
-                    setEditorView("design");
-                  }}
+                  onClick={() => editComponent(c.id)}
                   className="flex min-w-0 flex-1 items-center gap-2 text-left"
                   title="Edit component"
                 >
@@ -326,7 +398,6 @@ export function SystemMain({ project }: { project: Project }) {
 /* ---------------------------------------------------------- Components (defs) */
 function ComponentsSection({ project }: { project: Project }) {
   const components = project.designSystem.components;
-  const addComponentDefinition = useEditor((s) => s.addComponentDefinition);
   const deleteComponentDefinition = useEditor(
     (s) => s.deleteComponentDefinition
   );
@@ -335,18 +406,8 @@ function ComponentsSection({ project }: { project: Project }) {
   );
   const createInstance = useEditor((s) => s.createInstance);
   const editComponent = useEditor((s) => s.editComponent);
-  const setEditorView = useEditor((s) => s.setEditorView);
 
-  const createAndEdit = () => {
-    const id = addComponentDefinition(`Component ${components.length + 1}`);
-    editComponent(id);
-    setEditorView("design");
-  };
-
-  const edit = (id: string) => {
-    editComponent(id);
-    setEditorView("design");
-  };
+  const edit = (id: string) => editComponent(id);
 
   const insert = (defId: string) => {
     const root = useEditor.getState().currentRoot();
@@ -364,10 +425,7 @@ function ComponentsSection({ project }: { project: Project }) {
         <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground/70">
           Components
         </h2>
-        <Button size="sm" variant="brand" className="h-7" onClick={createAndEdit}>
-          <Plus className="h-3.5 w-3.5" />
-          New component
-        </Button>
+        <NewComponentButton count={components.length} className="h-7" />
       </div>
 
       {components.length === 0 ? (
@@ -379,15 +437,12 @@ function ComponentsSection({ project }: { project: Project }) {
             primitives below. Use it on any page — editing it updates every
             instance everywhere.
           </p>
-          <Button
-            size="sm"
+          <NewComponentButton
+            count={components.length}
             variant="outline"
             className="mt-2 h-7"
-            onClick={createAndEdit}
-          >
-            <Plus className="h-3.5 w-3.5" />
-            Create your first component
-          </Button>
+            label="Create your first component"
+          />
         </div>
       ) : (
         <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3">

@@ -195,9 +195,8 @@ export function CommandPalette({ project }: { project: Project }) {
             placeholder="Type a command or search…"
             className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           />
-          <kbd className="rounded border bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-            ⌘K
-          </kbd>
+          {/* Leave room for the dialog's built-in ✕ close button (absolute right-4 top-4). */}
+          <span className="w-6 shrink-0" aria-hidden />
         </div>
         <div ref={listRef} className="max-h-80 overflow-auto scrollbar-thin p-1.5">
           {filtered.length === 0 ? (

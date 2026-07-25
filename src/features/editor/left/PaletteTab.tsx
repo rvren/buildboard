@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useDraggable } from "@dnd-kit/core";
 import { motion } from "framer-motion";
 import { Component as ComponentIcon } from "lucide-react";
@@ -11,15 +12,49 @@ import { defFor } from "@/lib/nodeDefs";
 
 export function PaletteTab() {
   const editingComponentId = useEditor((s) => s.editingComponentId);
+  const [filter, setFilter] = useState<"all" | "custom">("all");
+  const componentCount =
+    useEditor((s) => s.currentProject()?.designSystem.components.length) ?? 0;
+  const presetCount =
+    useEditor((s) => s.currentProject()?.designSystem.presets.length) ?? 0;
+  const hasCustom = componentCount + presetCount > 0;
+
   return (
     <ScrollArea className="h-full">
-      <div className="space-y-5 p-2.5">
-        {/* Don't offer components while editing one (avoids self-nesting confusion). */}
+      <div className="space-y-4 p-2.5">
+        {/* Filter: your custom components only, or all (custom + base building blocks). */}
+        <div className="flex rounded-lg border border-border/70 bg-muted/40 p-0.5 text-[12px] font-medium">
+          {(["all", "custom"] as const).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={cn(
+                "flex-1 rounded-md px-2 py-1 transition-colors",
+                filter === f
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {f === "all" ? "All" : "Custom"}
+            </button>
+          ))}
+        </div>
+
+        {/* Custom (user-authored) — components + presets. */}
         {!editingComponentId && <ComponentsGroup />}
         <PresetsGroup />
-        {categoryOrder.map((cat) => (
-          <CategorySection key={cat} category={cat} />
-        ))}
+
+        {filter === "custom" && !hasCustom && (
+          <p className="px-2 py-6 text-center text-[12px] leading-relaxed text-muted-foreground">
+            No custom components yet. Create one in the Design System view.
+          </p>
+        )}
+
+        {/* Base building blocks (the defaults we provide). */}
+        {filter === "all" &&
+          categoryOrder.map((cat) => (
+            <CategorySection key={cat} category={cat} />
+          ))}
       </div>
     </ScrollArea>
   );
@@ -35,7 +70,7 @@ function ComponentsGroup() {
   return (
     <div>
       <p className="mb-1.5 px-2 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground/70">
-        Components
+        Custom components
       </p>
       <div className="space-y-0.5">
         {components.map((c) => (
@@ -77,6 +112,9 @@ function ComponentRow({ id, name }: { id: string; name: string }) {
     >
       <ComponentIcon className="h-4 w-4 shrink-0 text-primary" />
       <span className="flex-1 truncate text-[13px] font-medium">{name}</span>
+      <span className="shrink-0 rounded bg-primary/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-primary">
+        Custom
+      </span>
     </motion.button>
   );
 }

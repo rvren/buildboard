@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Command,
   HelpCircle,
+  LayoutDashboard,
   LayoutTemplate,
   Workflow,
   SwatchBook,
@@ -17,11 +18,12 @@ import {
 import { useEditor } from "@/store/editorStore";
 import { cn } from "@/lib/utils";
 
-type EditorView = "design" | "flow" | "system" | "architecture";
+type EditorView = "overview" | "design" | "flow" | "system" | "architecture";
 
-// Order follows the enterprise workflow: define the system → architect →
-// design screens → wire the flow.
+// Overview is the landing view; the rest follow the enterprise workflow:
+// define the system → architect → design screens → wire the flow.
 const VIEWS: { id: EditorView; icon: LucideIcon; label: string }[] = [
+  { id: "overview", icon: LayoutDashboard, label: "Overview" },
   { id: "system", icon: SwatchBook, label: "Design System" },
   { id: "architecture", icon: Waypoints, label: "Architecture" },
   { id: "design", icon: LayoutTemplate, label: "Design" },
