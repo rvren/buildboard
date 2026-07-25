@@ -12,7 +12,7 @@ import EditorPage from "@/features/editor/EditorPage";
 
 const router = createHashRouter([
   { path: "/", element: <ProjectsDashboard /> },
-  { path: "/project/:projectId", element: <EditorPage /> },
+  { path: "/project/:projectId/:view?", element: <EditorPage /> },
 ]);
 
 export default function App() {

@@ -8,6 +8,8 @@ import type {
   DataSourceKind,
   DesignNode,
   DesignTokens,
+  ThemeMode,
+  ThemePalette,
   NodeAction,
   NodeType,
   Project,
@@ -24,6 +26,7 @@ import {
   createScreen,
   defaultArchitecture,
   defaultDesignSystem,
+  defaultTokens,
 } from "@/lib/factory";
 import { deriveServices, deriveSequence } from "@/lib/architecture";
 import {
@@ -36,6 +39,37 @@ import {
   updateNodeById,
 } from "@/lib/tree";
 import { defFor } from "@/lib/nodeDefs";
+
+export type EditorView =
+  | "overview"
+  | "design"
+  | "flow"
+  | "system"
+  | "architecture";
+
+/** All editor views, in nav order — also the valid URL `:view` segments. */
+export const EDITOR_VIEWS: EditorView[] = [
+  "overview",
+  "system",
+  "architecture",
+  "design",
+  "flow",
+];
+
+/** Coerce an unknown URL segment to a valid view (defaults to overview). */
+export function parseView(v: string | undefined | null): EditorView {
+  return EDITOR_VIEWS.includes(v as EditorView) ? (v as EditorView) : "overview";
+}
+
+/**
+ * A view→URL navigator registered by the mounted EditorPage. `setEditorView`
+ * calls it so every existing caller updates the route with no code changes.
+ * Store code can't use `useNavigate`, hence this small registry.
+ */
+let _viewNav: ((view: EditorView) => void) | null = null;
+export function registerViewNavigator(fn: ((view: EditorView) => void) | null) {
+  _viewNav = fn;
+}
 
 interface EditorState {
   projects: Project[];
@@ -114,6 +148,8 @@ interface EditorState {
 
   // ----- design system (project-scoped)
   updateTokens: (patch: Partial<DesignTokens>) => void;
+  /** Update one theme's palette (light or dark). */
+  updateThemeToken: (mode: ThemeMode, patch: Partial<ThemePalette>) => void;
   addPreset: (fromNodeId: string, name: string) => void;
   updatePreset: (id: string, patch: Partial<ComponentPreset>) => void;
   deletePreset: (id: string) => void;
@@ -156,6 +192,39 @@ interface EditorState {
 
 function touch(p: Project): Project {
   return { ...p, updatedAt: Date.now() };
+}
+
+/**
+ * Upgrade a persisted `tokens` object to the current light/dark shape.
+ * Old projects stored a flat `{ primary, brandFrom, brandTo, radius, font }`;
+ * we build full light+dark palettes and carry the old brand/primary into both.
+ */
+function normalizeTokens(tokens: any): DesignTokens {
+  const defaults = defaultTokens();
+  if (!tokens) return defaults;
+  // Already the new shape — merge with defaults to backfill any missing keys.
+  if (tokens.light && tokens.dark) {
+    return {
+      light: { ...defaults.light, ...tokens.light },
+      dark: { ...defaults.dark, ...tokens.dark },
+      radius: tokens.radius ?? defaults.radius,
+      font: tokens.font ?? defaults.font,
+    };
+  }
+  // Old flat shape: preserve the user's brand/primary in both themes.
+  const brand: Partial<ThemePalette> = {};
+  if (tokens.primary) {
+    brand.primary = tokens.primary;
+    brand.ring = tokens.primary;
+  }
+  if (tokens.brandFrom) brand.brandFrom = tokens.brandFrom;
+  if (tokens.brandTo) brand.brandTo = tokens.brandTo;
+  return {
+    light: { ...defaults.light, ...brand },
+    dark: { ...defaults.dark, ...brand },
+    radius: tokens.radius ?? defaults.radius,
+    font: tokens.font ?? defaults.font,
+  };
 }
 
 /** Apply an updater to the current screen's root, marking the project dirty. */
@@ -241,7 +310,11 @@ export const useEditor = create<EditorState>()(
       editorView: "overview",
       // Switching top-level views exits component-edit mode so the Insert palette
       // shows custom components again (create-and-edit re-enters it explicitly after).
-      setEditorView: (v) => set({ editorView: v, editingComponentId: null }),
+      // Also mirrors the view into the URL via the registered navigator.
+      setEditorView: (v) => {
+        set({ editorView: v, editingComponentId: null });
+        _viewNav?.(v);
+      },
       leftTool: "insert",
       setLeftTool: (v) => set({ leftTool: v }),
       systemTool: "tokens",
@@ -323,7 +396,11 @@ export const useEditor = create<EditorState>()(
             })),
             designSystem: src.designSystem
               ? {
-                  tokens: { ...src.designSystem.tokens },
+                  tokens: {
+                    ...src.designSystem.tokens,
+                    light: { ...src.designSystem.tokens.light },
+                    dark: { ...src.designSystem.tokens.dark },
+                  },
                   presets: src.designSystem.presets.map((pr) => ({
                     ...pr,
                     id: uid("preset"),
@@ -354,7 +431,7 @@ export const useEditor = create<EditorState>()(
           currentScreenId: project?.screens[0]?.id ?? null,
           selectedNodeId: null,
           viewport: { x: 80, y: 80, zoom: 0.85 },
-          editorView: "overview",
+          // editorView is driven by the URL (see EditorPage) — not forced here.
         });
       },
 
@@ -592,6 +669,24 @@ export const useEditor = create<EditorState>()(
                   designSystem: {
                     ...p.designSystem,
                     tokens: { ...p.designSystem.tokens, ...patch },
+                  },
+                })
+              : p
+          ),
+        })),
+
+      updateThemeToken: (mode, patch) =>
+        set((s) => ({
+          projects: s.projects.map((p) =>
+            p.id === s.currentProjectId
+              ? touch({
+                  ...p,
+                  designSystem: {
+                    ...p.designSystem,
+                    tokens: {
+                      ...p.designSystem.tokens,
+                      [mode]: { ...p.designSystem.tokens[mode], ...patch },
+                    },
                   },
                 })
               : p
@@ -985,7 +1080,7 @@ export const useEditor = create<EditorState>()(
     }),
     {
       name: "buildboard-store",
-      version: 5,
+      version: 6,
       partialize: (s) => ({ projects: s.projects }),
       migrate: (persisted: any) => {
         if (persisted?.projects) {
@@ -1000,6 +1095,7 @@ export const useEditor = create<EditorState>()(
               })),
               designSystem: {
                 ...ds,
+                tokens: normalizeTokens(ds.tokens),
                 presets: ds.presets ?? [],
                 components: ds.components ?? [],
               },

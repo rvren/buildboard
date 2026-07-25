@@ -3,6 +3,7 @@ import type { ComponentDefinition, DesignTokens, Screen } from "@/types";
 import { StaticNode } from "@/features/editor/canvas/renderTree";
 import { ComponentDefsProvider } from "@/features/editor/canvas/componentDefs";
 import { tokenStyle } from "@/lib/designSystem";
+import { useTheme } from "@/store/theme";
 import { ImageOff } from "lucide-react";
 
 /**
@@ -20,6 +21,7 @@ export function MiniPreview({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.2);
+  const theme = useTheme((s) => s.theme);
 
   useEffect(() => {
     if (!ref.current || !screen) return;
@@ -50,7 +52,7 @@ export function MiniPreview({
           height: screen.height,
           transform: `scale(${scale})`,
           transformOrigin: "top left",
-          ...(tokens ? tokenStyle(tokens) : {}),
+          ...(tokens ? tokenStyle(tokens, theme) : {}),
         }}
       >
         <ComponentDefsProvider components={components ?? []}>

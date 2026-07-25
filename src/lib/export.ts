@@ -1,8 +1,17 @@
 import JSZip from "jszip";
-import type { Project } from "@/types";
+import type { Project, ThemePalette } from "@/types";
 import { generatePageCode } from "@/lib/codegen";
-import { hexToHslTriple } from "@/lib/designSystem";
+import { hexToHslTriple, PALETTE_VARS } from "@/lib/designSystem";
 import { architectureMarkdown } from "@/lib/architecture";
+
+/** Emit a `{ --var: H S% L%; … }` block body from a palette + radius. */
+function paletteVarBlock(palette: ThemePalette, radius: number): string {
+  const lines = (Object.keys(PALETTE_VARS) as (keyof ThemePalette)[]).map(
+    (key) => `  ${PALETTE_VARS[key]}: ${hexToHslTriple(palette[key])};`
+  );
+  lines.push(`  --radius: ${radius}px;`);
+  return lines.join("\n");
+}
 
 function pascalCase(input: string): string {
   const cleaned = input.replace(/[^a-zA-Z0-9]+/g, " ").trim();
@@ -49,13 +58,8 @@ export async function exportProjectZip(project: Project) {
   if (t) {
     folder.file(
       "design-tokens.css",
-      `:root {\n` +
-        `  --primary: ${hexToHslTriple(t.primary)};\n` +
-        `  --ring: ${hexToHslTriple(t.primary)};\n` +
-        `  --brand-from: ${hexToHslTriple(t.brandFrom)};\n` +
-        `  --brand-to: ${hexToHslTriple(t.brandTo)};\n` +
-        `  --radius: ${t.radius}px;\n` +
-        `}\n\n` +
+      `:root {\n${paletteVarBlock(t.light, t.radius)}\n}\n\n` +
+        `.dark {\n${paletteVarBlock(t.dark, t.radius)}\n}\n\n` +
         `.bg-brand { background-image: linear-gradient(135deg, hsl(var(--brand-from)), hsl(var(--brand-to))); }\n`
     );
   }

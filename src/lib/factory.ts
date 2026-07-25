@@ -9,9 +9,82 @@ import type {
   ProjectMode,
   Screen,
 } from "@/types";
+import type { ThemePalette } from "@/types";
 import { defFor } from "@/lib/nodeDefs";
 import { uid } from "@/lib/utils";
 import { schemaFromBody } from "@/lib/dataSource";
+import { hslTripleToHex } from "@/lib/designSystem";
+
+/** Source-of-truth default palettes, mirroring src/index.css `:root` / `.dark`. */
+const LIGHT_HSL: Record<keyof ThemePalette, string> = {
+  background: "220 20% 98.5%",
+  foreground: "224 14% 14%",
+  card: "0 0% 100%",
+  cardForeground: "224 14% 14%",
+  popover: "0 0% 100%",
+  popoverForeground: "224 14% 14%",
+  primary: "243 75% 60%",
+  primaryForeground: "0 0% 100%",
+  secondary: "220 14% 96%",
+  secondaryForeground: "224 14% 22%",
+  muted: "220 14% 96%",
+  mutedForeground: "220 9% 46%",
+  accent: "220 14% 95%",
+  accentForeground: "224 14% 20%",
+  destructive: "352 78% 56%",
+  destructiveForeground: "0 0% 100%",
+  success: "158 64% 42%",
+  warning: "32 90% 52%",
+  border: "220 13% 91%",
+  input: "220 13% 90%",
+  ring: "243 75% 60%",
+  brandFrom: "243 75% 60%",
+  brandTo: "275 80% 66%",
+};
+
+const DARK_HSL: Record<keyof ThemePalette, string> = {
+  background: "220 8% 9%",
+  foreground: "220 14% 93%",
+  card: "220 7% 12%",
+  cardForeground: "220 14% 93%",
+  popover: "220 7% 13%",
+  popoverForeground: "220 14% 93%",
+  primary: "248 90% 72%",
+  primaryForeground: "240 30% 10%",
+  secondary: "220 6% 17%",
+  secondaryForeground: "220 14% 93%",
+  muted: "220 6% 16%",
+  mutedForeground: "220 8% 60%",
+  accent: "220 6% 18%",
+  accentForeground: "220 14% 90%",
+  destructive: "352 74% 62%",
+  destructiveForeground: "0 0% 100%",
+  success: "158 60% 52%",
+  warning: "32 92% 62%",
+  border: "220 6% 20%",
+  input: "220 6% 22%",
+  ring: "248 90% 72%",
+  brandFrom: "248 85% 66%",
+  brandTo: "278 80% 68%",
+};
+
+function paletteFromHsl(src: Record<keyof ThemePalette, string>): ThemePalette {
+  const out = {} as ThemePalette;
+  for (const key of Object.keys(src) as (keyof ThemePalette)[]) {
+    out[key] = hslTripleToHex(src[key]);
+  }
+  return out;
+}
+
+/** Default design tokens: full light + dark palettes, shared radius/font. */
+export function defaultTokens() {
+  return {
+    light: paletteFromHsl(LIGHT_HSL),
+    dark: paletteFromHsl(DARK_HSL),
+    radius: 14,
+    font: "Geist",
+  };
+}
 
 export function createNode(type: NodeType): DesignNode {
   const def = defFor(type);
@@ -232,13 +305,7 @@ export function createDataSource(
 
 export function defaultDesignSystem(): DesignSystem {
   return {
-    tokens: {
-      brandFrom: "#6366f1",
-      brandTo: "#a855f7",
-      primary: "#6366f1",
-      radius: 14,
-      font: "Geist",
-    },
+    tokens: defaultTokens(),
     presets: [],
     components: [],
   };

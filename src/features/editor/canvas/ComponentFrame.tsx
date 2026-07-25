@@ -1,6 +1,7 @@
 import type { ComponentDefinition } from "@/types";
 import { useEditor } from "@/store/editorStore";
 import { tokenStyle } from "@/lib/designSystem";
+import { useTheme } from "@/store/theme";
 import { NodeRenderer } from "./NodeRenderer";
 import { ComponentDefsProvider } from "./componentDefs";
 
@@ -20,13 +21,14 @@ export function ComponentFrame({
     (s) => s.currentProject()?.designSystem.components
   );
   const setSelected = useEditor((s) => s.setSelected);
+  const theme = useTheme((s) => s.theme);
 
   return (
     <div
       className="rounded-xl bg-white p-10 ring-1 ring-border shadow-soft dark:bg-card"
       onClick={() => setSelected(null)}
     >
-      <div style={tokens ? tokenStyle(tokens) : undefined}>
+      <div style={tokens ? tokenStyle(tokens, theme) : undefined}>
         <ComponentDefsProvider components={components ?? []}>
           <NodeRenderer node={definition.root} isRoot />
         </ComponentDefsProvider>

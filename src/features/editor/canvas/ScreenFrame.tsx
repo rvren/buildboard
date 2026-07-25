@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { useEditor } from "@/store/editorStore";
 import { spring } from "@/lib/motion";
 import { tokenStyle } from "@/lib/designSystem";
+import { useTheme } from "@/store/theme";
 import { NodeRenderer } from "./NodeRenderer";
 import { ComponentDefsProvider } from "./componentDefs";
 
@@ -12,6 +13,7 @@ export function ScreenFrame({ screen }: { screen: Screen }) {
   const selectScreen = useEditor((s) => s.selectScreen);
   const setSelected = useEditor((s) => s.setSelected);
   const tokens = useEditor((s) => s.currentProject()?.designSystem.tokens);
+  const theme = useTheme((s) => s.theme);
   const components = useEditor(
     (s) => s.currentProject()?.designSystem.components
   );
@@ -63,7 +65,7 @@ export function ScreenFrame({ screen }: { screen: Screen }) {
       >
         <div
           className="h-full w-full overflow-auto scrollbar-thin"
-          style={tokens ? tokenStyle(tokens) : undefined}
+          style={tokens ? tokenStyle(tokens, theme) : undefined}
         >
           <ComponentDefsProvider components={components ?? []}>
             <NodeRenderer node={screen.root} isRoot />

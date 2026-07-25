@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Copy, Plus, Trash2, Component, Pencil } from "lucide-react";
-import type { DesignNode, NodeType, Project } from "@/types";
+import type { DesignNode, NodeType, Project, ThemePalette } from "@/types";
 import { createNode } from "@/lib/factory";
 import { nodeDefList, categoryOrder } from "@/lib/nodeDefs";
 import { StaticNode } from "@/features/editor/canvas/renderTree";
@@ -9,6 +9,7 @@ import { ComponentDefsProvider } from "@/features/editor/canvas/componentDefs";
 import { generateComponentCode } from "@/lib/codegen";
 import { tokenStyle, ensureFontLoaded, DS_FONTS } from "@/lib/designSystem";
 import { useEditor } from "@/store/editorStore";
+import { useTheme } from "@/store/theme";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -185,9 +186,68 @@ export function SystemLeft({ project }: { project: Project }) {
   );
 }
 
+/** Full palette editors, grouped. Labels kept short for the narrow rail. */
+const TOKEN_GROUPS: {
+  title: string;
+  fields: { key: keyof ThemePalette; label: string }[];
+}[] = [
+  {
+    title: "Surfaces",
+    fields: [
+      { key: "background", label: "Background" },
+      { key: "foreground", label: "Foreground" },
+      { key: "card", label: "Card" },
+      { key: "cardForeground", label: "Card fg" },
+      { key: "popover", label: "Popover" },
+      { key: "popoverForeground", label: "Popover fg" },
+    ],
+  },
+  {
+    title: "Primary & brand",
+    fields: [
+      { key: "primary", label: "Primary" },
+      { key: "primaryForeground", label: "Primary fg" },
+      { key: "ring", label: "Ring" },
+      { key: "brandFrom", label: "Gradient A" },
+      { key: "brandTo", label: "Gradient B" },
+    ],
+  },
+  {
+    title: "Secondary, accent & muted",
+    fields: [
+      { key: "secondary", label: "Secondary" },
+      { key: "secondaryForeground", label: "Secondary fg" },
+      { key: "accent", label: "Accent" },
+      { key: "accentForeground", label: "Accent fg" },
+      { key: "muted", label: "Muted" },
+      { key: "mutedForeground", label: "Muted fg" },
+    ],
+  },
+  {
+    title: "Status",
+    fields: [
+      { key: "destructive", label: "Destructive" },
+      { key: "destructiveForeground", label: "Destructive fg" },
+      { key: "success", label: "Success" },
+      { key: "warning", label: "Warning" },
+    ],
+  },
+  {
+    title: "Borders",
+    fields: [
+      { key: "border", label: "Border" },
+      { key: "input", label: "Input" },
+    ],
+  },
+];
+
 function TokensPanel({ project }: { project: Project }) {
   const tokens = project.designSystem.tokens;
   const updateTokens = useEditor((s) => s.updateTokens);
+  const updateThemeToken = useEditor((s) => s.updateThemeToken);
+  const theme = useTheme((s) => s.theme);
+  const setTheme = useTheme((s) => s.setTheme);
+  const palette = tokens[theme];
 
   useEffect(() => {
     ensureFontLoaded(tokens.font);
@@ -196,32 +256,55 @@ function TokensPanel({ project }: { project: Project }) {
   return (
     <ScrollArea className="h-full">
       <div className="space-y-5 p-4">
-        <div className="space-y-2.5">
-          <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">
-            Brand
+        {/* Light / Dark toggle — synced to the app theme so the canvas shows
+            the mode you're editing. */}
+        <div>
+          <div className="flex rounded-lg border border-border/70 bg-muted p-0.5 text-[12px] font-medium">
+            {(["light", "dark"] as const).map((m) => (
+              <button
+                key={m}
+                onClick={() => setTheme(m)}
+                className={cn(
+                  "flex-1 rounded-md px-2 py-1 capitalize transition-colors",
+                  theme === m
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {m}
+              </button>
+            ))}
+          </div>
+          <p className="mt-1.5 px-0.5 text-[10.5px] leading-relaxed text-muted-foreground">
+            Editing the <b className="font-medium text-foreground">{theme}</b>{" "}
+            palette. Toggle to edit the other mode.
           </p>
-          <ColorRow
-            label="Primary"
-            value={tokens.primary}
-            onChange={(v) => updateTokens({ primary: v })}
-          />
-          <ColorRow
-            label="Gradient A"
-            value={tokens.brandFrom}
-            onChange={(v) => updateTokens({ brandFrom: v })}
-          />
-          <ColorRow
-            label="Gradient B"
-            value={tokens.brandTo}
-            onChange={(v) => updateTokens({ brandTo: v })}
-          />
         </div>
+
+        {TOKEN_GROUPS.map((group) => (
+          <div key={group.title} className="space-y-2.5">
+            <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">
+              {group.title}
+            </p>
+            {group.fields.map((f) => (
+              <ColorRow
+                key={f.key}
+                label={f.label}
+                value={palette[f.key]}
+                onChange={(v) => updateThemeToken(theme, { [f.key]: v })}
+              />
+            ))}
+          </div>
+        ))}
 
         <div className="space-y-2.5">
           <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">
             Shape & type
+            <span className="ml-1 normal-case tracking-normal text-muted-foreground/50">
+              (both modes)
+            </span>
           </p>
-          <div className="grid grid-cols-[64px_1fr] items-center gap-2">
+          <div className="grid grid-cols-[88px_1fr] items-center gap-2">
             <label className="text-[12px] text-muted-foreground">Radius</label>
             <div className="flex items-center gap-2">
               <input
@@ -239,7 +322,7 @@ function TokensPanel({ project }: { project: Project }) {
               </span>
             </div>
           </div>
-          <div className="grid grid-cols-[64px_1fr] items-center gap-2">
+          <div className="grid grid-cols-[88px_1fr] items-center gap-2">
             <label className="text-[12px] text-muted-foreground">Font</label>
             <Dropdown
               value={tokens.font}
@@ -249,16 +332,23 @@ function TokensPanel({ project }: { project: Project }) {
           </div>
         </div>
 
-        {/* brand preview */}
-        <div className="rounded-xl border p-3" style={tokenStyle(tokens)}>
-          <div className="mb-2 h-9 rounded-lg bg-brand" />
-          <div className="flex gap-2">
+        {/* live preview of the active mode */}
+        <div
+          className="space-y-2 rounded-xl border p-3"
+          style={tokenStyle(tokens, theme)}
+        >
+          <div className="h-9 rounded-lg bg-brand" />
+          <div className="flex flex-wrap gap-2">
             <Button variant="brand" size="sm" className="pointer-events-none">
               Primary
             </Button>
             <Button variant="outline" size="sm" className="pointer-events-none">
               Outline
             </Button>
+          </div>
+          <div className="rounded-lg border bg-card p-2 text-card-foreground">
+            <p className="text-xs font-medium">Card surface</p>
+            <p className="text-[11px] text-muted-foreground">Muted text</p>
           </div>
         </div>
       </div>
@@ -336,6 +426,7 @@ function ComponentsPanel({ project }: { project: Project }) {
 /** Main gallery for the Design System view (component showcase + primitives). */
 export function SystemMain({ project }: { project: Project }) {
   const tokens = project.designSystem.tokens;
+  const theme = useTheme((s) => s.theme);
   const groups = useMemo(buildGroups, []);
 
   useEffect(() => {
@@ -345,7 +436,7 @@ export function SystemMain({ project }: { project: Project }) {
   return (
     <ScrollArea className="min-h-0 flex-1 bg-background">
       <ComponentDefsProvider components={project.designSystem.components}>
-        <div className="p-8" style={tokenStyle(tokens)}>
+        <div className="p-8" style={tokenStyle(tokens, theme)}>
           <div className="mb-6">
             <h1 className="text-2xl font-semibold tracking-tight">
               Design System
@@ -502,8 +593,10 @@ function ColorRow({
   onChange: (v: string) => void;
 }) {
   return (
-    <div className="grid grid-cols-[64px_1fr] items-center gap-2">
-      <label className="text-[12px] text-muted-foreground">{label}</label>
+    <div className="grid grid-cols-[88px_1fr] items-center gap-2">
+      <label className="truncate text-[12px] text-muted-foreground">
+        {label}
+      </label>
       <div className="flex items-center gap-2 rounded-md border px-2 py-1">
         <input
           type="color"

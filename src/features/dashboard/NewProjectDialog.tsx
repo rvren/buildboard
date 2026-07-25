@@ -53,7 +53,7 @@ export function NewProjectDialog({ trigger }: { trigger?: React.ReactNode }) {
     setOpen(false);
     setName("");
     setMode("static");
-    navigate(`/project/${id}`);
+    navigate(`/project/${id}/overview`);
   };
 
   return (

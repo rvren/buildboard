@@ -24,7 +24,11 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { useEditor } from "@/store/editorStore";
+import {
+  useEditor,
+  parseView,
+  registerViewNavigator,
+} from "@/store/editorStore";
 import { cn } from "@/lib/utils";
 import { findNode, findParent, isAncestor } from "@/lib/tree";
 import { defFor } from "@/lib/nodeDefs";
@@ -77,19 +81,40 @@ function resolveDrop(
 }
 
 export default function EditorPage() {
-  const { projectId } = useParams();
+  const { projectId, view } = useParams();
   const navigate = useNavigate();
 
   const projects = useEditor((s) => s.projects);
   const currentProjectId = useEditor((s) => s.currentProjectId);
   const openProject = useEditor((s) => s.openProject);
   const editorView = useEditor((s) => s.editorView);
+  const setEditorView = useEditor((s) => s.setEditorView);
   const project = projects.find((p) => p.id === projectId);
+  const routeView = parseView(view);
 
   // Sync store's active project with the URL.
   React.useEffect(() => {
     if (project && currentProjectId !== project.id) openProject(project.id);
   }, [project, currentProjectId, openProject]);
+
+  // Register the view→URL navigator so setEditorView (and all its callers)
+  // keep the route in sync. Cleared on unmount.
+  React.useEffect(() => {
+    if (!projectId) return;
+    registerViewNavigator((v) => navigate(`/project/${projectId}/${v}`));
+    return () => registerViewNavigator(null);
+  }, [projectId, navigate]);
+
+  // URL → store: apply the route's view (deep links, back/forward). A missing or
+  // invalid `:view` segment is canonicalized to /overview.
+  React.useEffect(() => {
+    if (!projectId) return;
+    if (view !== routeView) {
+      navigate(`/project/${projectId}/${routeView}`, { replace: true });
+    } else if (routeView !== editorView) {
+      setEditorView(routeView);
+    }
+  }, [projectId, view, routeView, editorView, navigate, setEditorView]);
 
   // Load the project's design-system font (for the canvas too).
   React.useEffect(() => {

@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import type { DesignTokens } from "@/types";
+import type { DesignTokens, ThemeMode, ThemePalette } from "@/types";
 
 /** Curated fonts offered by the design system (loaded on demand from Google Fonts). */
 export const DS_FONTS = [
@@ -43,21 +43,78 @@ export function hexToHslTriple(hex: string): string {
   return `${Math.round(hue)} ${Math.round(sat * 100)}% ${Math.round(lum * 100)}%`;
 }
 
+/** Convert a Tailwind/shadcn `"H S% L%"` triple to a #RRGGBB hex. */
+export function hslTripleToHex(triple: string): string {
+  const m = triple.trim().match(/^([\d.]+)\s+([\d.]+)%\s+([\d.]+)%$/);
+  if (!m) return "#000000";
+  const h = parseFloat(m[1]);
+  const s = parseFloat(m[2]) / 100;
+  const l = parseFloat(m[3]) / 100;
+  const c = (1 - Math.abs(2 * l - 1)) * s;
+  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+  const mm = l - c / 2;
+  let r = 0,
+    g = 0,
+    b = 0;
+  if (h < 60) [r, g, b] = [c, x, 0];
+  else if (h < 120) [r, g, b] = [x, c, 0];
+  else if (h < 180) [r, g, b] = [0, c, x];
+  else if (h < 240) [r, g, b] = [0, x, c];
+  else if (h < 300) [r, g, b] = [x, 0, c];
+  else [r, g, b] = [c, 0, x];
+  const to = (n: number) =>
+    Math.round((n + mm) * 255)
+      .toString(16)
+      .padStart(2, "0");
+  return `#${to(r)}${to(g)}${to(b)}`;
+}
+
+/** Map from `ThemePalette` field → CSS custom property name. */
+export const PALETTE_VARS: Record<keyof ThemePalette, string> = {
+  background: "--background",
+  foreground: "--foreground",
+  card: "--card",
+  cardForeground: "--card-foreground",
+  popover: "--popover",
+  popoverForeground: "--popover-foreground",
+  primary: "--primary",
+  primaryForeground: "--primary-foreground",
+  secondary: "--secondary",
+  secondaryForeground: "--secondary-foreground",
+  muted: "--muted",
+  mutedForeground: "--muted-foreground",
+  accent: "--accent",
+  accentForeground: "--accent-foreground",
+  destructive: "--destructive",
+  destructiveForeground: "--destructive-foreground",
+  success: "--success",
+  warning: "--warning",
+  border: "--border",
+  input: "--input",
+  ring: "--ring",
+  brandFrom: "--brand-from",
+  brandTo: "--brand-to",
+};
+
 /**
  * CSS-variable style object that re-themes any subtree rendering the user's
- * design (canvas artboard, thumbnails, gallery) to the project's tokens.
- * Components already read `hsl(var(--primary))`, `.bg-brand`, `--radius`, etc.
+ * design (canvas artboard, thumbnails, gallery) to the project's tokens for the
+ * given theme. Emits the full palette so the designed app is fully token-driven.
  */
-export function tokenStyle(tokens: DesignTokens): CSSProperties {
+export function tokenStyle(
+  tokens: DesignTokens,
+  theme: ThemeMode = "light"
+): CSSProperties {
+  const palette = tokens[theme];
+  const style: Record<string, string> = {};
+  for (const key of Object.keys(PALETTE_VARS) as (keyof ThemePalette)[]) {
+    style[PALETTE_VARS[key]] = hexToHslTriple(palette[key]);
+  }
+  style["--radius"] = `${tokens.radius}px`;
   return {
-    // cast: CSS custom properties aren't in the CSSProperties type
-    ["--primary" as any]: hexToHslTriple(tokens.primary),
-    ["--ring" as any]: hexToHslTriple(tokens.primary),
-    ["--brand-from" as any]: hexToHslTriple(tokens.brandFrom),
-    ["--brand-to" as any]: hexToHslTriple(tokens.brandTo),
-    ["--radius" as any]: `${tokens.radius}px`,
+    ...style,
     fontFamily: `"${tokens.font}", ui-sans-serif, system-ui, sans-serif`,
-  };
+  } as CSSProperties;
 }
 
 const loaded = new Set<string>();

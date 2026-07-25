@@ -23,7 +23,7 @@ export function PaletteTab() {
     <ScrollArea className="h-full">
       <div className="space-y-4 p-2.5">
         {/* Filter: your custom components only, or all (custom + base building blocks). */}
-        <div className="flex rounded-lg border border-border/70 bg-muted/40 p-0.5 text-[12px] font-medium">
+        <div className="flex rounded-lg border border-border/70 bg-muted p-0.5 text-[12px] font-medium">
           {(["all", "custom"] as const).map((f) => (
             <button
               key={f}

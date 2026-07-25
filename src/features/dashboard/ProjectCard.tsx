@@ -45,7 +45,7 @@ export function ProjectCard({ project }: { project: Project }) {
 
   const open = () => {
     openProject(project.id);
-    navigate(`/project/${project.id}`);
+    navigate(`/project/${project.id}/overview`);
   };
 
   const commitRename = () => {

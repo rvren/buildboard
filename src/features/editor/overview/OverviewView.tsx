@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import type { DesignNode, Project, DataSource } from "@/types";
 import { useEditor } from "@/store/editorStore";
+import { useTheme } from "@/store/theme";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { MiniPreview } from "@/features/dashboard/MiniPreview";
@@ -48,6 +49,8 @@ export function OverviewView({ project }: { project: Project }) {
   const selectScreen = useEditor((s) => s.selectScreen);
   const setEditorView = useEditor((s) => s.setEditorView);
   const setDataOpen = useEditor((s) => s.setDataDialogOpen);
+  const theme = useTheme((s) => s.theme);
+  const palette = project.designSystem.tokens[theme];
 
   const firstScreen = project.screens[0];
   const componentCount = project.screens.reduce(
@@ -316,12 +319,12 @@ export function OverviewView({ project }: { project: Project }) {
               <Swatch
                 label="Brand"
                 style={{
-                  backgroundImage: `linear-gradient(135deg, ${project.designSystem.tokens.brandFrom}, ${project.designSystem.tokens.brandTo})`,
+                  backgroundImage: `linear-gradient(135deg, ${palette.brandFrom}, ${palette.brandTo})`,
                 }}
               />
               <Swatch
                 label="Primary"
-                style={{ backgroundColor: project.designSystem.tokens.primary }}
+                style={{ backgroundColor: palette.primary }}
               />
               <div className="flex flex-col gap-0.5 text-xs text-muted-foreground">
                 <span className="font-medium text-foreground">

@@ -153,12 +153,41 @@ export interface DataSource {
 
 export type ProjectMode = "static" | "dynamic";
 
+/** Full semantic color palette for one theme (all values are #RRGGBB hex). */
+export interface ThemePalette {
+  background: string;
+  foreground: string;
+  card: string;
+  cardForeground: string;
+  popover: string;
+  popoverForeground: string;
+  primary: string;
+  primaryForeground: string;
+  secondary: string;
+  secondaryForeground: string;
+  muted: string;
+  mutedForeground: string;
+  accent: string;
+  accentForeground: string;
+  destructive: string;
+  destructiveForeground: string;
+  success: string;
+  warning: string;
+  border: string;
+  input: string;
+  ring: string;
+  brandFrom: string;
+  brandTo: string;
+}
+
+export type ThemeMode = "light" | "dark";
+
 export interface DesignTokens {
-  brandFrom: string; // hex
-  brandTo: string; // hex
-  primary: string; // hex
-  radius: number; // px
-  font: string; // font family name
+  /** Full palette per theme, independently editable. */
+  light: ThemePalette;
+  dark: ThemePalette;
+  radius: number; // px, shared across themes
+  font: string; // font family name, shared across themes
 }
 
 export interface ComponentPreset {
