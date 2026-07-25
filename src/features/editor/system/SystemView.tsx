@@ -1,0 +1,552 @@
+import { useEffect, useMemo } from "react";
+import { toast } from "sonner";
+import { Copy, Plus, Trash2, Component, Pencil } from "lucide-react";
+import type { DesignNode, NodeType, Project } from "@/types";
+import { createNode } from "@/lib/factory";
+import { StaticNode } from "@/features/editor/canvas/renderTree";
+import { ComponentDefsProvider } from "@/features/editor/canvas/componentDefs";
+import { generateComponentCode } from "@/lib/codegen";
+import { tokenStyle, ensureFontLoaded, DS_FONTS } from "@/lib/designSystem";
+import { useEditor } from "@/store/editorStore";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Dropdown } from "@/features/editor/right/controls";
+import { cn } from "@/lib/utils";
+
+/* Build a sample node of a type with prop/style overrides. */
+function sample(
+  type: NodeType,
+  props: Record<string, any> = {},
+  children: DesignNode[] = []
+): DesignNode {
+  const n = createNode(type);
+  return { ...n, props: { ...n.props, ...props }, children };
+}
+
+interface Story {
+  label: string;
+  node: DesignNode;
+}
+interface Group {
+  title: string;
+  stories: Story[];
+}
+
+function buildGroups(): Group[] {
+  return [
+    {
+      title: "Button",
+      stories: [
+        { label: "default", node: sample("Button", { label: "Button" }) },
+        { label: "secondary", node: sample("Button", { label: "Secondary", variant: "secondary" }) },
+        { label: "outline", node: sample("Button", { label: "Outline", variant: "outline" }) },
+        { label: "ghost", node: sample("Button", { label: "Ghost", variant: "ghost" }) },
+        { label: "destructive", node: sample("Button", { label: "Delete", variant: "destructive" }) },
+        { label: "link", node: sample("Button", { label: "Link", variant: "link" }) },
+        { label: "sm", node: sample("Button", { label: "Small", size: "sm" }) },
+        { label: "lg", node: sample("Button", { label: "Large", size: "lg" }) },
+      ],
+    },
+    {
+      title: "Badge",
+      stories: [
+        { label: "default", node: sample("Badge", { label: "Badge" }) },
+        { label: "secondary", node: sample("Badge", { label: "New", variant: "secondary" }) },
+        { label: "outline", node: sample("Badge", { label: "Beta", variant: "outline" }) },
+        { label: "destructive", node: sample("Badge", { label: "Error", variant: "destructive" }) },
+      ],
+    },
+    {
+      title: "Inputs",
+      stories: [
+        { label: "input", node: sample("Input", { placeholder: "Email address" }) },
+        { label: "textarea", node: sample("Textarea", { placeholder: "Your message…" }) },
+        { label: "switch (on)", node: sample("Switch", { checked: true }) },
+        { label: "switch (off)", node: sample("Switch", { checked: false }) },
+        { label: "checkbox", node: sample("Checkbox", { checked: true }) },
+      ],
+    },
+    {
+      title: "Typography",
+      stories: [
+        { label: "H1", node: sample("Heading", { content: "Heading 1", level: 1 }) },
+        { label: "H2", node: sample("Heading", { content: "Heading 2", level: 2 }) },
+        { label: "H3", node: sample("Heading", { content: "Heading 3", level: 3 }) },
+        { label: "Text", node: sample("Text", { content: "Body text sample." }) },
+      ],
+    },
+    {
+      title: "Display",
+      stories: [
+        { label: "avatar", node: sample("Avatar") },
+        { label: "divider", node: sample("Divider") },
+      ],
+    },
+  ];
+}
+
+/** Left rail panel for the Design System view (tokens editor or components manager). */
+export function SystemLeft({ project }: { project: Project }) {
+  const tool = useEditor((s) => s.systemTool);
+  return tool === "components" ? (
+    <ComponentsPanel project={project} />
+  ) : (
+    <TokensPanel project={project} />
+  );
+}
+
+function TokensPanel({ project }: { project: Project }) {
+  const tokens = project.designSystem.tokens;
+  const updateTokens = useEditor((s) => s.updateTokens);
+
+  useEffect(() => {
+    ensureFontLoaded(tokens.font);
+  }, [tokens.font]);
+
+  return (
+    <ScrollArea className="h-full">
+      <div className="space-y-5 p-4">
+        <div className="space-y-2.5">
+          <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">
+            Brand
+          </p>
+          <ColorRow
+            label="Primary"
+            value={tokens.primary}
+            onChange={(v) => updateTokens({ primary: v })}
+          />
+          <ColorRow
+            label="Gradient A"
+            value={tokens.brandFrom}
+            onChange={(v) => updateTokens({ brandFrom: v })}
+          />
+          <ColorRow
+            label="Gradient B"
+            value={tokens.brandTo}
+            onChange={(v) => updateTokens({ brandTo: v })}
+          />
+        </div>
+
+        <div className="space-y-2.5">
+          <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">
+            Shape & type
+          </p>
+          <div className="grid grid-cols-[64px_1fr] items-center gap-2">
+            <label className="text-[12px] text-muted-foreground">Radius</label>
+            <div className="flex items-center gap-2">
+              <input
+                type="range"
+                min={0}
+                max={28}
+                value={tokens.radius}
+                onChange={(e) =>
+                  updateTokens({ radius: Number(e.target.value) })
+                }
+                className="flex-1 accent-[hsl(var(--primary))]"
+              />
+              <span className="w-8 text-right text-[11px] tabular-nums text-muted-foreground">
+                {tokens.radius}
+              </span>
+            </div>
+          </div>
+          <div className="grid grid-cols-[64px_1fr] items-center gap-2">
+            <label className="text-[12px] text-muted-foreground">Font</label>
+            <Dropdown
+              value={tokens.font}
+              onChange={(v) => updateTokens({ font: v })}
+              options={DS_FONTS.map((f) => ({ value: f, label: f }))}
+            />
+          </div>
+        </div>
+
+        {/* brand preview */}
+        <div className="rounded-xl border p-3" style={tokenStyle(tokens)}>
+          <div className="mb-2 h-9 rounded-lg bg-brand" />
+          <div className="flex gap-2">
+            <Button variant="brand" size="sm" className="pointer-events-none">
+              Primary
+            </Button>
+            <Button variant="outline" size="sm" className="pointer-events-none">
+              Outline
+            </Button>
+          </div>
+        </div>
+      </div>
+    </ScrollArea>
+  );
+}
+
+/** Compact components manager in the left rail (New / edit / insert / delete). */
+function ComponentsPanel({ project }: { project: Project }) {
+  const components = project.designSystem.components;
+  const addComponentDefinition = useEditor((s) => s.addComponentDefinition);
+  const deleteComponentDefinition = useEditor(
+    (s) => s.deleteComponentDefinition
+  );
+  const createInstance = useEditor((s) => s.createInstance);
+  const editComponent = useEditor((s) => s.editComponent);
+  const setEditorView = useEditor((s) => s.setEditorView);
+
+  const createAndEdit = () => {
+    const id = addComponentDefinition(`Component ${components.length + 1}`);
+    editComponent(id);
+    setEditorView("design");
+  };
+  const insert = (defId: string) => {
+    const root = useEditor.getState().currentRoot();
+    if (!root) {
+      toast.error("Open a screen first");
+      return;
+    }
+    createInstance(root.id, defId);
+    toast.success("Added to current screen");
+  };
+
+  return (
+    <ScrollArea className="h-full">
+      <div className="space-y-2 p-3">
+        <Button
+          size="sm"
+          variant="brand"
+          className="h-7 w-full"
+          onClick={createAndEdit}
+        >
+          <Plus className="h-3.5 w-3.5" />
+          New component
+        </Button>
+
+        {components.length === 0 ? (
+          <p className="px-1 py-3 text-center text-[11px] text-muted-foreground">
+            No components yet. Create one, then drop it on any page — edit it
+            once and every page updates.
+          </p>
+        ) : (
+          <div className="space-y-0.5 pt-1">
+            {components.map((c) => (
+              <div
+                key={c.id}
+                className="group flex h-8 items-center gap-2 rounded-md px-2 text-xs hover:bg-muted"
+              >
+                <button
+                  onClick={() => {
+                    editComponent(c.id);
+                    setEditorView("design");
+                  }}
+                  className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                  title="Edit component"
+                >
+                  <Component className="h-3.5 w-3.5 shrink-0 text-primary" />
+                  <span className="truncate font-medium">{c.name}</span>
+                </button>
+                <button
+                  onClick={() => insert(c.id)}
+                  className="grid h-6 w-6 shrink-0 place-items-center rounded text-muted-foreground opacity-0 hover:text-primary group-hover:opacity-100"
+                  title="Add to current screen"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  onClick={() => deleteComponentDefinition(c.id)}
+                  className="grid h-6 w-6 shrink-0 place-items-center rounded text-muted-foreground opacity-0 hover:text-destructive group-hover:opacity-100"
+                  title="Delete component"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </ScrollArea>
+  );
+}
+
+/** Main gallery for the Design System view (component showcase + primitives). */
+export function SystemMain({ project }: { project: Project }) {
+  const tokens = project.designSystem.tokens;
+  const groups = useMemo(buildGroups, []);
+
+  useEffect(() => {
+    ensureFontLoaded(tokens.font);
+  }, [tokens.font]);
+
+  return (
+    <ScrollArea className="min-h-0 flex-1 bg-background">
+      <ComponentDefsProvider components={project.designSystem.components}>
+        <div className="p-8" style={tokenStyle(tokens)}>
+          <div className="mb-6">
+            <h1 className="text-2xl font-semibold tracking-tight">
+              Design System
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Set your <b className="font-medium text-foreground">tokens</b>,
+              build <b className="font-medium text-foreground">components</b>{" "}
+              from them, then use those on pages — edit a component once and
+              every page updates.
+            </p>
+          </div>
+
+          <ComponentsSection project={project} />
+          <PresetsSection project={project} />
+
+          <section>
+            <h2 className="mb-1 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground/70">
+              Primitives
+            </h2>
+            <p className="mb-3 text-xs text-muted-foreground">
+              Building blocks, themed by your tokens. Combine them into
+              components above.
+            </p>
+            <div className="space-y-8">
+              {groups.map((g) => (
+                <section key={g.title}>
+                  <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground/60">
+                    {g.title}
+                  </h3>
+                  <div className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-3">
+                    {g.stories.map((st) => (
+                      <StoryCard
+                        key={st.label}
+                        label={st.label}
+                        node={st.node}
+                        project={project}
+                      />
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </div>
+          </section>
+        </div>
+      </ComponentDefsProvider>
+    </ScrollArea>
+  );
+}
+
+/* ---------------------------------------------------------- Components (defs) */
+function ComponentsSection({ project }: { project: Project }) {
+  const components = project.designSystem.components;
+  const addComponentDefinition = useEditor((s) => s.addComponentDefinition);
+  const deleteComponentDefinition = useEditor(
+    (s) => s.deleteComponentDefinition
+  );
+  const renameComponentDefinition = useEditor(
+    (s) => s.renameComponentDefinition
+  );
+  const createInstance = useEditor((s) => s.createInstance);
+  const editComponent = useEditor((s) => s.editComponent);
+  const setEditorView = useEditor((s) => s.setEditorView);
+
+  const createAndEdit = () => {
+    const id = addComponentDefinition(`Component ${components.length + 1}`);
+    editComponent(id);
+    setEditorView("design");
+  };
+
+  const edit = (id: string) => {
+    editComponent(id);
+    setEditorView("design");
+  };
+
+  const insert = (defId: string) => {
+    const root = useEditor.getState().currentRoot();
+    if (!root) {
+      toast.error("Open a screen first");
+      return;
+    }
+    createInstance(root.id, defId);
+    toast.success("Added to current screen");
+  };
+
+  return (
+    <section className="mb-8">
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground/70">
+          Components
+        </h2>
+        <Button size="sm" variant="brand" className="h-7" onClick={createAndEdit}>
+          <Plus className="h-3.5 w-3.5" />
+          New component
+        </Button>
+      </div>
+
+      {components.length === 0 ? (
+        <div className="flex flex-col items-center gap-1 rounded-xl border border-dashed p-8 text-center">
+          <Component className="h-6 w-6 text-muted-foreground" />
+          <p className="mt-1 text-sm font-medium">No components yet</p>
+          <p className="max-w-sm text-xs text-muted-foreground">
+            Build a reusable component (a button, a card, a header) from the
+            primitives below. Use it on any page — editing it updates every
+            instance everywhere.
+          </p>
+          <Button
+            size="sm"
+            variant="outline"
+            className="mt-2 h-7"
+            onClick={createAndEdit}
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Create your first component
+          </Button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3">
+          {components.map((c) => (
+            <div
+              key={c.id}
+              className="group flex flex-col overflow-hidden rounded-xl border border-primary/30 bg-card shadow-soft"
+            >
+              <button
+                onClick={() => edit(c.id)}
+                className="relative flex min-h-[104px] flex-1 items-center justify-center p-4 text-left transition-colors hover:bg-muted/40"
+                title="Edit component"
+              >
+                <StaticNode node={c.root} />
+                <span className="absolute right-1.5 top-1.5 grid h-6 w-6 place-items-center rounded-md text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
+                  <Pencil className="h-3 w-3" />
+                </span>
+              </button>
+              <div className="flex items-center gap-1 border-t border-border/60 px-2 py-1.5">
+                <input
+                  value={c.name}
+                  onChange={(e) =>
+                    renameComponentDefinition(c.id, e.target.value)
+                  }
+                  className="min-w-0 flex-1 bg-transparent text-[11px] font-medium outline-none"
+                />
+                <button
+                  onClick={() => insert(c.id)}
+                  className="grid h-6 w-6 shrink-0 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-primary"
+                  title="Add to current screen"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  onClick={() => deleteComponentDefinition(c.id)}
+                  className="grid h-6 w-6 shrink-0 place-items-center rounded-md text-muted-foreground hover:text-destructive"
+                  title="Delete component"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function ColorRow({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <div className="grid grid-cols-[64px_1fr] items-center gap-2">
+      <label className="text-[12px] text-muted-foreground">{label}</label>
+      <div className="flex items-center gap-2 rounded-md border px-2 py-1">
+        <input
+          type="color"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="h-5 w-5 cursor-pointer rounded border-0 bg-transparent p-0"
+        />
+        <input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full bg-transparent font-mono text-[11px] uppercase outline-none"
+        />
+      </div>
+    </div>
+  );
+}
+
+function StoryCard({
+  label,
+  node,
+  project,
+}: {
+  label: string;
+  node: DesignNode;
+  project: Project;
+}) {
+  return (
+    <div className="group flex flex-col overflow-hidden rounded-xl border border-border/70 bg-card shadow-soft">
+      <div className="relative flex min-h-[92px] flex-1 items-center justify-center p-4">
+        <StaticNode node={node} />
+        <button
+          onClick={() => {
+            navigator.clipboard.writeText(generateComponentCode(node, project));
+            toast.success("Component code copied");
+          }}
+          className="absolute right-1.5 top-1.5 grid h-6 w-6 place-items-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground group-hover:opacity-100"
+          title="Copy code"
+        >
+          <Copy className="h-3 w-3" />
+        </button>
+      </div>
+      <div className="border-t border-border/60 px-2.5 py-1.5 text-[11px] font-medium text-muted-foreground">
+        {label}
+      </div>
+    </div>
+  );
+}
+
+function PresetsSection({ project }: { project: Project }) {
+  const presets = project.designSystem.presets;
+  const deletePreset = useEditor((s) => s.deletePreset);
+  const createNodeFromPreset = useEditor((s) => s.createNodeFromPreset);
+  const currentScreen = useEditor((s) => s.currentScreen());
+
+  const insert = (presetId: string) => {
+    const screen = currentScreen;
+    if (!screen) return;
+    createNodeFromPreset(screen.root.id, presetId);
+    toast.success("Added to current screen");
+  };
+
+  if (presets.length === 0) return null;
+  return (
+    <section className="mb-8">
+      <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground/70">
+        Presets
+      </h2>
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-3">
+        {presets.map((p) => (
+          <div
+            key={p.id}
+            className="group flex flex-col overflow-hidden rounded-xl border border-primary/30 bg-card shadow-soft"
+          >
+            <div className="flex min-h-[92px] flex-1 items-center justify-center p-4">
+              <StaticNode node={{ ...createNode(p.type), props: p.props, styles: p.styles }} />
+            </div>
+            <div className="flex items-center gap-1 border-t border-border/60 px-2 py-1.5">
+              <span className="flex-1 truncate text-[11px] font-medium">
+                {p.name}
+              </span>
+              <button
+                onClick={() => insert(p.id)}
+                className="grid h-6 w-6 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-primary"
+                title="Add to screen"
+              >
+                <Plus className="h-3.5 w-3.5" />
+              </button>
+              <button
+                onClick={() => deletePreset(p.id)}
+                className="grid h-6 w-6 place-items-center rounded-md text-muted-foreground hover:text-destructive"
+                title="Delete preset"
+              >
+                <Trash2 className="h-3 w-3" />
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
