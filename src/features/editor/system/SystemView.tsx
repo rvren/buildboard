@@ -625,7 +625,7 @@ function StoryCard({
 }) {
   return (
     <div className="group flex flex-col overflow-hidden rounded-xl border border-border/70 bg-card shadow-soft">
-      <div className="relative flex min-h-[92px] flex-1 items-center justify-center p-4">
+      <div className="relative flex min-h-[92px] flex-1 items-center justify-center p-4 [&>*]:min-w-0 [&>*]:max-w-full">
         <StaticNode node={node} />
         <button
           onClick={() => {
