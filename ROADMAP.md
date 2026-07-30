@@ -4,24 +4,12 @@ Source of truth for shipping. BuildBoard grows as an **infinite loop of ~100-fea
 features ship **on demand** (when the maintainer says go), each as its own gated patch release on top
 of the existing app. This file is process-only — nothing here renders in the UI.
 
-## Ledger — Batch 1
+## The live queue lives in `CLAUDE.md`
 
-**Shipped 1 / 11 (9%)** · Batch 1 opens with the desktop conversion; the rest are queued below.
-
-- [x] **0** — Desktop conversion → `v0.1.0` ✅ (Electron + electron-vite; normalized better-sqlite3
-  persistence replacing localStorage; `npm run smoke`/`bootcheck` gates; release workflow)
-- [ ] **1** — Local project search & filter (dashboard) *(power-user)*
-- [ ] **2** — Autosave history & undo/redo backed by the DB *(ownership)*
-- [ ] **3** — Project import / export (portable `.bbproj` bundle) *(ownership)*
-- [ ] **4** — Command palette actions (jump view/screen, add node, run data source) *(power-user)*
-- [ ] **5** — Component usage insights ("this definition has N instances across M screens") *(insights)*
-- [ ] **6** — Screen templates & duplicate-as-template *(productivity)*
-- [ ] **7** — Data-source requests through main (CORS-free fetch + response cache) *(fidelity)*
-- [ ] **8** — Export polish: multi-file project export + copy-to-clipboard per node *(fidelity)*
-- [ ] **9** — Design-system token presets & import (bring a palette) *(design system)*
-- [ ] **10** — Recent-projects, window state, and a native menu (macOS) *(app polish)*
-
-_Update this ledger after each ship (check the box, record the version, bump the % line)._
+The **current batch checklist** (what `/next` ships next, with progress + versions) is maintained in
+`CLAUDE.md` → **"Feature shipping — the `/next` loop."** That is the source of truth for what ships.
+**This file** holds the shipping **methodology** and the **backlog catalog** that the 75% refill draws
+from. Run `/next` (or say "next") to ship the next queued feature end-to-end.
 
 ---
 

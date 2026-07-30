@@ -48,8 +48,41 @@ npm run package    # local macOS .dmg + .zip via electron-builder
 ```
 
 Releases: push a `v*` tag → `.github/workflows/release.yml` (macOS CI → lint + build →
-electron-builder → **draft** GitHub Release with `.dmg`/`.zip` for arm64 + x64). Publishing the draft
-is a manual step. Repo: `rvren/buildboard`.
+`electron-builder --publish never` → attach `dist/*.dmg` + `*.zip` for arm64 + x64 to a **published**
+GitHub Release via `softprops/action-gh-release`, `fail_on_unmatched_files` so it can never ship empty).
+Repo: `rvren/buildboard`. The website reads `releases/latest`, so a new tag's installers list
+automatically.
+
+## Feature shipping — the `/next` loop
+
+Features ship **on demand, one at a time**: run **`/next`** (or just say "next") and the next queued
+feature below is built end-to-end, verified, ticked off, and committed as its own patch. **This
+checklist is the source of truth for what ships next** — `ROADMAP.md` holds the methodology + the
+backlog catalog that refills it.
+
+**Every ship must:** stay additive / zero-regression (new node types · views · DB tables · export
+paths, reusing existing patterns; never alter renderer → `window.api` → SQLite except to add
+capability); extend the typed model (`shared/types.ts`) + schema (`dbCore.ts`) + serialize/hydrate
+(`store.ts`) for any new persisted state and cover it in `smoke.ts`; pass `npm run lint` +
+`npm run smoke` + `npm run bootcheck` + `npm run build`; then tick its box (with the version), bump the
+patch version in `package.json`, and commit.
+
+**75% refill (never runs dry):** when ≥75% of the current batch is shipped, append a fresh ~10-item
+batch to this list — curated from the `ROADMAP.md` backlog, de-duped against everything already
+shipped — and tell the maintainer the queue was refilled.
+
+### Current batch — Batch 1 · shipped 1 / 11 (9%)
+- [x] **0** — Desktop conversion (Electron + normalized SQLite) → `v0.1.0`
+- [ ] **1** — Local project search & filter on the dashboard
+- [ ] **2** — Autosave history & undo/redo backed by the DB
+- [ ] **3** — Project import / export (portable `.bbproj` bundle)
+- [ ] **4** — Command-palette actions (jump view/screen, add node, run data source)
+- [ ] **5** — Component usage insights ("N instances across M screens")
+- [ ] **6** — Screen templates & duplicate-as-template
+- [ ] **7** — Data-source requests through main (CORS-free fetch + response cache)
+- [ ] **8** — Export polish: multi-file project export + copy-node JSX
+- [ ] **9** — Design-system token presets & import
+- [ ] **10** — Recent projects, window-state persistence, native macOS menu
 
 ## Process architecture
 
