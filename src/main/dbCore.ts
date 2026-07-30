@@ -38,7 +38,7 @@ export const PALETTE_KEYS = [
   "brandTo",
 ] as const;
 
-const SCHEMA_VERSION = 3;
+const SCHEMA_VERSION = 4;
 
 export function openDb(path: string): Database.Database {
   const db = new DatabaseCtor(path);
@@ -71,6 +71,9 @@ export function ensureSchema(db: Database.Database): void {
       id TEXT PRIMARY KEY,
       project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
       name TEXT NOT NULL,
+      title TEXT,
+      description TEXT,
+      path TEXT,
       width INTEGER NOT NULL,
       height INTEGER NOT NULL,
       x REAL NOT NULL,
@@ -222,6 +225,15 @@ export function ensureSchema(db: Database.Database): void {
     ).map((c) => c.name);
     if (!defCols.includes("variants")) {
       db.exec("ALTER TABLE component_definitions ADD COLUMN variants TEXT");
+    }
+    // v4: per-page metadata (title / description / path).
+    const screenCols = (
+      db.prepare("PRAGMA table_info(screens)").all() as { name: string }[]
+    ).map((c) => c.name);
+    for (const col of ["title", "description", "path"]) {
+      if (!screenCols.includes(col)) {
+        db.exec(`ALTER TABLE screens ADD COLUMN ${col} TEXT`);
+      }
     }
     db.pragma(`user_version = ${SCHEMA_VERSION}`);
   }

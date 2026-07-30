@@ -369,7 +369,8 @@ function assemble(
   fnKeyword: string,
   fnName: string,
   node: DesignNode,
-  ctx: Ctx
+  ctx: Ctx,
+  metaBlock = ""
 ): string {
   ctx.defNames.add(fnName);
   const { lines, imports } = walk(node, 3, ctx);
@@ -397,10 +398,18 @@ function assemble(
   const compBlock = comps.fns.length ? comps.fns.join("\n") + "\n" : "";
 
   return (
-    `${header}${compBlock}export ${fnKeyword} ${fnName}() {\n` +
+    `${header}${compBlock}${metaBlock}export ${fnKeyword} ${fnName}() {\n` +
     body.join("\n") +
     `\n}\n`
   );
+}
+
+/** `export const metadata = { … }` for a page (Next.js-style; harmless elsewhere). */
+function pageMetaBlock(screen: Screen): string {
+  const entries = [`title: ${JSON.stringify(screen.title || screen.name)}`];
+  if (screen.description) entries.push(`description: ${JSON.stringify(screen.description)}`);
+  if (screen.path) entries.push(`path: ${JSON.stringify(screen.path)}`);
+  return `export const metadata = {\n${INDENT}${entries.join(`,\n${INDENT}`)},\n};\n\n`;
 }
 
 function makeCtx(
@@ -431,7 +440,7 @@ export function generatePageCode(screen: Screen, project?: Project): string {
     screen.root,
     screen.dataSourceId
   );
-  return assemble("default function", fnName, screen.root, ctx);
+  return assemble("default function", fnName, screen.root, ctx, pageMetaBlock(screen));
 }
 
 /** Self-contained snippet for a single selected node/subtree. */

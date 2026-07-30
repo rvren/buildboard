@@ -36,7 +36,7 @@ function sampleProject(): Project {
     createdAt: 1000,
     updatedAt: 2000,
     screens: [
-      { id: "s1", name: "Home", width: 1200, height: 800, x: 10, y: 20, root, dataSourceId: "d1" },
+      { id: "s1", name: "Home", title: "Welcome", description: "The home page", path: "/", width: 1200, height: 800, x: 10, y: 20, root, dataSourceId: "d1" },
     ],
     dataSources: [
       {
@@ -119,6 +119,12 @@ export function runSmoke(): void {
     assert(d.schema?.length === 2, "schema fields");
     assert(d.lastResult?.status === 200, "last result json");
     assert(p!.screens[0].dataSourceId === "d1", "screen data source link");
+    assert(
+      p!.screens[0].title === "Welcome" &&
+        p!.screens[0].description === "The home page" &&
+        p!.screens[0].path === "/",
+      "page metadata survives",
+    );
     // architecture
     assert(p!.architecture.sequences[0].steps.length === 2, "sequence steps");
     assert(p!.architecture.interactions[0].from === "svc1", "interaction");

@@ -106,6 +106,11 @@ export interface DesignNode {
 export interface Screen {
   id: string;
   name: string;
+  /** Page metadata for multi-page sites — exported as `export const metadata`. */
+  title?: string;
+  description?: string;
+  /** Route path for this page, e.g. "/" or "/about". */
+  path?: string;
   width: number;
   height: number;
   x: number;

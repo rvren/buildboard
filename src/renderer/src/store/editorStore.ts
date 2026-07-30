@@ -129,6 +129,11 @@ interface EditorState {
   addScreen: (name?: string) => void;
   selectScreen: (id: string) => void;
   renameScreen: (id: string, name: string) => void;
+  /** Update a page's metadata (title / description / path). */
+  updateScreenMeta: (
+    id: string,
+    patch: Partial<Pick<Screen, "title" | "description" | "path">>
+  ) => void;
   deleteScreen: (id: string) => void;
 
   // ----- nodes
@@ -501,6 +506,20 @@ export const useEditor = create<EditorState>()(
                   ...p,
                   screens: p.screens.map((sc) =>
                     sc.id === id ? { ...sc, name } : sc
+                  ),
+                })
+              : p
+          ),
+        })),
+
+      updateScreenMeta: (id, patch) =>
+        set((s) => ({
+          projects: s.projects.map((p) =>
+            p.id === s.currentProjectId
+              ? touch({
+                  ...p,
+                  screens: p.screens.map((sc) =>
+                    sc.id === id ? { ...sc, ...patch } : sc
                   ),
                 })
               : p

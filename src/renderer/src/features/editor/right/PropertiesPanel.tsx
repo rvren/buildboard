@@ -10,10 +10,11 @@ import {
   List,
   Database,
   Bookmark,
+  FileText,
   Component as ComponentIcon,
 } from "lucide-react";
 import { toast } from "sonner";
-import type { DesignNode, NodeAction, SchemaField } from "@/types";
+import type { DesignNode, NodeAction, SchemaField, Screen } from "@/types";
 import { ITEM_SOURCE, SCREEN_SOURCE } from "@/types";
 import { defFor } from "@/lib/nodeDefs";
 import { effectiveTokens } from "@/lib/styles";
@@ -39,13 +40,16 @@ export function PropertiesPanel() {
   const root = useEditor((s) => s.currentRoot());
   const selectedId = useEditor((s) => s.selectedNodeId);
   const editingComponentId = useEditor((s) => s.editingComponentId);
+  const currentScreen = useEditor((s) => s.currentScreen());
   const node = root && selectedId ? findNode(root, selectedId) : null;
 
   if (node?.type === "Instance") return <InstanceProps node={node} />;
 
-  // Nothing to show unless a node is selected or a component is being edited
-  // (variants are managed on the definition even with nothing selected).
-  if (!node && !editingComponentId) return <EmptyProps />;
+  // Nothing selected: show page settings for the current screen (or, when
+  // editing a component, its variants); otherwise the empty state.
+  if (!node && !editingComponentId) {
+    return currentScreen ? <PageSettings screen={currentScreen} /> : <EmptyProps />;
+  }
 
   return (
     <div className="flex h-full flex-col">
@@ -241,6 +245,63 @@ function InstanceProps({ node }: { node: DesignNode }) {
             </p>
           </Section>
         )}
+      </ScrollArea>
+    </div>
+  );
+}
+
+/** Per-page metadata (title / path / description) — exported as `metadata`. */
+function PageSettings({ screen }: { screen: Screen }) {
+  const updateScreenMeta = useEditor((s) => s.updateScreenMeta);
+  const field =
+    "h-7 w-full rounded-md border bg-transparent px-2 text-xs outline-none focus:ring-2 focus:ring-ring";
+  return (
+    <div className="flex h-full flex-col">
+      <div className="flex items-center gap-2 border-b px-3.5 py-2.5 text-sm font-medium">
+        <FileText className="h-3.5 w-3.5 text-primary" />
+        Page settings
+      </div>
+      <ScrollArea className="flex-1">
+        <Section title="Metadata">
+          <p className="px-0.5 pb-2 text-[11px] leading-relaxed text-muted-foreground">
+            Exported as{" "}
+            <code className="rounded bg-muted px-1">export const metadata</code>{" "}
+            for this page.
+          </p>
+          <div className="space-y-2.5">
+            <div className="grid grid-cols-[64px_1fr] items-center gap-2">
+              <label className="text-[12px] text-muted-foreground">Title</label>
+              <input
+                className={field}
+                value={screen.title ?? ""}
+                placeholder={screen.name}
+                onChange={(e) => updateScreenMeta(screen.id, { title: e.target.value })}
+              />
+            </div>
+            <div className="grid grid-cols-[64px_1fr] items-center gap-2">
+              <label className="text-[12px] text-muted-foreground">Path</label>
+              <input
+                className={field}
+                value={screen.path ?? ""}
+                placeholder="/"
+                onChange={(e) => updateScreenMeta(screen.id, { path: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="px-0.5 text-[11px] text-muted-foreground">
+                Description
+              </label>
+              <Textarea
+                className="mt-1 h-16 text-xs"
+                value={screen.description ?? ""}
+                placeholder="Short description for SEO / social cards…"
+                onChange={(e) =>
+                  updateScreenMeta(screen.id, { description: e.target.value })
+                }
+              />
+            </div>
+          </div>
+        </Section>
       </ScrollArea>
     </div>
   );
