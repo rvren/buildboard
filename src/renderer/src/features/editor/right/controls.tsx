@@ -1,4 +1,5 @@
 import * as React from "react";
+import { Upload as UploadIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import {
@@ -152,6 +153,92 @@ export function TextControl({
       onChange={(e) => onChange(e.target.value)}
       className="h-8 text-xs"
     />
+  );
+}
+
+/**
+ * Image source: a URL/data-URI text field plus an "Upload" button that reads a
+ * local PNG/JPG/SVG/WebP/GIF as a data URI. A data URI is self-contained, so the
+ * canvas, preview, and exported code all render it with no external asset — it
+ * "bundles on export" for free.
+ */
+const MAX_IMAGE_BYTES = 2 * 1024 * 1024; // 2 MB — keep the project DB reasonable
+
+export function ImageSourceControl({
+  value,
+  onChange,
+}: {
+  value: string | undefined;
+  onChange: (v: string) => void;
+}) {
+  const inputRef = React.useRef<HTMLInputElement>(null);
+  const [err, setErr] = React.useState<string | null>(null);
+
+  const pick = (file: File | undefined) => {
+    if (!file) return;
+    if (file.size > MAX_IMAGE_BYTES) {
+      setErr("Image is over 2 MB — use a smaller file or a URL.");
+      return;
+    }
+    setErr(null);
+    const reader = new FileReader();
+    reader.onload = () => onChange(String(reader.result ?? ""));
+    reader.onerror = () => setErr("Couldn't read that file.");
+    reader.readAsDataURL(file);
+  };
+
+  const isData = (value ?? "").startsWith("data:");
+
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center gap-1.5">
+        <Input
+          value={isData ? "" : value ?? ""}
+          placeholder={isData ? "Uploaded image" : "https://… or upload"}
+          disabled={isData}
+          onChange={(e) => onChange(e.target.value)}
+          className="h-8 flex-1 text-xs"
+        />
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          className="flex h-8 shrink-0 items-center gap-1 rounded-md border border-border bg-card px-2 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+          title="Upload an image from your computer"
+        >
+          <UploadIcon className="h-3.5 w-3.5" />
+          Upload
+        </button>
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/png,image/jpeg,image/svg+xml,image/webp,image/gif"
+          className="hidden"
+          onChange={(e) => {
+            pick(e.target.files?.[0]);
+            e.target.value = "";
+          }}
+        />
+      </div>
+      {value ? (
+        <div className="flex items-center gap-2">
+          <img
+            src={value}
+            alt=""
+            className="h-9 w-9 rounded border border-border object-cover"
+          />
+          {isData && (
+            <button
+              type="button"
+              onClick={() => onChange("")}
+              className="text-[11px] text-muted-foreground underline underline-offset-2 hover:text-foreground"
+            >
+              Remove
+            </button>
+          )}
+        </div>
+      ) : null}
+      {err && <p className="text-[11px] text-destructive">{err}</p>}
+    </div>
   );
 }
 

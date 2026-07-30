@@ -36,6 +36,7 @@ import {
   Stepper,
   Dropdown,
   TextControl,
+  ImageSourceControl,
   ColorControl,
 } from "./controls";
 
@@ -588,7 +589,10 @@ function ContentSection({ node }: { node: DesignNode }) {
         <Section title="Content">
           <Row label="Source">
             <BindableField node={node} prop="src">
-              <TextControl value={p.src} onChange={(v) => set({ src: v })} />
+              <ImageSourceControl
+                value={p.src}
+                onChange={(v) => set({ src: v })}
+              />
             </BindableField>
           </Row>
           <Row label="Alt">
