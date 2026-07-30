@@ -1,3 +1,4 @@
+import { useMemo, useState } from "react";
 import {
   Plus,
   Sparkles,
@@ -5,12 +6,17 @@ import {
   Database,
   Code2,
   ArrowDown,
+  Search,
+  X,
   type LucideIcon,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEditor } from "@/store/editorStore";
+import type { ProjectMode } from "@/types";
 import { Logo, ThemeToggle } from "@/components/common";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import { pageVariants, staggerContainer, riseItem } from "@/lib/motion";
 import { NewProjectDialog } from "./NewProjectDialog";
 import { ProjectCard } from "./ProjectCard";
@@ -41,6 +47,26 @@ function scrollToProjects() {
 
 export default function ProjectsDashboard() {
   const projects = useEditor((s) => s.projects);
+  const [query, setQuery] = useState("");
+  const [mode, setMode] = useState<"all" | ProjectMode>("all");
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return projects.filter((p) => {
+      if (mode !== "all" && p.mode !== mode) return false;
+      if (!q) return true;
+      return (
+        p.name.toLowerCase().includes(q) ||
+        (p.description?.toLowerCase().includes(q) ?? false)
+      );
+    });
+  }, [projects, query, mode]);
+
+  const filtering = query.trim() !== "" || mode !== "all";
+  const clearFilters = () => {
+    setQuery("");
+    setMode("all");
+  };
 
   return (
     <motion.div
@@ -133,20 +159,66 @@ export default function ProjectsDashboard() {
         {/* Your projects */}
         <div
           id="projects"
-          className="mb-5 flex items-center gap-2 scroll-mt-20"
+          className="mb-5 flex flex-wrap items-center gap-3 scroll-mt-20"
         >
-          <h2 className="text-sm font-semibold uppercase tracking-[0.08em] text-muted-foreground/80">
-            Your projects
-          </h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-semibold uppercase tracking-[0.08em] text-muted-foreground/80">
+              Your projects
+            </h2>
+            {projects.length > 0 && (
+              <span className="rounded-md bg-muted px-1.5 py-0.5 text-xs font-semibold tabular-nums text-muted-foreground">
+                {filtering ? `${filtered.length}/${projects.length}` : projects.length}
+              </span>
+            )}
+          </div>
+
           {projects.length > 0 && (
-            <span className="rounded-md bg-muted px-1.5 py-0.5 text-xs font-semibold tabular-nums text-muted-foreground">
-              {projects.length}
-            </span>
+            <div className="ml-auto flex flex-wrap items-center gap-2">
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search projects…"
+                  aria-label="Search projects"
+                  className="h-9 w-52 pl-8 pr-8"
+                />
+                {query && (
+                  <button
+                    type="button"
+                    onClick={() => setQuery("")}
+                    aria-label="Clear search"
+                    className="absolute right-2 top-1/2 grid -translate-y-1/2 place-items-center text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+              <div className="flex items-center gap-0.5 rounded-lg border border-border/70 bg-card p-0.5">
+                {(["all", "static", "dynamic"] as const).map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => setMode(m)}
+                    className={cn(
+                      "rounded-md px-2.5 py-1 text-xs font-medium capitalize transition-colors",
+                      mode === m
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {m}
+                  </button>
+                ))}
+              </div>
+            </div>
           )}
         </div>
 
         {projects.length === 0 ? (
           <EmptyState />
+        ) : filtered.length === 0 ? (
+          <NoMatches onClear={clearFilters} />
         ) : (
           <motion.div
             className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3"
@@ -155,7 +227,7 @@ export default function ProjectsDashboard() {
             animate="animate"
           >
             <AnimatePresence mode="popLayout">
-              {projects.map((p) => (
+              {filtered.map((p) => (
                 <motion.div
                   key={p.id}
                   layout
@@ -172,6 +244,23 @@ export default function ProjectsDashboard() {
         )}
       </main>
     </motion.div>
+  );
+}
+
+function NoMatches({ onClear }: { onClear: () => void }) {
+  return (
+    <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border/70 bg-card/50 py-16 text-center">
+      <div className="mb-4 grid h-12 w-12 place-items-center rounded-2xl bg-muted text-muted-foreground">
+        <Search className="h-5 w-5" />
+      </div>
+      <h2 className="text-base font-semibold">No matching projects</h2>
+      <p className="mb-5 mt-1 max-w-sm text-sm text-muted-foreground">
+        Try a different search term or filter.
+      </p>
+      <Button variant="outline" size="sm" onClick={onClear}>
+        Clear filters
+      </Button>
+    </div>
   );
 }
 

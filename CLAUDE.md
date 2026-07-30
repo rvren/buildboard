@@ -71,9 +71,9 @@ patch version in `package.json`, and commit.
 batch to this list — curated from the `ROADMAP.md` backlog, de-duped against everything already
 shipped — and tell the maintainer the queue was refilled.
 
-### Current batch — Batch 1 · shipped 1 / 11 (9%)
+### Current batch — Batch 1 · shipped 2 / 11 (18%)
 - [x] **0** — Desktop conversion (Electron + normalized SQLite) → `v0.1.0`
-- [ ] **1** — Local project search & filter on the dashboard
+- [x] **1** — Local project search & filter on the dashboard → `v0.1.1`
 - [ ] **2** — Autosave history & undo/redo backed by the DB
 - [ ] **3** — Project import / export (portable `.bbproj` bundle)
 - [ ] **4** — Command-palette actions (jump view/screen, add node, run data source)
