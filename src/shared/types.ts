@@ -69,12 +69,22 @@ export interface NodeAction {
   dataSourceId?: string; // for request
 }
 
+/** Responsive breakpoints (mobile-first): base < sm < md < lg. */
+export type Breakpoint = "sm" | "md" | "lg";
+export const BREAKPOINTS: Breakpoint[] = ["sm", "md", "lg"];
+
 export interface DesignNode {
   id: string;
   type: NodeType;
   name?: string;
   props: Record<string, any>;
   styles: StyleTokens;
+  /**
+   * Per-breakpoint style overrides (mobile-first). `styles` is the base; each
+   * breakpoint patches over the cascade below it. Drives responsive Tailwind on
+   * export (e.g. `w-full md:w-1/2`) and the canvas preview at the active breakpoint.
+   */
+  responsive?: Partial<Record<Breakpoint, Partial<StyleTokens>>>;
   children: DesignNode[];
   /** propName -> Binding. Bound props render from data. */
   bindings?: Record<string, Binding>;

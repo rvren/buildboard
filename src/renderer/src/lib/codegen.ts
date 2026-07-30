@@ -7,7 +7,7 @@ import type {
   Screen,
 } from "@/types";
 import { ITEM_SOURCE, SCREEN_SOURCE } from "@/types";
-import { stylesToTailwind } from "@/lib/styles";
+import { responsiveClasses } from "@/lib/styles";
 import { defFor, type ImportSpec } from "@/lib/nodeDefs";
 
 const INDENT = "  ";
@@ -160,7 +160,7 @@ function walk(node: DesignNode, depth: number, ctx: Ctx): WalkResult {
   const spec = def.codegen(node);
   const imports: ImportSpec[] = [...spec.imports];
 
-  const styleClasses = stylesToTailwind(node.styles);
+  const styleClasses = responsiveClasses(node.styles, node.responsive);
   const className = [styleClasses, spec.extraClass].filter(Boolean).join(" ");
 
   const attrs = [...spec.attrs];

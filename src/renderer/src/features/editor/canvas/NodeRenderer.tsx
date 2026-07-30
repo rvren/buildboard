@@ -3,7 +3,7 @@ import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { toast } from "sonner";
 import type { DesignNode } from "@/types";
 import { defFor } from "@/lib/nodeDefs";
-import { stylesToTailwind, sizeStyle } from "@/lib/styles";
+import { stylesToTailwind, sizeStyle, effectiveTokens } from "@/lib/styles";
 import {
   resolveBindingDisplay,
   resolveArray,
@@ -32,8 +32,10 @@ export function NodeRenderer({ node, isRoot = false }: Props) {
   const project = useEditor((s) => s.currentProject());
   const screen = useEditor((s) => s.currentScreen());
   const selectScreen = useEditor((s) => s.selectScreen);
+  const activeBreakpoint = useEditor((s) => s.activeBreakpoint);
   const { dropParentId, isDragging } = useDragState();
   const repeaterItem = useRepeaterItem();
+  const eff = effectiveTokens(node, activeBreakpoint);
 
   const bindCtx: BindingContext = {
     sources: project?.dataSources ?? [],
@@ -105,7 +107,7 @@ export function NodeRenderer({ node, isRoot = false }: Props) {
     }
   };
 
-  const styleClasses = stylesToTailwind(node.styles);
+  const styleClasses = stylesToTailwind(eff);
 
   const selectionClasses = cn(
     "outline-none transition-[box-shadow,opacity]",
@@ -125,7 +127,7 @@ export function NodeRenderer({ node, isRoot = false }: Props) {
 
   const rootProps: Record<string, any> = previewMode
     ? {
-        style: sizeStyle(node.styles),
+        style: sizeStyle(eff),
         onClick: node.action
           ? (e: React.MouseEvent) => {
               e.stopPropagation();
@@ -136,7 +138,7 @@ export function NodeRenderer({ node, isRoot = false }: Props) {
     : {
         ref: setRef,
         "data-node-id": node.id,
-        style: sizeStyle(node.styles),
+        style: sizeStyle(eff),
         ...attributes,
         ...listeners,
         onClick: (e: React.MouseEvent) => {
@@ -197,8 +199,10 @@ function InstanceNode({ node, isRoot }: Props) {
   const selectedId = useEditor((s) => s.selectedNodeId);
   const setSelected = useEditor((s) => s.setSelected);
   const previewMode = useEditor((s) => s.previewMode);
+  const activeBreakpoint = useEditor((s) => s.activeBreakpoint);
   const { dropParentId, isDragging } = useDragState();
   const [hovered, setHovered] = React.useState(false);
+  const eff = effectiveTokens(node, activeBreakpoint);
 
   const selected = selectedId === node.id;
   const isDropTarget = dropParentId === node.id;
@@ -228,7 +232,7 @@ function InstanceNode({ node, isRoot }: Props) {
 
   const className = cn(
     "w-fit",
-    stylesToTailwind(node.styles),
+    stylesToTailwind(eff),
     "outline-none transition-[box-shadow,opacity]",
     !previewMode &&
       selected &&
@@ -239,11 +243,11 @@ function InstanceNode({ node, isRoot }: Props) {
   );
 
   const rootProps: Record<string, any> = previewMode
-    ? { style: sizeStyle(node.styles) }
+    ? { style: sizeStyle(eff) }
     : {
         ref: setRef,
         "data-node-id": node.id,
-        style: sizeStyle(node.styles),
+        style: sizeStyle(eff),
         ...attributes,
         ...listeners,
         onClick: (e: React.MouseEvent) => {

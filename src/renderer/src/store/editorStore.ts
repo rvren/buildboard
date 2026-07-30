@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type {
   Architecture,
+  Breakpoint,
   ComponentDefinition,
   ComponentPreset,
   DataSource,
@@ -83,6 +84,9 @@ interface EditorState {
   canRedo: boolean;
   undo: () => void;
   redo: () => void;
+  /** Active responsive breakpoint being edited/previewed on the canvas. */
+  activeBreakpoint: "base" | Breakpoint;
+  setActiveBreakpoint: (bp: "base" | Breakpoint) => void;
   editorView: "overview" | "design" | "flow" | "system" | "architecture";
   setEditorView: (
     v: "overview" | "design" | "flow" | "system" | "architecture"
@@ -314,6 +318,8 @@ export const useEditor = create<EditorState>()(
       canRedo: false,
       undo: () => historyUndo(),
       redo: () => historyRedo(),
+      activeBreakpoint: "base",
+      setActiveBreakpoint: (bp) => set({ activeBreakpoint: bp }),
       editorView: "overview",
       // Switching top-level views exits component-edit mode so the Insert palette
       // shows custom components again (create-and-edit re-enters it explicitly after).
@@ -579,14 +585,21 @@ export const useEditor = create<EditorState>()(
         ),
 
       updateNodeStyles: (nodeId, styles) =>
-        set((s) =>
-          withActiveRoot(s, (root) =>
-            updateNodeById(root, nodeId, (n) => ({
-              ...n,
-              styles: { ...n.styles, ...styles },
-            }))
-          )
-        ),
+        set((s) => {
+          const bp = s.activeBreakpoint;
+          return withActiveRoot(s, (root) =>
+            updateNodeById(root, nodeId, (n) => {
+              // At "base" edit the node's base styles; at a breakpoint, write an
+              // override so export emits responsive Tailwind (e.g. md:w-1/2).
+              if (bp === "base") return { ...n, styles: { ...n.styles, ...styles } };
+              const prev = n.responsive?.[bp] ?? {};
+              return {
+                ...n,
+                responsive: { ...n.responsive, [bp]: { ...prev, ...styles } },
+              };
+            })
+          );
+        }),
 
       renameNode: (nodeId, name) =>
         set((s) =>

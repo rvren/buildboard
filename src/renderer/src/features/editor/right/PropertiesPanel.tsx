@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import type { DesignNode, NodeAction, SchemaField } from "@/types";
 import { ITEM_SOURCE, SCREEN_SOURCE } from "@/types";
 import { defFor } from "@/lib/nodeDefs";
+import { effectiveTokens } from "@/lib/styles";
 import { findNode, findRepeatAncestor } from "@/lib/tree";
 import { itemFields } from "@/lib/dataSource";
 import { useEditor } from "@/store/editorStore";
@@ -400,7 +401,8 @@ function LayoutSection({ node }: { node: DesignNode }) {
   const def = defFor(node.type);
   if (!def.canHaveChildren) return null;
   const setStyles = useEditor((s) => s.updateNodeStyles);
-  const s = node.styles;
+  const activeBreakpoint = useEditor((s) => s.activeBreakpoint);
+  const s = effectiveTokens(node, activeBreakpoint);
   const set = (patch: Partial<typeof s>) => setStyles(node.id, patch);
 
   return (
@@ -471,7 +473,8 @@ function LayoutSection({ node }: { node: DesignNode }) {
 /* --------------------------------------------------------------------- Size */
 function SizeSection({ node }: { node: DesignNode }) {
   const setStyles = useEditor((s) => s.updateNodeStyles);
-  const s = node.styles;
+  const activeBreakpoint = useEditor((s) => s.activeBreakpoint);
+  const s = effectiveTokens(node, activeBreakpoint);
   const set = (patch: Partial<typeof s>) => setStyles(node.id, patch);
   return (
     <Section title="Size">
@@ -496,7 +499,8 @@ function SizeSection({ node }: { node: DesignNode }) {
 /* ------------------------------------------------------------------ Spacing */
 function SpacingSection({ node }: { node: DesignNode }) {
   const setStyles = useEditor((s) => s.updateNodeStyles);
-  const s = node.styles;
+  const activeBreakpoint = useEditor((s) => s.activeBreakpoint);
+  const s = effectiveTokens(node, activeBreakpoint);
   const set = (patch: Partial<typeof s>) => setStyles(node.id, patch);
   return (
     <Section title="Spacing">
@@ -513,7 +517,8 @@ function SpacingSection({ node }: { node: DesignNode }) {
 /* --------------------------------------------------------------- Typography */
 function TypographySection({ node }: { node: DesignNode }) {
   const setStyles = useEditor((s) => s.updateNodeStyles);
-  const s = node.styles;
+  const activeBreakpoint = useEditor((s) => s.activeBreakpoint);
+  const s = effectiveTokens(node, activeBreakpoint);
   const set = (patch: Partial<typeof s>) => setStyles(node.id, patch);
   return (
     <Section title="Typography">
@@ -561,7 +566,8 @@ function TypographySection({ node }: { node: DesignNode }) {
 /* ------------------------------------------------------------------ Appearance */
 function AppearanceSection({ node }: { node: DesignNode }) {
   const setStyles = useEditor((s) => s.updateNodeStyles);
-  const s = node.styles;
+  const activeBreakpoint = useEditor((s) => s.activeBreakpoint);
+  const s = effectiveTokens(node, activeBreakpoint);
   const set = (patch: Partial<typeof s>) => setStyles(node.id, patch);
   return (
     <Section title="Appearance">

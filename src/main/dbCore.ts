@@ -38,7 +38,7 @@ export const PALETTE_KEYS = [
   "brandTo",
 ] as const;
 
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 2;
 
 export function openDb(path: string): Database.Database {
   const db = new DatabaseCtor(path);
@@ -97,7 +97,8 @@ export function ensureSchema(db: Database.Database): void {
       action TEXT,
       repeat TEXT,
       instance_of TEXT,
-      overrides TEXT
+      overrides TEXT,
+      responsive TEXT
     );
     CREATE INDEX IF NOT EXISTS idx_nodes_owner ON nodes(project_id, owner_kind, owner_id);
 
@@ -199,9 +200,19 @@ export function ensureSchema(db: Database.Database): void {
     );
   `);
 
-  // Forward-compatible migration gate for future feature batches.
+  // Forward-compatible migration gate. Fresh DBs already have every column from
+  // the CREATEs above; existing DBs get additive ALTERs here, once.
   const v = (db.pragma("user_version", { simple: true }) as number) || 0;
-  if (v < SCHEMA_VERSION) db.pragma(`user_version = ${SCHEMA_VERSION}`);
+  if (v < SCHEMA_VERSION) {
+    // v2: per-node responsive style overrides.
+    const nodeCols = (db.prepare("PRAGMA table_info(nodes)").all() as { name: string }[]).map(
+      (c) => c.name
+    );
+    if (!nodeCols.includes("responsive")) {
+      db.exec("ALTER TABLE nodes ADD COLUMN responsive TEXT");
+    }
+    db.pragma(`user_version = ${SCHEMA_VERSION}`);
+  }
 }
 
 // ---- settings key/value helpers ----

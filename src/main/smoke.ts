@@ -14,7 +14,7 @@ function palette(hex: string): ThemePalette {
 }
 
 function sampleProject(): Project {
-  const input: DesignNode = { id: "n-input", type: "Input", props: { placeholder: "Email" }, styles: { width: "full" }, children: [] };
+  const input: DesignNode = { id: "n-input", type: "Input", props: { placeholder: "Email" }, styles: { width: "full" }, responsive: { md: { width: "1/2" }, lg: { width: "1/3" } }, children: [] };
   const text: DesignNode = { id: "n-text", type: "Text", props: { text: "Hi" }, styles: {}, children: [] };
   const inner: DesignNode = { id: "n-inner", type: "Container", props: {}, styles: { direction: "col", gap: 2 }, children: [text, input] };
   const button: DesignNode = {
@@ -90,6 +90,11 @@ export function runSmoke(): void {
     assert(root.children[1].action?.type === "navigate", "button action survives");
     assert(root.children[2].children[1].type === "Input", "nested input at depth 3");
     assert(root.children[2].children[1].styles.width === "full", "nested styles survive");
+    assert(
+      root.children[2].children[1].responsive?.md?.width === "1/2" &&
+        root.children[2].children[1].responsive?.lg?.width === "1/3",
+      "responsive overrides survive",
+    );
     // design system
     assert(p!.designSystem.tokens.radius === 10, "ds radius");
     assert(p!.designSystem.tokens.light.background === "#ffffff", "light palette");

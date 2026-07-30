@@ -1,4 +1,5 @@
-import type { StyleTokens } from "@/types";
+import type { Breakpoint, DesignNode, StyleTokens } from "@/types";
+import { BREAKPOINTS } from "@/types";
 
 /** Color token -> Tailwind background class. */
 export const BG_TOKENS: Record<string, string> = {
@@ -146,6 +147,46 @@ export function stylesToTailwind(s: StyleTokens): string {
     cls.push(`text-${s.textAlign}`);
 
   return cls.join(" ");
+}
+
+/** Active editing/preview breakpoint — "base" plus the responsive breakpoints. */
+export type ActiveBreakpoint = "base" | Breakpoint;
+
+/**
+ * Merge a node's base `styles` with its responsive overrides up to and including
+ * `bp` (mobile-first cascade). At "base" this is just `styles`. Used by the canvas
+ * to preview a node at the active breakpoint.
+ */
+export function effectiveTokens(node: DesignNode, bp: ActiveBreakpoint): StyleTokens {
+  if (bp === "base" || !node.responsive) return node.styles;
+  let merged: StyleTokens = { ...node.styles };
+  for (const b of BREAKPOINTS) {
+    const ov = node.responsive[b];
+    if (ov) merged = { ...merged, ...ov };
+    if (b === bp) break;
+  }
+  return merged;
+}
+
+/**
+ * Codegen: base classes plus prefixed responsive overrides, e.g.
+ * `flex flex-col md:flex-row lg:w-1/2`. Each override emits only its own changed
+ * properties, prefixed with the breakpoint — real, mobile-first Tailwind.
+ */
+export function responsiveClasses(
+  base: StyleTokens,
+  responsive?: Partial<Record<Breakpoint, Partial<StyleTokens>>>
+): string {
+  const parts = [stylesToTailwind(base)];
+  if (responsive) {
+    for (const bp of BREAKPOINTS) {
+      const ov = responsive[bp];
+      if (!ov || Object.keys(ov).length === 0) continue;
+      const cls = stylesToTailwind(ov as StyleTokens).trim();
+      if (cls) parts.push(cls.split(/\s+/).map((c) => `${bp}:${c}`).join(" "));
+    }
+  }
+  return parts.filter(Boolean).join(" ");
 }
 
 /**

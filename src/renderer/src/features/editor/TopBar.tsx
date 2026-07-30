@@ -55,6 +55,8 @@ export function TopBar({ project }: { project: Project }) {
   const canRedo = useEditor((s) => s.canRedo);
   const undo = useEditor((s) => s.undo);
   const redo = useEditor((s) => s.redo);
+  const activeBreakpoint = useEditor((s) => s.activeBreakpoint);
+  const setActiveBreakpoint = useEditor((s) => s.setActiveBreakpoint);
   useTheme((s) => s.theme);
 
   const [editingName, setEditingName] = useState(false);
@@ -116,6 +118,29 @@ export function TopBar({ project }: { project: Project }) {
       >
         <Redo2 className="h-4 w-4" />
       </Button>
+
+      {/* Responsive breakpoint switcher — edits/previews the active breakpoint */}
+      <Separator orientation="vertical" className="mx-1 h-5" />
+      <div
+        className="flex items-center gap-0.5 rounded-lg border border-border/70 bg-card p-0.5"
+        title="Responsive breakpoint — edits here export as sm:/md:/lg: Tailwind"
+      >
+        {(["base", "sm", "md", "lg"] as const).map((bp) => (
+          <button
+            key={bp}
+            type="button"
+            onClick={() => setActiveBreakpoint(bp)}
+            className={cn(
+              "rounded-md px-2 py-1 text-[11px] font-medium uppercase transition-colors",
+              activeBreakpoint === bp
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            {bp}
+          </button>
+        ))}
+      </div>
 
       {/* Screen switcher (design view only) */}
       <Separator orientation="vertical" className="mx-1 h-5" />
