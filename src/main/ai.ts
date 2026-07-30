@@ -43,6 +43,17 @@ styles (all optional) use ONLY these keys/values:
 
 Wrap the layout in a single top-level Container (flex col, some padding, width "full"). Keep it tasteful and realistic. Return 1-2 top-level nodes.`;
 
+/** Pull the human-readable message out of an Anthropic error body, else fall back to the raw text. */
+function errorMessage(raw: string): string {
+  try {
+    const j = JSON.parse(raw) as { error?: { message?: string } };
+    if (j?.error?.message) return j.error.message;
+  } catch {
+    /* not JSON */
+  }
+  return raw.slice(0, 180) || "request failed";
+}
+
 function extractJson(text: string): unknown {
   let t = text.trim();
   const fence = t.match(/```(?:json)?\s*([\s\S]*?)```/);
@@ -102,15 +113,24 @@ export async function aiGenerate(
       body: JSON.stringify({
         model: MODEL,
         max_tokens: 4096,
+        // This is a structured-JSON extraction task, not a reasoning one. Sonnet 5
+        // runs adaptive thinking by default, which would consume the max_tokens
+        // budget and truncate the JSON — disable it so the full budget is output.
+        thinking: { type: "disabled" },
         system: SYSTEM,
         messages: [{ role: "user", content: clean }],
       }),
     });
     if (!res.ok) {
-      const t = await res.text().catch(() => "");
-      return { ok: false, error: `Anthropic API ${res.status}: ${t.slice(0, 180)}` };
+      const raw = await res.text().catch(() => "");
+      const msg = errorMessage(raw);
+      console.error(`[ai] Anthropic API ${res.status}:`, raw.slice(0, 500));
+      return { ok: false, error: `Anthropic API ${res.status}: ${msg}` };
     }
-    const data = (await res.json()) as { content?: { text?: string }[] };
+    const data = (await res.json()) as {
+      content?: { text?: string }[];
+      stop_reason?: string;
+    };
     const text = Array.isArray(data.content)
       ? data.content.map((b) => b.text ?? "").join("")
       : "";
@@ -118,7 +138,14 @@ export async function aiGenerate(
     try {
       parsed = extractJson(text);
     } catch {
-      return { ok: false, error: "AI response wasn't valid JSON." };
+      console.error("[ai] Non-JSON response (stop_reason:", data.stop_reason, "):", text.slice(0, 500));
+      return {
+        ok: false,
+        error:
+          data.stop_reason === "max_tokens"
+            ? "Response was cut off — try a shorter prompt."
+            : "AI response wasn't valid JSON.",
+      };
     }
     const arr = Array.isArray(parsed)
       ? parsed
@@ -128,6 +155,7 @@ export async function aiGenerate(
     if (!nodes.length) return { ok: false, error: "AI returned no usable nodes." };
     return { ok: true, nodes };
   } catch (e) {
-    return { ok: false, error: (e as Error).message };
+    console.error("[ai] request failed:", e);
+    return { ok: false, error: (e as Error)?.message ?? "Network request failed." };
   }
 }
