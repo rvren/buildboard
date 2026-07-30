@@ -114,7 +114,7 @@ design system, and higher-fidelity code export.
 - [x] **B2-7** — Component usage insights: per-component "N× · M screens" (or "Unused") badge in the components manager → `v0.1.21`
 - [x] **B2-8** — WCAG contrast checker in the tokens editor: live AA/AAA grade + ratio per fg/bg token pair (per active mode) → `v0.1.22`
 - [x] **B2-9** — Shortcuts cheatsheet (press `?`) + 7 new command-palette actions (views, add screen, shortcuts, theme toggle) → `v0.1.23`
-- [ ] **B2-10** — Dashboard project templates / starter projects (getting started)
+- [x] **B2-10** — Dashboard "Start from" templates (Blank · Landing · Sign-up · Catalog) — composes existing STARTERS into a seeded first screen → `v0.1.24`
 
 ## Process architecture
 

@@ -28,6 +28,7 @@ import {
   defaultDesignSystem,
   defaultTokens,
 } from "@/lib/factory";
+import { createProjectFromTemplate } from "@/lib/templates";
 import { deriveServices, deriveSequence } from "@/lib/architecture";
 import {
   cloneNodeWithNewIds,
@@ -119,6 +120,11 @@ interface EditorState {
 
   // ----- project CRUD
   addProject: (name: string, mode: ProjectMode, description?: string) => string;
+  addProjectFromTemplate: (
+    name: string,
+    mode: ProjectMode,
+    templateId: string
+  ) => string;
   renameProject: (id: string, name: string) => void;
   deleteProject: (id: string) => void;
   duplicateProject: (id: string) => void;
@@ -379,6 +385,12 @@ export const useEditor = create<EditorState>()(
 
       addProject: (name, mode, description) => {
         const project = createProject(name, mode, description);
+        set((s) => ({ projects: [project, ...s.projects] }));
+        return project.id;
+      },
+
+      addProjectFromTemplate: (name, mode, templateId) => {
+        const project = createProjectFromTemplate(name, mode, templateId);
         set((s) => ({ projects: [project, ...s.projects] }));
         return project.id;
       },

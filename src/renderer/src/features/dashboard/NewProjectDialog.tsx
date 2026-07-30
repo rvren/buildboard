@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useEditor } from "@/store/editorStore";
+import { PROJECT_TEMPLATES } from "@/lib/templates";
 import { cn } from "@/lib/utils";
 
 const MODES: {
@@ -41,18 +42,24 @@ export function NewProjectDialog({ trigger }: { trigger?: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [mode, setMode] = useState<ProjectMode>("static");
+  const [template, setTemplate] = useState("blank");
   const addProject = useEditor((s) => s.addProject);
+  const addProjectFromTemplate = useEditor((s) => s.addProjectFromTemplate);
   const openProject = useEditor((s) => s.openProject);
   const navigate = useNavigate();
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const finalName = name.trim() || "Untitled project";
-    const id = addProject(finalName, mode);
+    const id =
+      template === "blank"
+        ? addProject(finalName, mode)
+        : addProjectFromTemplate(finalName, mode, template);
     openProject(id);
     setOpen(false);
     setName("");
     setMode("static");
+    setTemplate("blank");
     navigate(`/project/${id}/overview`);
   };
 
@@ -120,6 +127,35 @@ export function NewProjectDialog({ trigger }: { trigger?: React.ReactNode }) {
                       <span className="text-sm font-semibold">{m.title}</span>
                       <span className="text-xs leading-snug text-muted-foreground">
                         {m.desc}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <Label>Start from</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {PROJECT_TEMPLATES.map((t) => {
+                  const active = template === t.id;
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => setTemplate(t.id)}
+                      className={cn(
+                        "relative flex flex-col items-start gap-0.5 rounded-lg border p-2.5 text-left transition-all",
+                        active
+                          ? "border-primary bg-primary/5 ring-1 ring-primary"
+                          : "hover:border-primary/40 hover:bg-muted/40"
+                      )}
+                    >
+                      {active && (
+                        <Check className="absolute right-2 top-2 h-3.5 w-3.5 text-primary" />
+                      )}
+                      <span className="text-[13px] font-semibold">{t.name}</span>
+                      <span className="text-[11px] leading-snug text-muted-foreground">
+                        {t.hint}
                       </span>
                     </button>
                   );
