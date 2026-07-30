@@ -101,6 +101,7 @@ design system, and higher-fidelity code export.
       _(multi-select + snapping/smart-guides remain in the backlog)_
 
 ### Next batch — Batch 2 (refill; queued after Batch 1 #9–#10)
+- [x] **Interactive preview** — single-screen click-through prototype (navigate actions walk pages) → `v0.1.15` (sticky)
 > ⚠️ **75% refill fired** at Batch 1 = 9/11 (82%). Curated ~10, de-duped against everything shipped,
 > balanced across the themes and anchored to the vision (designers → apps/websites → real code).
 - [x] **B2-1** — Layers panel: inline rename (dbl-click) + hide/show toggle (persisted) + reorder → `v0.1.12`

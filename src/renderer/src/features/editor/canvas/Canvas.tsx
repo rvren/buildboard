@@ -2,23 +2,93 @@ import * as React from "react";
 import { Minus, Plus, Maximize, Check, Component } from "lucide-react";
 import type { Project } from "@/types";
 import { useEditor } from "@/store/editorStore";
+import { useTheme } from "@/store/theme";
+import { tokenStyle } from "@/lib/designSystem";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ScreenFrame } from "./ScreenFrame";
 import { ComponentFrame } from "./ComponentFrame";
+import { NodeRenderer } from "./NodeRenderer";
+import { ComponentDefsProvider } from "./componentDefs";
 
 const MIN_ZOOM = 0.2;
 const MAX_ZOOM = 2;
 
 export function Canvas({ project }: { project: Project }) {
   const editingComponentId = useEditor((s) => s.editingComponentId);
+  const previewMode = useEditor((s) => s.previewMode);
   const editingDef = project.designSystem.components.find(
     (c) => c.id === editingComponentId
   );
   if (editingComponentId && editingDef) {
     return <ComponentEditCanvas definition={editingDef} />;
   }
+  // Preview mode = a single-screen, click-through prototype (navigate actions
+  // walk between pages like a real app).
+  if (previewMode) return <PreviewCanvas project={project} />;
   return <ScreensCanvas project={project} />;
+}
+
+function PreviewCanvas({ project }: { project: Project }) {
+  const currentScreenId = useEditor((s) => s.currentScreenId);
+  const theme = useTheme((s) => s.theme);
+  const tokens = project.designSystem.tokens;
+  const screen =
+    project.screens.find((s) => s.id === currentScreenId) ?? project.screens[0];
+  const ref = React.useRef<HTMLDivElement>(null);
+  const [scale, setScale] = React.useState(1);
+
+  React.useEffect(() => {
+    const el = ref.current;
+    if (!el || !screen) return;
+    const fit = () => {
+      const pad = 56;
+      const s = Math.min(
+        (el.clientWidth - pad) / screen.width,
+        (el.clientHeight - pad) / screen.height,
+        1
+      );
+      setScale(s > 0 ? s : 1);
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [screen?.width, screen?.height]);
+
+  if (!screen) return null;
+
+  return (
+    <div
+      ref={ref}
+      className="relative flex h-full w-full items-center justify-center overflow-hidden bg-muted/30 p-6"
+    >
+      <div
+        className="absolute left-1/2 top-4 z-10 -translate-x-1/2 rounded-full border border-border/70 bg-card/85 px-3 py-1 text-xs font-medium text-muted-foreground shadow-soft backdrop-blur"
+      >
+        {screen.name}
+      </div>
+      <div
+        className="overflow-hidden rounded-xl bg-white shadow-soft-lg ring-1 ring-border dark:bg-card"
+        style={{ width: screen.width * scale, height: screen.height * scale }}
+      >
+        <div
+          className="overflow-auto scrollbar-thin"
+          style={{
+            width: screen.width,
+            height: screen.height,
+            transform: `scale(${scale})`,
+            transformOrigin: "top left",
+            ...tokenStyle(tokens, theme),
+          }}
+        >
+          <ComponentDefsProvider components={project.designSystem.components}>
+            <NodeRenderer node={screen.root} isRoot />
+          </ComponentDefsProvider>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function ScreensCanvas({ project }: { project: Project }) {
