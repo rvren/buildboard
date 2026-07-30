@@ -124,7 +124,7 @@ design system, and higher-fidelity code export.
 - [x] **B3-3** — Reorder screens (move left/right) in the screen switcher → `v0.1.27`
 - [x] **B3-4** — Theme preset gallery: apply a curated light+dark palette to the design system in one click → `v0.1.28`
 - [x] **B3-5** — Wrap selection in a Container ("Group", ⌘G) → `v0.1.29`
-- [ ] **B3-6** — Multi-select on canvas (shift-click) + bulk delete/move (selection ergonomics)
+- [x] **B3-6** — Multi-select on canvas (shift-click) + bulk delete → `v0.1.31` _(bulk move deferred: flow layout has no free positioning)_
 - [ ] **B3-7** — Component props/slots: expose editable text as named props on a definition (design system)
 - [ ] **B3-8** — One-click Next.js App Router scaffold export (real code)
 - [ ] **B3-9** — Snapping / smart-guides while dragging on the canvas (canvas UX)

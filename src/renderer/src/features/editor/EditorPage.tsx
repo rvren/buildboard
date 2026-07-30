@@ -544,7 +544,8 @@ function useKeyboardShortcuts() {
       if (!id) return;
       if (e.key === "Delete" || e.key === "Backspace") {
         e.preventDefault();
-        store.deleteNode(id);
+        if (store.selectedNodeIds.length > 1) store.deleteSelection();
+        else store.deleteNode(id);
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "d") {
         e.preventDefault();
         store.duplicateNode(id);

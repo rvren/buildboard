@@ -27,7 +27,9 @@ export function NodeRenderer({ node, isRoot = false }: Props) {
   if (node.instanceOf) return <InstanceNode node={node} isRoot={isRoot} />;
   const def = defFor(node.type);
   const selectedId = useEditor((s) => s.selectedNodeId);
+  const selectedIds = useEditor((s) => s.selectedNodeIds);
   const setSelected = useEditor((s) => s.setSelected);
+  const toggleSelectNode = useEditor((s) => s.toggleSelectNode);
   const previewMode = useEditor((s) => s.previewMode);
   const project = useEditor((s) => s.currentProject());
   const screen = useEditor((s) => s.currentScreen());
@@ -44,7 +46,7 @@ export function NodeRenderer({ node, isRoot = false }: Props) {
   };
 
   const [hovered, setHovered] = React.useState(false);
-  const selected = selectedId === node.id;
+  const selected = selectedId === node.id || selectedIds.includes(node.id);
   const isDropTarget = dropParentId === node.id;
   const hasBindings = !!node.bindings && Object.keys(node.bindings).length > 0;
 
@@ -151,7 +153,8 @@ export function NodeRenderer({ node, isRoot = false }: Props) {
         ...listeners,
         onClick: (e: React.MouseEvent) => {
           e.stopPropagation();
-          setSelected(node.id);
+          if (e.shiftKey) toggleSelectNode(node.id);
+          else setSelected(node.id);
         },
         onMouseEnter: (e: React.MouseEvent) => {
           e.stopPropagation();
@@ -216,14 +219,16 @@ function EmptyHint({ active }: { active?: boolean }) {
 function InstanceNode({ node, isRoot }: Props) {
   const defs = useComponentDefs();
   const selectedId = useEditor((s) => s.selectedNodeId);
+  const selectedIds = useEditor((s) => s.selectedNodeIds);
   const setSelected = useEditor((s) => s.setSelected);
+  const toggleSelectNode = useEditor((s) => s.toggleSelectNode);
   const previewMode = useEditor((s) => s.previewMode);
   const activeBreakpoint = useEditor((s) => s.activeBreakpoint);
   const { dropParentId, isDragging } = useDragState();
   const [hovered, setHovered] = React.useState(false);
   const eff = effectiveTokens(node, activeBreakpoint);
 
-  const selected = selectedId === node.id;
+  const selected = selectedId === node.id || selectedIds.includes(node.id);
   const isDropTarget = dropParentId === node.id;
 
   const { setNodeRef: setDropRef } = useDroppable({
@@ -271,7 +276,8 @@ function InstanceNode({ node, isRoot }: Props) {
         ...listeners,
         onClick: (e: React.MouseEvent) => {
           e.stopPropagation();
-          setSelected(node.id);
+          if (e.shiftKey) toggleSelectNode(node.id);
+          else setSelected(node.id);
         },
         onMouseEnter: (e: React.MouseEvent) => {
           e.stopPropagation();

@@ -80,6 +80,8 @@ interface EditorState {
   currentProjectId: string | null;
   currentScreenId: string | null;
   selectedNodeId: string | null;
+  /** Multi-selection (always includes the primary selectedNodeId). */
+  selectedNodeIds: string[];
   viewport: Viewport;
   previewMode: boolean;
   setPreviewMode: (v: boolean) => void;
@@ -134,6 +136,10 @@ interface EditorState {
   openProject: (id: string) => void;
   closeProject: () => void;
   setSelected: (id: string | null) => void;
+  /** Shift-click: add/remove a node from the multi-selection. */
+  toggleSelectNode: (id: string) => void;
+  /** Delete every node in the multi-selection. */
+  deleteSelection: () => void;
   setViewport: (v: Partial<Viewport>) => void;
 
   // ----- screens
@@ -352,6 +358,7 @@ export const useEditor = create<EditorState>()(
       currentProjectId: null,
       currentScreenId: null,
       selectedNodeId: null,
+      selectedNodeIds: [],
       viewport: { x: 0, y: 0, zoom: 1 },
       previewMode: false,
       setPreviewMode: (v) => set({ previewMode: v, selectedNodeId: null }),
@@ -504,7 +511,40 @@ export const useEditor = create<EditorState>()(
           selectedNodeId: null,
         }),
 
-      setSelected: (id) => set({ selectedNodeId: id }),
+      setSelected: (id) =>
+        set({ selectedNodeId: id, selectedNodeIds: id ? [id] : [] }),
+
+      toggleSelectNode: (id) =>
+        set((s) => {
+          const has = s.selectedNodeIds.includes(id);
+          const ids = has
+            ? s.selectedNodeIds.filter((x) => x !== id)
+            : [...s.selectedNodeIds, id];
+          return {
+            selectedNodeIds: ids,
+            // Primary stays the most-recently-added (or the last remaining).
+            selectedNodeId: has ? ids[ids.length - 1] ?? null : id,
+          };
+        }),
+
+      deleteSelection: () =>
+        set((s) => {
+          const ids = s.selectedNodeIds.length
+            ? s.selectedNodeIds
+            : s.selectedNodeId
+              ? [s.selectedNodeId]
+              : [];
+          const root = get().currentRoot();
+          if (!root || !ids.length) return {};
+          const targets = ids.filter((id) => id !== root.id);
+          if (!targets.length) return {};
+          const patch = withActiveRoot(s, (r) => {
+            let tree = r;
+            for (const id of targets) tree = removeNode(tree, id).tree;
+            return tree;
+          });
+          return { ...patch, selectedNodeId: null, selectedNodeIds: [] };
+        }),
 
       setViewport: (v) =>
         set((s) => ({ viewport: { ...s.viewport, ...v } })),
