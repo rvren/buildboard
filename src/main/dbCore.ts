@@ -38,7 +38,7 @@ export const PALETTE_KEYS = [
   "brandTo",
 ] as const;
 
-const SCHEMA_VERSION = 2;
+const SCHEMA_VERSION = 3;
 
 export function openDb(path: string): Database.Database {
   const db = new DatabaseCtor(path);
@@ -98,7 +98,8 @@ export function ensureSchema(db: Database.Database): void {
       repeat TEXT,
       instance_of TEXT,
       overrides TEXT,
-      responsive TEXT
+      responsive TEXT,
+      variant TEXT
     );
     CREATE INDEX IF NOT EXISTS idx_nodes_owner ON nodes(project_id, owner_kind, owner_id);
 
@@ -161,6 +162,7 @@ export function ensureSchema(db: Database.Database): void {
       id TEXT PRIMARY KEY,
       project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
       name TEXT NOT NULL,
+      variants TEXT,
       order_index INTEGER NOT NULL
     );
 
@@ -210,6 +212,16 @@ export function ensureSchema(db: Database.Database): void {
     );
     if (!nodeCols.includes("responsive")) {
       db.exec("ALTER TABLE nodes ADD COLUMN responsive TEXT");
+    }
+    // v3: component variants + per-instance variant selection.
+    if (!nodeCols.includes("variant")) {
+      db.exec("ALTER TABLE nodes ADD COLUMN variant TEXT");
+    }
+    const defCols = (
+      db.prepare("PRAGMA table_info(component_definitions)").all() as { name: string }[]
+    ).map((c) => c.name);
+    if (!defCols.includes("variants")) {
+      db.exec("ALTER TABLE component_definitions ADD COLUMN variants TEXT");
     }
     db.pragma(`user_version = ${SCHEMA_VERSION}`);
   }

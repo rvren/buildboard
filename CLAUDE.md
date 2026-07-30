@@ -78,7 +78,7 @@ patch version in `package.json`, and commit.
 batch to this list — curated from the `ROADMAP.md` backlog, de-duped against everything already
 shipped — and tell the maintainer the queue was refilled.
 
-### Current batch — Batch 1 · shipped 4 / 11 (36%)
+### Current batch — Batch 1 · shipped 5 / 11 (45%)
 Curated for the designer → real-code job (apps **and** websites): richer canvas design, a stronger
 design system, and higher-fidelity code export.
 - [x] **0** — Desktop conversion (Electron + normalized SQLite) → `v0.1.0`
@@ -86,7 +86,8 @@ design system, and higher-fidelity code export.
 - [x] **2** — Undo / redo (in-editor history) + autosave persistence → `v0.1.2`
       _(restorable DB version-timeline stays in the backlog: "version snapshots in the DB")_
 - [x] **3** — Responsive breakpoints (per-node sm/md/lg overrides) → responsive Tailwind export → `v0.1.3`
-- [ ] **4** — Design-system component variants (props-driven, a real component API)
+- [x] **4** — Design-system component variants (named style variants, per-instance, exported) → `v0.1.4`
+      _(also fixed instance overrides not exporting; prop-driven conditional variants remain a future extension)_
 - [ ] **5** — Design tokens import / export (palette + typography; bring/sync a theme)
 - [ ] **6** — Multi-page websites: links, nav, and per-page meta (title/description)
 - [ ] **7** — Canvas precision: multi-select, align / distribute, snapping & smart guides

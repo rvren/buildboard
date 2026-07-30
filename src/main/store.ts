@@ -52,9 +52,9 @@ function insertNodeTree(
 ): void {
   db.prepare(
     `INSERT INTO nodes(id, project_id, owner_kind, owner_id, parent_id, order_index,
-       type, name, props, styles, bindings, action, repeat, instance_of, overrides, responsive)
+       type, name, props, styles, bindings, action, repeat, instance_of, overrides, responsive, variant)
      VALUES(@id,@project_id,@owner_kind,@owner_id,@parent_id,@order_index,
-       @type,@name,@props,@styles,@bindings,@action,@repeat,@instance_of,@overrides,@responsive)`,
+       @type,@name,@props,@styles,@bindings,@action,@repeat,@instance_of,@overrides,@responsive,@variant)`,
   ).run({
     id: node.id,
     project_id: projectId,
@@ -72,6 +72,7 @@ function insertNodeTree(
     instance_of: node.instanceOf ?? null,
     overrides: j(node.overrides),
     responsive: j(node.responsive),
+    variant: node.variant ?? null,
   });
   const children = node.children ?? [];
   for (let i = 0; i < children.length; i++) {
@@ -93,6 +94,7 @@ interface NodeRow {
   instance_of: string | null;
   overrides: string | null;
   responsive: string | null;
+  variant: string | null;
 }
 
 function loadNodeTree(
@@ -130,6 +132,7 @@ function loadNodeTree(
     if (overrides) node.overrides = overrides;
     const responsive = pj<DesignNode["responsive"]>(r.responsive);
     if (responsive) node.responsive = responsive;
+    if (r.variant != null) node.variant = r.variant;
     byId.set(r.id, node);
   }
 
@@ -210,8 +213,9 @@ const saveTx = (db: Database.Database, p: Project) => {
   });
   ds.components.forEach((c, i) => {
     db.prepare(
-      `INSERT INTO component_definitions(id, project_id, name, order_index) VALUES(?,?,?,?)`,
-    ).run(c.id, p.id, c.name, i);
+      `INSERT INTO component_definitions(id, project_id, name, variants, order_index)
+       VALUES(?,?,?,?,?)`,
+    ).run(c.id, p.id, c.name, j(c.variants), i);
     if (c.root) insertNodeTree(db, p.id, "component", c.id, c.root, null, 0);
   });
 
@@ -379,13 +383,20 @@ function loadDesignSystem(db: Database.Database, projectId: string): DesignSyste
 
   const components: ComponentDefinition[] = (
     db
-      .prepare("SELECT id, name FROM component_definitions WHERE project_id = ? ORDER BY order_index ASC")
+      .prepare(
+        "SELECT id, name, variants FROM component_definitions WHERE project_id = ? ORDER BY order_index ASC"
+      )
       .all(projectId) as any[]
-  ).map((c) => ({
-    id: c.id,
-    name: c.name,
-    root: loadNodeTree(db, projectId, "component", c.id) as DesignNode,
-  }));
+  ).map((c) => {
+    const def: ComponentDefinition = {
+      id: c.id,
+      name: c.name,
+      root: loadNodeTree(db, projectId, "component", c.id) as DesignNode,
+    };
+    const variants = pj<ComponentDefinition["variants"]>(c.variants);
+    if (variants) def.variants = variants;
+    return def;
+  });
 
   return { tokens, presets, components };
 }

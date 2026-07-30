@@ -39,8 +39,12 @@ export function resolveInstance(
   if (!node.instanceOf) return null;
   const def = defs.find((c) => c.id === node.instanceOf);
   if (!def) return null;
+  const variant = node.variant
+    ? def.variants?.find((v) => v.id === node.variant)
+    : undefined;
   return {
     ...def.root,
+    styles: { ...def.root.styles, ...(variant?.styles ?? {}) },
     props: { ...def.root.props, ...(node.overrides ?? {}) },
   };
 }

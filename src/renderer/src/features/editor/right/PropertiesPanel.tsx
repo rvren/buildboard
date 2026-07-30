@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   MousePointer2,
   Copy,
@@ -37,26 +38,105 @@ import {
 export function PropertiesPanel() {
   const root = useEditor((s) => s.currentRoot());
   const selectedId = useEditor((s) => s.selectedNodeId);
+  const editingComponentId = useEditor((s) => s.editingComponentId);
   const node = root && selectedId ? findNode(root, selectedId) : null;
 
-  if (!node) return <EmptyProps />;
+  if (node?.type === "Instance") return <InstanceProps node={node} />;
 
-  if (node.type === "Instance") return <InstanceProps node={node} />;
+  // Nothing to show unless a node is selected or a component is being edited
+  // (variants are managed on the definition even with nothing selected).
+  if (!node && !editingComponentId) return <EmptyProps />;
 
   return (
     <div className="flex h-full flex-col">
-      <NodeHeader node={node} />
+      {node ? (
+        <NodeHeader node={node} />
+      ) : (
+        <div className="flex items-center gap-2 border-b px-3.5 py-2.5 text-sm font-medium">
+          <ComponentIcon className="h-3.5 w-3.5 text-primary" />
+          Component
+        </div>
+      )}
       <ScrollArea className="flex-1">
-        <ScreenDataSection node={node} />
-        <ContentSection node={node} />
-        <RepeatSection node={node} />
-        <LayoutSection node={node} />
-        <SizeSection node={node} />
-        <SpacingSection node={node} />
-        <TypographySection node={node} />
-        <AppearanceSection node={node} />
+        {editingComponentId && <VariantsManager defId={editingComponentId} />}
+        {node && (
+          <>
+            <ScreenDataSection node={node} />
+            <ContentSection node={node} />
+            <RepeatSection node={node} />
+            <LayoutSection node={node} />
+            <SizeSection node={node} />
+            <SpacingSection node={node} />
+            <TypographySection node={node} />
+            <AppearanceSection node={node} />
+          </>
+        )}
       </ScrollArea>
     </div>
+  );
+}
+
+/** Author named variants on a component definition (captures the root's styles). */
+function VariantsManager({ defId }: { defId: string }) {
+  const project = useEditor((s) => s.currentProject());
+  const rootNode = useEditor((s) => s.currentRoot());
+  const addVariant = useEditor((s) => s.addComponentVariant);
+  const deleteVariant = useEditor((s) => s.deleteComponentVariant);
+  const [name, setName] = useState("");
+  const def = project?.designSystem.components.find((c) => c.id === defId);
+  if (!def) return null;
+  const variants = def.variants ?? [];
+  const save = () => {
+    const n = name.trim();
+    if (!n || !rootNode) return;
+    addVariant(defId, n, rootNode.styles);
+    setName("");
+  };
+  return (
+    <Section title="Variants">
+      <p className="px-0.5 pb-2 text-[11px] text-muted-foreground">
+        Save the root's current styles as a named variant. Instances can then pick
+        one (exported as its own Tailwind).
+      </p>
+      {variants.length > 0 && (
+        <div className="mb-2 flex flex-col gap-1">
+          {variants.map((v) => (
+            <div
+              key={v.id}
+              className="flex items-center gap-2 rounded-md border px-2 py-1 text-xs"
+            >
+              <span className="min-w-0 flex-1 truncate">{v.name}</span>
+              <button
+                type="button"
+                onClick={() => deleteVariant(defId, v.id)}
+                className="text-muted-foreground transition-colors hover:text-destructive"
+                title="Delete variant"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+      <div className="flex items-center gap-1.5">
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && save()}
+          placeholder="Variant name"
+          className="h-7 min-w-0 flex-1 rounded-md border bg-transparent px-2 text-xs outline-none focus:ring-2 focus:ring-ring"
+        />
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-7"
+          onClick={save}
+          disabled={!name.trim()}
+        >
+          Save styles
+        </Button>
+      </div>
+    </Section>
   );
 }
 
@@ -67,9 +147,11 @@ function InstanceProps({ node }: { node: DesignNode }) {
   const setEditorView = useEditor((s) => s.setEditorView);
   const deleteNode = useEditor((s) => s.deleteNode);
   const setInstanceOverride = useEditor((s) => s.setInstanceOverride);
+  const setInstanceVariant = useEditor((s) => s.setInstanceVariant);
   const def = project?.designSystem.components.find(
     (c) => c.id === node.instanceOf
   );
+  const variants = def?.variants ?? [];
   const rootProps = def?.root.props ?? {};
   const OVERRIDABLE = ["content", "label", "placeholder", "alt", "fallback"];
   const keys = OVERRIDABLE.filter((k) => k in rootProps);
@@ -114,6 +196,32 @@ function InstanceProps({ node }: { node: DesignNode }) {
             </Button>
           )}
         </Section>
+        {variants.length > 0 && (
+          <Section title="Variant">
+            <div className="flex flex-wrap gap-1">
+              {[{ id: null as string | null, name: "Default" }, ...variants].map(
+                (v) => {
+                  const active = (node.variant ?? null) === v.id;
+                  return (
+                    <button
+                      key={v.id ?? "__default"}
+                      type="button"
+                      onClick={() => setInstanceVariant(node.id, v.id)}
+                      className={
+                        "rounded-md border px-2 py-1 text-xs transition-colors " +
+                        (active
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "text-muted-foreground hover:text-foreground")
+                      }
+                    >
+                      {v.name}
+                    </button>
+                  );
+                }
+              )}
+            </div>
+          </Section>
+        )}
         {keys.length > 0 ? (
           <Section title="Overrides">
             {keys.map((k) => (

@@ -99,6 +99,8 @@ export interface DesignNode {
   instanceOf?: string;
   /** Prop patch applied to the definition's root when rendering this instance. */
   overrides?: Record<string, any>;
+  /** Selected variant id (of the definition's `variants`) for this instance. */
+  variant?: string;
 }
 
 export interface Screen {
@@ -213,10 +215,19 @@ export interface ComponentPreset {
  * DesignNode subtree; page nodes with `instanceOf === id` render through it,
  * so editing the definition fans out to every instance on every screen.
  */
+/** A named variant of a component: a style-token patch applied to its root. */
+export interface ComponentVariant {
+  id: string;
+  name: string;
+  styles: Partial<StyleTokens>;
+}
+
 export interface ComponentDefinition {
   id: string;
   name: string;
   root: DesignNode;
+  /** Named variants selectable per instance (e.g. primary / secondary / ghost). */
+  variants?: ComponentVariant[];
 }
 
 export interface DesignSystem {

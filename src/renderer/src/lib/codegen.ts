@@ -147,11 +147,25 @@ function registerDef(def: ComponentDefinition, ctx: Ctx): string {
 }
 
 function walk(node: DesignNode, depth: number, ctx: Ctx): WalkResult {
-  // Instances render as a reference to a locally-emitted component.
+  // Instances render as a reference to a locally-emitted component. A customized
+  // instance (variant and/or prop overrides) inlines its resolved subtree so the
+  // export matches what's on the canvas.
   if (node.instanceOf) {
     const pad = INDENT.repeat(depth);
     const def = ctx.components.find((c) => c.id === node.instanceOf);
     if (!def) return { lines: [`${pad}{/* missing component */}`], imports: [] };
+    const variant = node.variant
+      ? def.variants?.find((v) => v.id === node.variant)
+      : undefined;
+    const hasOverrides = !!node.overrides && Object.keys(node.overrides).length > 0;
+    if (variant || hasOverrides) {
+      const resolved: DesignNode = {
+        ...def.root,
+        styles: { ...def.root.styles, ...(variant?.styles ?? {}) },
+        props: { ...def.root.props, ...(node.overrides ?? {}) },
+      };
+      return walk(resolved, depth, ctx);
+    }
     const name = registerDef(def, ctx);
     return { lines: [`${pad}<${name} />`], imports: [] };
   }

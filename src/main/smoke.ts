@@ -18,7 +18,7 @@ function sampleProject(): Project {
   const text: DesignNode = { id: "n-text", type: "Text", props: { text: "Hi" }, styles: {}, children: [] };
   const inner: DesignNode = { id: "n-inner", type: "Container", props: {}, styles: { direction: "col", gap: 2 }, children: [text, input] };
   const button: DesignNode = {
-    id: "n-btn", type: "Button", props: { text: "Go" }, styles: {}, children: [],
+    id: "n-btn", type: "Button", props: { text: "Go" }, styles: {}, children: [], variant: "vp",
     action: { trigger: "click", type: "navigate", targetScreenId: "s1" },
   };
   const heading: DesignNode = { id: "n-h", type: "Heading", name: "Title", props: { text: "Welcome" }, styles: { fontSize: "2xl" }, children: [] };
@@ -51,7 +51,12 @@ function sampleProject(): Project {
     designSystem: {
       tokens: { light: palette("#ffffff"), dark: palette("#111111"), radius: 10, font: "Inter" },
       presets: [ { id: "pr1", name: "CTA", type: "Button", props: { text: "Buy" }, styles: { bg: "primary" } } ],
-      components: [ { id: "cd1", name: "Card", root: compRoot } ],
+      components: [
+        {
+          id: "cd1", name: "Card", root: compRoot,
+          variants: [{ id: "vp", name: "Primary", styles: { bg: "primary" } }],
+        },
+      ],
     },
     architecture: {
       services: [ { id: "svc1", name: "Web", kind: "frontend", description: "UI" } ],
@@ -100,6 +105,12 @@ export function runSmoke(): void {
     assert(p!.designSystem.tokens.light.background === "#ffffff", "light palette");
     assert(p!.designSystem.tokens.dark.background === "#111111", "dark palette");
     assert(p!.designSystem.components[0].root.children[0].type === "Badge", "component def tree");
+    assert(
+      p!.designSystem.components[0].variants?.[0]?.name === "Primary" &&
+        p!.designSystem.components[0].variants?.[0]?.styles.bg === "primary",
+      "component variants survive",
+    );
+    assert(root.children[1].variant === "vp", "instance variant selection survives");
     assert(p!.designSystem.presets[0].name === "CTA", "preset");
     // data sources
     const d = p!.dataSources[0];

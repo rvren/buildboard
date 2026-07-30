@@ -180,6 +180,15 @@ interface EditorState {
     index?: number
   ) => string | null;
   setInstanceOverride: (nodeId: string, patch: Record<string, any>) => void;
+  /** Select (or clear) which variant of its definition an instance uses. */
+  setInstanceVariant: (nodeId: string, variantId: string | null) => void;
+  /** Capture a named variant (style patch) on a component definition. */
+  addComponentVariant: (
+    defId: string,
+    name: string,
+    styles: Partial<StyleTokens>
+  ) => void;
+  deleteComponentVariant: (defId: string, variantId: string) => void;
 
   // ----- architecture (project-scoped)
   updateArchitecture: (fn: (a: Architecture) => Architecture) => void;
@@ -978,6 +987,67 @@ export const useEditor = create<EditorState>()(
             }))
           )
         ),
+
+      setInstanceVariant: (nodeId, variantId) =>
+        set((s) =>
+          withActiveRoot(s, (root) =>
+            updateNodeById(root, nodeId, (n) => {
+              const next = { ...n };
+              if (variantId) next.variant = variantId;
+              else delete next.variant;
+              return next;
+            })
+          )
+        ),
+
+      addComponentVariant: (defId, name, styles) =>
+        set((s) => ({
+          projects: s.projects.map((p) =>
+            p.id === s.currentProjectId
+              ? touch({
+                  ...p,
+                  designSystem: {
+                    ...p.designSystem,
+                    components: p.designSystem.components.map((c) =>
+                      c.id === defId
+                        ? {
+                            ...c,
+                            variants: [
+                              ...(c.variants ?? []),
+                              { id: uid(), name, styles },
+                            ],
+                          }
+                        : c
+                    ),
+                  },
+                })
+              : p
+          ),
+        })),
+
+      deleteComponentVariant: (defId, variantId) =>
+        set((s) => ({
+          projects: s.projects.map((p) =>
+            p.id === s.currentProjectId
+              ? touch({
+                  ...p,
+                  designSystem: {
+                    ...p.designSystem,
+                    components: p.designSystem.components.map((c) =>
+                      c.id === defId
+                        ? {
+                            ...c,
+                            variants: (c.variants ?? []).filter(
+                              (v) => v.id !== variantId
+                            ),
+                          }
+                        : c
+                    ),
+                  },
+                })
+              : p
+          ),
+        })),
 
       updateArchitecture: (fn) =>
         set((s) => ({
