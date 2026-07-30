@@ -98,8 +98,8 @@ interface EditorState {
   setEditorView: (
     v: "overview" | "design" | "flow" | "system" | "architecture"
   ) => void;
-  leftTool: "insert" | "layers" | "data";
-  setLeftTool: (v: "insert" | "layers" | "data") => void;
+  leftTool: "insert" | "layers" | "data" | "pages";
+  setLeftTool: (v: "insert" | "layers" | "data" | "pages") => void;
   /** Design System sub-tool (left rail). */
   systemTool: "tokens" | "components";
   setSystemTool: (v: "tokens" | "components") => void;

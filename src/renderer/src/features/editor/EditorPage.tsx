@@ -16,6 +16,7 @@ import {
 import {
   Layers,
   Blocks,
+  LayoutTemplate,
   Database,
   Palette,
   Component,
@@ -44,6 +45,7 @@ import { Canvas } from "./canvas/Canvas";
 import { PaletteTab } from "./left/PaletteTab";
 import { LayersTab } from "./left/LayersTab";
 import { DataTab } from "./left/DataTab";
+import { PagesTab } from "./left/PagesTab";
 import { PropertiesPanel } from "./right/PropertiesPanel";
 import { CodePanel } from "./right/CodePanel";
 import { DragStateContext } from "./canvas/dragContext";
@@ -385,6 +387,7 @@ function MainArea({
 const TOOL_META: Record<string, { label: string; icon: LucideIcon }> = {
   insert: { label: "Insert", icon: Blocks },
   layers: { label: "Layers", icon: Layers },
+  pages: { label: "Pages", icon: LayoutTemplate },
   data: { label: "Data", icon: Database },
   tokens: { label: "Tokens", icon: Palette },
   components: { label: "Components", icon: Component },
@@ -431,14 +434,19 @@ function LeftPanel({
   } else {
     // Data doesn't apply while editing a component; fall back to Insert.
     const designTool =
-      editingComponentId && leftTool === "data" ? "insert" : leftTool;
+      editingComponentId && (leftTool === "data" || leftTool === "pages")
+        ? "insert"
+        : leftTool;
     activeId = designTool;
     tabs = [
       { id: "insert", onSelect: () => setLeftTool("insert") },
       { id: "layers", onSelect: () => setLeftTool("layers") },
       ...(editingComponentId
         ? []
-        : [{ id: "data", onSelect: () => setLeftTool("data") }]),
+        : [
+            { id: "pages", onSelect: () => setLeftTool("pages") },
+            { id: "data", onSelect: () => setLeftTool("data") },
+          ]),
     ];
   }
 
@@ -472,6 +480,7 @@ function LeftPanel({
           <>
             {activeId === "insert" && <PaletteTab />}
             {activeId === "layers" && <LayersTab />}
+            {activeId === "pages" && <PagesTab />}
             {activeId === "data" && <DataTab />}
           </>
         )}

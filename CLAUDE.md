@@ -138,7 +138,7 @@ design system, and higher-fidelity code export.
 - [x] **B4-3** — Exported component files take typed React props for their text (default = the design text) → `v0.1.41`
 - [x] **B4-4** — One-click Vite + React Router (SPA) scaffold export: src/pages per screen + App.tsx route table, main.tsx, config → `v0.1.40`
 - [ ] **B4-5** — Spacing & typography scale tokens in the design system (beyond color)
-- [ ] **B4-6** — Left "Pages" panel: screen thumbnails + reorder + rename (navigation)
+- [x] **B4-6** — Left "Pages" panel: screen thumbnails + select/rename/reorder/duplicate/delete → `v0.1.43`
 - [x] **B4-7** — Global find & replace of text across all screens + components (case option, live match count) → `v0.1.38`
 - [x] **B4-8** — Quick-insert palette (⌘/): type a node name → inserts at the selection (into container, else parent, else root) → `v0.1.39`
 - [ ] **B4-9** — DB version snapshots: restorable per-project timeline (data ownership)
