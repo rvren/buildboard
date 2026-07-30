@@ -135,7 +135,7 @@ design system, and higher-fidelity code export.
 > (designers → apps/websites → real, accessible code). Completes selection/design-system/export threads.
 - [ ] **B4-1** — Bulk move/nest for the multi-selection (drag several nodes into a container at once)
 - [x] **B4-2** — Per-node ARIA authoring (aria-label / role) in Properties → exported as aria-label/role attrs → `v0.1.36`
-- [ ] **B4-3** — Component content slots → real typed React props on exported component files (design system → real code)
+- [x] **B4-3** — Exported component files take typed React props for their text (default = the design text) → `v0.1.41`
 - [x] **B4-4** — One-click Vite + React Router (SPA) scaffold export: src/pages per screen + App.tsx route table, main.tsx, config → `v0.1.40`
 - [ ] **B4-5** — Spacing & typography scale tokens in the design system (beyond color)
 - [ ] **B4-6** — Left "Pages" panel: screen thumbnails + reorder + rename (navigation)

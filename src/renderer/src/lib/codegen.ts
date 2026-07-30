@@ -82,6 +82,10 @@ interface Ctx {
   usedDefs: Map<string, { name: string; def: ComponentDefinition }>;
   /** Reserved component/function names (avoids collisions). */
   defNames: Set<string>;
+  /** Component-file export only: `${nodeId}@${prop}` -> React prop name. */
+  slotProps?: Map<string, string>;
+  /** Filled during walk: prop name -> default literal, for the typed signature. */
+  usedSlotProps?: Map<string, string>;
 }
 
 /** Effective real source id for a binding (resolving $screen; $item → null). */
@@ -233,7 +237,18 @@ function walk(node: DesignNode, depth: number, ctx: Ctx): WalkResult {
       el.push(`${pad}${INDENT}${inner}`);
     el.push(`${pad}</${spec.tag}>`);
   } else if ((textExpr != null || spec.text != null) && node.children.length === 0) {
-    const inner = textExpr != null ? `{${textExpr}}` : jsxText(spec.text!);
+    // Component-file export: swap the literal text for a typed prop reference.
+    const slotName =
+      textExpr == null && textProp
+        ? ctx.slotProps?.get(`${node.id}@${textProp}`)
+        : undefined;
+    let inner: string;
+    if (slotName) {
+      ctx.usedSlotProps?.set(slotName, spec.text ?? "");
+      inner = `{${slotName}}`;
+    } else {
+      inner = textExpr != null ? `{${textExpr}}` : jsxText(spec.text!);
+    }
     el.push(`${pad}<${spec.tag}${attrStr}>${inner}</${spec.tag}>`);
   } else if (node.children.length === 0) {
     el.push(`${pad}<${spec.tag}${attrStr} />`);
@@ -403,8 +418,19 @@ function assemble(
 
   const compBlock = comps.fns.length ? comps.fns.join("\n") + "\n" : "";
 
+  // Typed props signature for parameterized component files (B4-3).
+  let params = "";
+  if (ctx.usedSlotProps && ctx.usedSlotProps.size) {
+    const names = [...ctx.usedSlotProps.entries()];
+    const destructure = names
+      .map(([name, def]) => `${name} = ${JSON.stringify(def)}`)
+      .join(", ");
+    const types = names.map(([name]) => `${name}?: string`).join("; ");
+    params = `{ ${destructure} }: { ${types} }`;
+  }
+
   return (
-    `${header}${compBlock}${metaBlock}export ${fnKeyword} ${fnName}() {\n` +
+    `${header}${compBlock}${metaBlock}export ${fnKeyword} ${fnName}(${params}) {\n` +
     body.join("\n") +
     `\n}\n`
   );
@@ -457,5 +483,37 @@ export function generateComponentCode(
 ): string {
   const compName = pascalCase(node.name || node.type);
   const ctx = makeCtx(project?.screens ?? [], project, node, screenSourceId);
+  // Expose each text-bearing node as a typed React prop (default = its text).
+  ctx.slotProps = new Map();
+  ctx.usedSlotProps = new Map();
+  assignSlotProps(node, ctx.slotProps);
   return assemble("function", compName, node, ctx);
+}
+
+/** Assign a unique React prop name to every text-bearing node in a subtree. */
+function assignSlotProps(node: DesignNode, out: Map<string, string>): void {
+  const used = new Set<string>();
+  const camel = (s: string) =>
+    s
+      .replace(/[^a-zA-Z0-9]+/g, " ")
+      .trim()
+      .split(/\s+/)
+      .map((w, i) =>
+        i === 0 ? w.toLowerCase() : w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()
+      )
+      .join("") || "text";
+  const walkAssign = (n: DesignNode) => {
+    const prop = TEXT_PROP[n.type];
+    if (prop && typeof n.props?.[prop] === "string" && n.props[prop]) {
+      let base = camel(n.name || `${n.type} ${prop}`);
+      if (!/^[a-z]/i.test(base)) base = "text" + base;
+      let name = base;
+      let i = 2;
+      while (used.has(name)) name = `${base}${i++}`;
+      used.add(name);
+      out.set(`${n.id}@${prop}`, name);
+    }
+    for (const c of n.children ?? []) walkAssign(c);
+  };
+  walkAssign(node);
 }
