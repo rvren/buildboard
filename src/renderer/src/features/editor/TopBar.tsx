@@ -16,10 +16,23 @@ import {
   Search,
   Undo2,
   Redo2,
+  AppWindow,
+  Smartphone,
+  Tablet,
+  Monitor,
+  type LucideIcon,
 } from "lucide-react";
-import type { ProjectMode } from "@/types";
+import type { Breakpoint, ProjectMode } from "@/types";
 import { toast } from "sonner";
 import type { Project } from "@/types";
+
+/** Breakpoint switcher tabs: base = design width; sm/md/lg preview at the width. */
+const BREAKPOINT_TABS: { id: "base" | Breakpoint; icon: LucideIcon; tip: string }[] = [
+  { id: "base", icon: AppWindow, tip: "Base — applies at all widths (your design canvas)" },
+  { id: "sm", icon: Smartphone, tip: "sm · ≥640px — preview the active screen at 640px" },
+  { id: "md", icon: Tablet, tip: "md · ≥768px — preview the active screen at 768px" },
+  { id: "lg", icon: Monitor, tip: "lg · ≥1024px — preview the active screen at 1024px" },
+];
 import { useEditor } from "@/store/editorStore";
 import { useTheme } from "@/store/theme";
 import { Button } from "@/components/ui/button";
@@ -119,28 +132,32 @@ export function TopBar({ project }: { project: Project }) {
         <Redo2 className="h-4 w-4" />
       </Button>
 
-      {/* Responsive breakpoint switcher — edits/previews the active breakpoint */}
-      <Separator orientation="vertical" className="mx-1 h-5" />
-      <div
-        className="flex items-center gap-0.5 rounded-lg border border-border/70 bg-card p-0.5"
-        title="Responsive breakpoint — edits here export as sm:/md:/lg: Tailwind"
-      >
-        {(["base", "sm", "md", "lg"] as const).map((bp) => (
-          <button
-            key={bp}
-            type="button"
-            onClick={() => setActiveBreakpoint(bp)}
-            className={cn(
-              "rounded-md px-2 py-1 text-[11px] font-medium uppercase transition-colors",
-              activeBreakpoint === bp
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            {bp}
-          </button>
-        ))}
-      </div>
+      {/* Responsive breakpoint switcher — resizes the active artboard to preview
+          each width; edits made here export as sm:/md:/lg: Tailwind. */}
+      {editorView === "design" && (
+        <>
+          <Separator orientation="vertical" className="mx-1 h-5" />
+          <div className="flex items-center gap-0.5 rounded-lg border border-border/70 bg-card p-0.5">
+            {BREAKPOINT_TABS.map((bp) => (
+              <button
+                key={bp.id}
+                type="button"
+                onClick={() => setActiveBreakpoint(bp.id)}
+                title={bp.tip}
+                className={cn(
+                  "flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition-colors",
+                  activeBreakpoint === bp.id
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <bp.icon className="h-3.5 w-3.5" />
+                <span className="uppercase">{bp.id}</span>
+              </button>
+            ))}
+          </div>
+        </>
+      )}
 
       {/* Screen switcher (design view only) */}
       <Separator orientation="vertical" className="mx-1 h-5" />

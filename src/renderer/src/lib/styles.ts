@@ -152,6 +152,13 @@ export function stylesToTailwind(s: StyleTokens): string {
 /** Active editing/preview breakpoint — "base" plus the responsive breakpoints. */
 export type ActiveBreakpoint = "base" | Breakpoint;
 
+/** Representative artboard preview width per breakpoint (Tailwind min-widths). */
+export const BREAKPOINT_WIDTHS: Record<Breakpoint, number> = {
+  sm: 640,
+  md: 768,
+  lg: 1024,
+};
+
 /**
  * Merge a node's base `styles` with its responsive overrides up to and including
  * `bp` (mobile-first cascade). At "base" this is just `styles`. Used by the canvas

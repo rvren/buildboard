@@ -3,6 +3,7 @@ import { LayoutTemplate } from "lucide-react";
 import type { Screen } from "@/types";
 import { cn } from "@/lib/utils";
 import { STARTERS, type Starter } from "@/lib/starters";
+import { BREAKPOINT_WIDTHS } from "@/lib/styles";
 import { useEditor } from "@/store/editorStore";
 import { spring } from "@/lib/motion";
 import { tokenStyle } from "@/lib/designSystem";
@@ -16,12 +17,19 @@ export function ScreenFrame({ screen }: { screen: Screen }) {
   const setSelected = useEditor((s) => s.setSelected);
   const previewMode = useEditor((s) => s.previewMode);
   const insertStarter = useEditor((s) => s.insertStarter);
+  const activeBreakpoint = useEditor((s) => s.activeBreakpoint);
   const tokens = useEditor((s) => s.currentProject()?.designSystem.tokens);
   const theme = useTheme((s) => s.theme);
   const components = useEditor(
     (s) => s.currentProject()?.designSystem.components
   );
   const active = currentScreenId === screen.id;
+  // The active screen previews at the breakpoint's width so responsive changes
+  // are visible; other screens (and "base") keep their design width.
+  const previewWidth =
+    active && activeBreakpoint !== "base"
+      ? BREAKPOINT_WIDTHS[activeBreakpoint]
+      : screen.width;
 
   return (
     <motion.div
@@ -54,17 +62,19 @@ export function ScreenFrame({ screen }: { screen: Screen }) {
         />
         {screen.name}
         <span className="text-muted-foreground/60">
-          {screen.width}×{screen.height}
+          {active && activeBreakpoint !== "base"
+            ? `${previewWidth}px · ${activeBreakpoint}`
+            : `${screen.width}×${screen.height}`}
         </span>
       </button>
 
       {/* Artboard */}
       <div
         className={cn(
-          "relative overflow-hidden rounded-xl bg-white ring-1 transition-shadow dark:bg-card",
+          "relative overflow-hidden rounded-xl bg-white ring-1 transition-[width,box-shadow] duration-200 dark:bg-card",
           active ? "ring-primary/30 shadow-soft-lg" : "ring-border shadow-soft"
         )}
-        style={{ width: screen.width, height: screen.height }}
+        style={{ width: previewWidth, height: screen.height }}
         onClick={() => setSelected(null)}
       >
         <div
