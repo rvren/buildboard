@@ -58,6 +58,7 @@ import { ShortcutsDialog } from "./ShortcutsDialog";
 import { FindReplaceDialog } from "./FindReplaceDialog";
 import { QuickInsertDialog } from "./QuickInsertDialog";
 import { ResponsivePreviewDialog } from "./ResponsivePreviewDialog";
+import { FocusOrderDialog } from "./FocusOrderDialog";
 import { GettingStarted } from "./onboarding/GettingStarted";
 import { NavRail } from "./NavRail";
 import { ensureFontLoaded } from "@/lib/designSystem";
@@ -310,6 +311,7 @@ export default function EditorPage() {
       <FindReplaceDialog />
       <QuickInsertDialog />
       <ResponsivePreviewDialog />
+      <FocusOrderDialog />
 
       <DragOverlay dropAnimation={null}>
         {activeLabel ? (

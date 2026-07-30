@@ -17,6 +17,7 @@ import {
   Home,
   SunMoon,
   Replace,
+  MousePointer2,
 } from "lucide-react";
 import { useTheme } from "@/store/theme";
 import type { NodeType, Project } from "@/types";
@@ -141,6 +142,13 @@ export function CommandPalette({ project }: { project: Project }) {
         icon: Keyboard,
         keywords: "shortcuts keys help cheatsheet",
         run: () => s.setShortcutsOpen(true),
+      },
+      {
+        id: "focus-order",
+        label: "Show focus order (a11y)",
+        icon: MousePointer2,
+        keywords: "focus tab order accessibility a11y keyboard",
+        run: () => s.setFocusOrderOpen(true),
       },
       {
         id: "find-replace",

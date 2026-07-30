@@ -142,6 +142,8 @@ interface EditorState {
   setQuickInsertOpen: (v: boolean) => void;
   responsivePreviewOpen: boolean;
   setResponsivePreviewOpen: (v: boolean) => void;
+  focusOrderOpen: boolean;
+  setFocusOrderOpen: (v: boolean) => void;
   countTextMatches: (find: string, caseSensitive: boolean) => number;
   replaceTextEverywhere: (
     find: string,
@@ -527,6 +529,8 @@ export const useEditor = create<EditorState>()(
       setQuickInsertOpen: (v) => set({ quickInsertOpen: v }),
       responsivePreviewOpen: false,
       setResponsivePreviewOpen: (v) => set({ responsivePreviewOpen: v }),
+      focusOrderOpen: false,
+      setFocusOrderOpen: (v) => set({ focusOrderOpen: v }),
 
       countTextMatches: (find, caseSensitive) => {
         const project = get().currentProject();

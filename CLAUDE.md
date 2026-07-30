@@ -156,7 +156,7 @@ design system, and higher-fidelity code export.
 - [x] **B5-7** — Duplicate project from the dashboard (deep-clone with instance/def id remap) — already shipped (store `duplicateProject` + ProjectCard menu); verified
 - [x] **B5-8** — Side-by-side responsive preview: the active screen at sm/md/lg at once (breakpoint-aware StaticNode) → `v0.1.52`
 - [x] **B5-9** — Auto-snapshot ("Before restore") the live project before every restore, so a restore is itself undoable → `v0.1.46` _(interval snapshots deferred)_
-- [ ] **B5-10** — Tab-order / focus-order overlay on the canvas (accessibility)
+- [x] **B5-10** — Reshaped: focus-order (tab order) list for the current screen — numbered, click-to-select → `v0.1.53` _(canvas overlay → list to avoid pan/zoom positioning fragility)_
 
 ## Process architecture
 
