@@ -1,0 +1,172 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Clean neutral (Supabase-like) — indigo kept as an accent only */
+    --background: 220 20% 98.5%;
+    --foreground: 224 14% 14%;
+    --card: 0 0% 100%;
+    --card-foreground: 224 14% 14%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 14% 14%;
+    --primary: 156 100% 27%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 224 14% 22%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+    --accent: 220 14% 95%;
+    --accent-foreground: 224 14% 20%;
+    --destructive: 352 78% 56%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 158 64% 42%;
+    --warning: 32 90% 52%;
+    --border: 220 13% 91%;
+    --input: 220 13% 90%;
+    --ring: 156 100% 27%;
+    --radius: 0.5rem;
+    --shadow-color: 220 24% 28%;
+    /* brand gradient endpoints (primary CTAs / accents only) — TechCrunch green (deep) */
+    --brand-from: 156 100% 27%;
+    --brand-to: 160 88% 34%;
+  }
+
+  .dark {
+    /* Clean neutral charcoal (not indigo-tinted) */
+    --background: 220 8% 9%;
+    --foreground: 220 14% 93%;
+    --card: 220 7% 12%;
+    --card-foreground: 220 14% 93%;
+    --popover: 220 7% 13%;
+    --popover-foreground: 220 14% 93%;
+    --primary: 156 62% 48%;
+    --primary-foreground: 240 30% 10%;
+    --secondary: 220 6% 17%;
+    --secondary-foreground: 220 14% 93%;
+    --muted: 220 6% 16%;
+    --muted-foreground: 220 8% 60%;
+    --accent: 220 6% 18%;
+    --accent-foreground: 220 14% 90%;
+    --destructive: 352 74% 62%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 158 60% 52%;
+    --warning: 32 92% 62%;
+    --border: 220 6% 20%;
+    --input: 220 6% 22%;
+    --ring: 156 62% 48%;
+    --shadow-color: 220 40% 2%;
+    /* TechCrunch green (deep) */
+    --brand-from: 156 66% 40%;
+    --brand-to: 160 70% 48%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    letter-spacing: -0.006em;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    letter-spacing: -0.02em;
+  }
+}
+
+/* Canvas dotted grid background */
+.canvas-grid {
+  background-image: radial-gradient(
+    hsl(var(--muted-foreground) / 0.12) 1px,
+    transparent 1px
+  );
+}
+
+/* Brand gradient language ------------------------------------------------ */
+.bg-brand {
+  background-image: linear-gradient(
+    135deg,
+    hsl(var(--brand-from)),
+    hsl(var(--brand-to))
+  );
+}
+.bg-brand-soft {
+  background-image: linear-gradient(
+    135deg,
+    hsl(var(--brand-from) / 0.12),
+    hsl(var(--brand-to) / 0.12)
+  );
+}
+.text-brand {
+  background-image: linear-gradient(
+    135deg,
+    hsl(var(--brand-from)),
+    hsl(var(--brand-to))
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.border-brand {
+  border-color: hsl(var(--brand-from) / 0.35);
+}
+
+/* Flat, subtle neutral elevation (Supabase-calm) */
+.shadow-soft {
+  box-shadow:
+    0 1px 2px hsl(var(--shadow-color) / 0.04),
+    0 1px 3px hsl(var(--shadow-color) / 0.06);
+}
+.shadow-soft-lg {
+  box-shadow:
+    0 1px 2px hsl(var(--shadow-color) / 0.05),
+    0 6px 20px -8px hsl(var(--shadow-color) / 0.12);
+}
+
+/* "glow" is now a subtle neutral shadow (kept as a class for back-compat) */
+.glow {
+  box-shadow:
+    0 1px 2px hsl(var(--shadow-color) / 0.05),
+    0 2px 8px -3px hsl(var(--shadow-color) / 0.1);
+}
+.glow-lg {
+  box-shadow:
+    0 1px 3px hsl(var(--shadow-color) / 0.06),
+    0 10px 28px -10px hsl(var(--shadow-color) / 0.14);
+}
+
+/* Flat app background (was a brand gradient wash — now clean/neutral) */
+.app-wash {
+  background-image: none;
+}
+
+.surface-wash {
+  background-image: none;
+}
+
+/* Thin scrollbars */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 9999px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::selection {
+  background: hsl(var(--primary) / 0.2);
+}
