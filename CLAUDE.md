@@ -130,6 +130,20 @@ design system, and higher-fidelity code export.
 - [x] **B3-9** — Reshaped: keyboard reorder of the selected node among siblings (⌘↑/⌘↓) → `v0.1.34` _(pixel snapping/smart-guides N/A: flow layout + auto-positioned artboards, not free positioning)_
 - [x] **B3-10** — Per-project favicon + theme-color (Overview settings; new v6 `projects.meta` column) → exported PWA manifest + Next `<head>` metadata → `v0.1.35`
 
+### Next batch — Batch 4 (refill; Batch 3 = 10/10 → 75% refill fired)
+> Curated de-duped against everything shipped, balanced across themes and anchored to the vision
+> (designers → apps/websites → real, accessible code). Completes selection/design-system/export threads.
+- [ ] **B4-1** — Bulk move/nest for the multi-selection (drag several nodes into a container at once)
+- [ ] **B4-2** — Per-node ARIA authoring (aria-label / role) surfaced in Properties + exported (a11y)
+- [ ] **B4-3** — Component content slots → real typed React props on exported component files (design system → real code)
+- [ ] **B4-4** — One-click Vite + React Router SPA scaffold export (complements the Next.js export)
+- [ ] **B4-5** — Spacing & typography scale tokens in the design system (beyond color)
+- [ ] **B4-6** — Left "Pages" panel: screen thumbnails + reorder + rename (navigation)
+- [ ] **B4-7** — Global find & replace of text content across all screens (authoring)
+- [ ] **B4-8** — Quick-insert palette (⌘/): add a node by name at the current selection (canvas UX)
+- [ ] **B4-9** — DB version snapshots: restorable per-project timeline (data ownership)
+- [ ] **B4-10** — Node alignment / justify quick controls in the Properties panel (canvas UX)
+
 ## Process architecture
 
 - **src/main/** (Node, privileged): app lifecycle + SQLite. `index.ts` (window, load renderer),
