@@ -118,7 +118,74 @@ function ScreensCanvas({ project }: { project: Project }) {
     setPanning(false);
   };
 
-  const resetView = () => setViewport({ x: 80, y: 80, zoom: 0.85 });
+  // Fit all screens into the viewport (bounding box + padding, centered).
+  const fitView = React.useCallback(() => {
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect || project.screens.length === 0) return;
+    let minX = Infinity,
+      minY = Infinity,
+      maxX = -Infinity,
+      maxY = -Infinity;
+    for (const s of project.screens) {
+      minX = Math.min(minX, s.x);
+      minY = Math.min(minY, s.y);
+      maxX = Math.max(maxX, s.x + s.width);
+      maxY = Math.max(maxY, s.y + s.height);
+    }
+    const pad = 96;
+    const bw = Math.max(maxX - minX, 1);
+    const bh = Math.max(maxY - minY, 1);
+    const zoom = clamp(
+      Math.min((rect.width - pad * 2) / bw, (rect.height - pad * 2) / bh),
+      MIN_ZOOM,
+      MAX_ZOOM
+    );
+    setViewport({
+      zoom,
+      x: (rect.width - bw * zoom) / 2 - minX * zoom,
+      y: (rect.height - bh * zoom) / 2 - minY * zoom,
+    });
+  }, [project.screens, setViewport]);
+
+  const zoomToPercent = (target: number) => {
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const px = rect.width / 2;
+    const py = rect.height / 2;
+    const next = clamp(target, MIN_ZOOM, MAX_ZOOM);
+    const wx = (px - viewport.x) / viewport.zoom;
+    const wy = (py - viewport.y) / viewport.zoom;
+    setViewport({ zoom: next, x: px - wx * next, y: py - wy * next });
+  };
+
+  // Frame the screens on first entry (only when the viewport is untouched, so a
+  // user's pan/zoom is never overridden when they come back).
+  const didFit = React.useRef(false);
+  React.useEffect(() => {
+    if (didFit.current) return;
+    didFit.current = true;
+    if (viewport.x === 0 && viewport.y === 0 && viewport.zoom === 1) fitView();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ⌘0 fit · ⌘= zoom in · ⌘- zoom out.
+  React.useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.metaKey || e.ctrlKey) || isTypingTarget(e.target)) return;
+      if (e.key === "0") {
+        e.preventDefault();
+        fitView();
+      } else if (e.key === "=" || e.key === "+") {
+        e.preventDefault();
+        zoomAtCenter(containerRef, viewport, setViewport, 1.1);
+      } else if (e.key === "-") {
+        e.preventDefault();
+        zoomAtCenter(containerRef, viewport, setViewport, 0.9);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [viewport, fitView, setViewport]);
 
   return (
     <div className="relative h-full w-full overflow-hidden bg-background">
@@ -158,9 +225,13 @@ function ScreensCanvas({ project }: { project: Project }) {
         >
           <Minus className="h-4 w-4" />
         </Button>
-        <span className="w-12 text-center text-xs tabular-nums text-muted-foreground">
+        <button
+          className="w-12 rounded text-center text-xs tabular-nums text-muted-foreground transition-colors hover:text-foreground"
+          onClick={() => zoomToPercent(1)}
+          title="Reset to 100%"
+        >
           {Math.round(viewport.zoom * 100)}%
-        </span>
+        </button>
         <Button
           variant="ghost"
           size="icon"
@@ -174,8 +245,8 @@ function ScreensCanvas({ project }: { project: Project }) {
           variant="ghost"
           size="icon"
           className="h-7 w-7"
-          onClick={resetView}
-          title="Reset view"
+          onClick={fitView}
+          title="Fit to screen (⌘0)"
         >
           <Maximize className="h-4 w-4" />
         </Button>

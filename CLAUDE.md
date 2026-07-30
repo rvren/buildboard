@@ -78,7 +78,7 @@ patch version in `package.json`, and commit.
 batch to this list — curated from the `ROADMAP.md` backlog, de-duped against everything already
 shipped — and tell the maintainer the queue was refilled.
 
-### Current batch — Batch 1 · shipped 7 / 11 (64%)
+### Current batch — Batch 1 · shipped 8 / 11 (73%)
 Curated for the designer → real-code job (apps **and** websites): richer canvas design, a stronger
 design system, and higher-fidelity code export.
 - [x] **0** — Desktop conversion (Electron + normalized SQLite) → `v0.1.0`
@@ -91,10 +91,13 @@ design system, and higher-fidelity code export.
 - [x] **5** — Design tokens import / export (JSON round-trip + copy CSS variables) → `v0.1.5`
 - [x] **6** — Per-page metadata (title/path/description) → exported `export const metadata` → `v0.1.6`
       _(cross-page links already exist via the Button navigate action; a dedicated nav component stays in the backlog)_
-- [ ] **7** — Canvas precision: multi-select, align / distribute, snapping & smart guides
-- [ ] **8** — Production export: multi-file project, per-component files, copy JSX, Tailwind config from tokens
-- [ ] **9** — Image & asset handling (import SVG/PNG, bundle on export)
-- [ ] **10** — Component usage insights ("N instances across M screens")
+      Canvas UX is the app's core; the maintainer flagged all four areas below as unintuitive, so the
+      rest of Batch 1 focuses there (export-polish · assets · usage-insights moved to the backlog).
+- [x] **7** — Canvas navigation: real fit-to-screen + auto-fit on entry, click-% → 100%, ⌘0/⌘=/⌘- shortcuts → `v0.1.7`
+      _(space-drag pan + wheel zoom-to-cursor already existed)_
+- [ ] **8** — Getting started: guided empty state, starter layouts, clearer drag-to-add hints
+- [ ] **9** — Adding & placing: live drop indicators / insertion lines when dropping in & reordering
+- [ ] **10** — Select · move · nest: multi-select, clearer drop zones, snapping & smart guides
 
 ## Process architecture
 
