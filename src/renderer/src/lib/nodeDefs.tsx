@@ -141,7 +141,13 @@ export const nodeDefs: Record<NodeType, NodeDef> = {
     render: ({ node, className, rootProps }) => {
       const Tag = `h${node.props.level ?? 2}` as any;
       return (
-        <Tag className={cn("tracking-tight", className)} {...rootProps}>
+        <Tag
+          className={cn(
+            "tracking-tight font-[family-name:var(--font-heading)]",
+            className
+          )}
+          {...rootProps}
+        >
           {node.props.content}
         </Tag>
       );
@@ -150,7 +156,7 @@ export const nodeDefs: Record<NodeType, NodeDef> = {
       tag: `h${node.props.level ?? 2}`,
       imports: [],
       attrs: [],
-      extraClass: "tracking-tight",
+      extraClass: "tracking-tight font-[family-name:var(--font-heading)]",
       text: node.props.content,
     }),
   },

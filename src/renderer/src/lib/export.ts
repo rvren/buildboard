@@ -13,6 +13,13 @@ function paletteVarBlock(palette: ThemePalette, radius: number): string {
   return lines.join("\n");
 }
 
+/** The `--font-heading` custom property line for an exported `:root` block. */
+function headingFontVar(project: Project): string {
+  const t = project.designSystem?.tokens;
+  const fam = t?.headingFont || t?.font || "Inter";
+  return `  --font-heading: "${fam}", ui-sans-serif, system-ui, sans-serif;`;
+}
+
 function pascalCase(input: string): string {
   const cleaned = input.replace(/[^a-zA-Z0-9]+/g, " ").trim();
   const pascal = cleaned
@@ -72,7 +79,7 @@ export async function exportProjectZip(project: Project) {
   if (t) {
     folder.file(
       "design-tokens.css",
-      `:root {\n${paletteVarBlock(t.light, t.radius)}\n}\n\n` +
+      `:root {\n${paletteVarBlock(t.light, t.radius)}\n${headingFontVar(project)}\n}\n\n` +
         `.dark {\n${paletteVarBlock(t.dark, t.radius)}\n}\n\n` +
         `.bg-brand { background-image: linear-gradient(135deg, hsl(var(--brand-from)), hsl(var(--brand-to))); }\n`
     );
@@ -153,7 +160,7 @@ export async function exportNextProjectZip(project: Project) {
   if (t) {
     app.file(
       "design-tokens.css",
-      `:root {\n${paletteVarBlock(t.light, t.radius)}\n}\n\n` +
+      `:root {\n${paletteVarBlock(t.light, t.radius)}\n${headingFontVar(project)}\n}\n\n` +
         `.dark {\n${paletteVarBlock(t.dark, t.radius)}\n}\n\n` +
         `.bg-brand { background-image: linear-gradient(135deg, hsl(var(--brand-from)), hsl(var(--brand-to))); }\n`
     );
@@ -293,7 +300,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   src.file(
     "index.css",
     (t
-      ? `:root {\n${paletteVarBlock(t.light, t.radius)}\n}\n\n.dark {\n${paletteVarBlock(t.dark, t.radius)}\n}\n\n` +
+      ? `:root {\n${paletteVarBlock(t.light, t.radius)}\n${headingFontVar(project)}\n}\n\n.dark {\n${paletteVarBlock(t.dark, t.radius)}\n}\n\n` +
         `.bg-brand { background-image: linear-gradient(135deg, hsl(var(--brand-from)), hsl(var(--brand-to))); }\n\n`
       : "") + `@tailwind base;\n@tailwind components;\n@tailwind utilities;\n`
   );

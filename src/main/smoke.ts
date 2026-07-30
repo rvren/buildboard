@@ -50,7 +50,7 @@ function sampleProject(): Project {
       },
     ],
     designSystem: {
-      tokens: { light: palette("#ffffff"), dark: palette("#111111"), radius: 10, font: "Inter" },
+      tokens: { light: palette("#ffffff"), dark: palette("#111111"), radius: 10, font: "Inter", headingFont: "Playfair Display" },
       presets: [ { id: "pr1", name: "CTA", type: "Button", props: { text: "Buy" }, styles: { bg: "primary" } } ],
       components: [
         {
@@ -108,6 +108,7 @@ export function runSmoke(): void {
     );
     // design system
     assert(p!.designSystem.tokens.radius === 10, "ds radius");
+    assert(p!.designSystem.tokens.headingFont === "Playfair Display", "ds heading font survives");
     assert(p!.designSystem.tokens.light.background === "#ffffff", "light palette");
     assert(p!.designSystem.tokens.dark.background === "#111111", "dark palette");
     assert(p!.designSystem.components[0].root.children[0].type === "Badge", "component def tree");

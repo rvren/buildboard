@@ -38,7 +38,7 @@ export const PALETTE_KEYS = [
   "brandTo",
 ] as const;
 
-const SCHEMA_VERSION = 6;
+const SCHEMA_VERSION = 7;
 
 export function openDb(path: string): Database.Database {
   const db = new DatabaseCtor(path);
@@ -143,7 +143,8 @@ export function ensureSchema(db: Database.Database): void {
     CREATE TABLE IF NOT EXISTS design_system (
       project_id TEXT PRIMARY KEY REFERENCES projects(id) ON DELETE CASCADE,
       radius REAL,
-      font TEXT
+      font TEXT,
+      heading_font TEXT
     );
 
     CREATE TABLE IF NOT EXISTS theme_palettes (
@@ -247,6 +248,13 @@ export function ensureSchema(db: Database.Database): void {
     ).map((c) => c.name);
     if (!projectCols.includes("meta")) {
       db.exec("ALTER TABLE projects ADD COLUMN meta TEXT");
+    }
+    // v7: optional heading (display) font token.
+    const dsCols = (
+      db.prepare("PRAGMA table_info(design_system)").all() as { name: string }[]
+    ).map((c) => c.name);
+    if (!dsCols.includes("heading_font")) {
+      db.exec("ALTER TABLE design_system ADD COLUMN heading_font TEXT");
     }
     db.pragma(`user_version = ${SCHEMA_VERSION}`);
   }

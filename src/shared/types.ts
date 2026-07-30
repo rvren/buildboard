@@ -207,7 +207,8 @@ export interface DesignTokens {
   light: ThemePalette;
   dark: ThemePalette;
   radius: number; // px, shared across themes
-  font: string; // font family name, shared across themes
+  font: string; // body font family name, shared across themes
+  headingFont?: string; // optional display font for headings (falls back to `font`)
 }
 
 export interface ComponentPreset {

@@ -402,7 +402,8 @@ function TokensPanel({ project }: { project: Project }) {
 
   useEffect(() => {
     ensureFontLoaded(tokens.font);
-  }, [tokens.font]);
+    if (tokens.headingFont) ensureFontLoaded(tokens.headingFont);
+  }, [tokens.font, tokens.headingFont]);
 
   return (
     <ScrollArea className="h-full">
@@ -510,6 +511,22 @@ function TokensPanel({ project }: { project: Project }) {
               options={DS_FONTS.map((f) => ({ value: f, label: f }))}
             />
           </div>
+          <div className="grid grid-cols-[88px_1fr] items-center gap-2">
+            <label className="text-[12px] text-muted-foreground">Headings</label>
+            <Dropdown
+              value={tokens.headingFont || tokens.font}
+              onChange={(v) =>
+                updateTokens({ headingFont: v === tokens.font ? undefined : v })
+              }
+              options={[
+                { value: tokens.font, label: `Same as body (${tokens.font})` },
+                ...DS_FONTS.filter((f) => f !== tokens.font).map((f) => ({
+                  value: f,
+                  label: f,
+                })),
+              ]}
+            />
+          </div>
         </div>
 
         <ContrastChecker palette={palette} />
@@ -613,7 +630,8 @@ export function SystemMain({ project }: { project: Project }) {
 
   useEffect(() => {
     ensureFontLoaded(tokens.font);
-  }, [tokens.font]);
+    if (tokens.headingFont) ensureFontLoaded(tokens.headingFont);
+  }, [tokens.font, tokens.headingFont]);
 
   return (
     <ScrollArea className="min-h-0 flex-1 bg-background">

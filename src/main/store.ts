@@ -208,9 +208,9 @@ const saveTx = (db: Database.Database, p: Project) => {
 
   // design system: tokens (design_system row + two palette rows), presets, components
   const ds = p.designSystem;
-  db.prepare(`INSERT INTO design_system(project_id, radius, font) VALUES(?,?,?)`).run(
-    p.id, ds.tokens.radius, ds.tokens.font,
-  );
+  db.prepare(
+    `INSERT INTO design_system(project_id, radius, font, heading_font) VALUES(?,?,?,?)`,
+  ).run(p.id, ds.tokens.radius, ds.tokens.font, ds.tokens.headingFont ?? null);
   (["light", "dark"] as ThemeMode[]).forEach((mode) => {
     const pal = ds.tokens[mode];
     const placeholders = PALETTE_KEYS.map(() => "?").join(", ");
@@ -378,14 +378,17 @@ function loadPalette(db: Database.Database, projectId: string, mode: ThemeMode):
 
 function loadDesignSystem(db: Database.Database, projectId: string): DesignSystem {
   const dsRow = db
-    .prepare("SELECT radius, font FROM design_system WHERE project_id = ?")
-    .get(projectId) as { radius: number; font: string } | undefined;
+    .prepare("SELECT radius, font, heading_font FROM design_system WHERE project_id = ?")
+    .get(projectId) as
+    | { radius: number; font: string; heading_font: string | null }
+    | undefined;
 
   const tokens: DesignTokens = {
     light: loadPalette(db, projectId, "light"),
     dark: loadPalette(db, projectId, "dark"),
     radius: dsRow?.radius ?? 8,
     font: dsRow?.font ?? "Inter",
+    ...(dsRow?.heading_font ? { headingFont: dsRow.heading_font } : {}),
   };
 
   const presets: ComponentPreset[] = (

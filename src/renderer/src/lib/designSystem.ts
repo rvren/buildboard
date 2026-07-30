@@ -111,6 +111,9 @@ export function tokenStyle(
     style[PALETTE_VARS[key]] = hexToHslTriple(palette[key]);
   }
   style["--radius"] = `${tokens.radius}px`;
+  // Heading/display font falls back to the body font when unset — no visual
+  // change until a heading font is chosen. Canvas + export read the same var.
+  style["--font-heading"] = `"${tokens.headingFont || tokens.font}", ui-sans-serif, system-ui, sans-serif`;
   return {
     ...style,
     fontFamily: `"${tokens.font}", ui-sans-serif, system-ui, sans-serif`,
@@ -143,6 +146,7 @@ export function tokensToCss(tokens: DesignTokens): string {
     ":root {",
     block(tokens.light),
     `  --radius: ${tokens.radius}px;`,
+    `  --font-heading: "${tokens.headingFont || tokens.font}", ui-sans-serif, system-ui, sans-serif;`,
     "}",
     "",
     ".dark {",

@@ -137,7 +137,7 @@ design system, and higher-fidelity code export.
 - [x] **B4-2** — Per-node ARIA authoring (aria-label / role) in Properties → exported as aria-label/role attrs → `v0.1.36`
 - [x] **B4-3** — Exported component files take typed React props for their text (default = the design text) → `v0.1.41`
 - [x] **B4-4** — One-click Vite + React Router (SPA) scaffold export: src/pages per screen + App.tsx route table, main.tsx, config → `v0.1.40`
-- [ ] **B4-5** — Spacing & typography scale tokens in the design system (beyond color)
+- [x] **B4-5** — Reshaped: heading (display) font token — separate font for headings, wired canvas + codegen + export (schema v7) → `v0.1.44` _(custom spacing/type scales deferred: would drift canvas vs. export)_
 - [x] **B4-6** — Left "Pages" panel: screen thumbnails + select/rename/reorder/duplicate/delete → `v0.1.43`
 - [x] **B4-7** — Global find & replace of text across all screens + components (case option, live match count) → `v0.1.38`
 - [x] **B4-8** — Quick-insert palette (⌘/): type a node name → inserts at the selection (into container, else parent, else root) → `v0.1.39`
