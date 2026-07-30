@@ -32,17 +32,45 @@ export function AiDialog({
     if (!open) return;
     setPrompt("");
     setKeyInput("");
-    void window.api.aiHasKey().then(setHasKey);
+    setHasKey(null);
+    // Guard against a stale main process (e.g. after an electron-vite dev reload
+    // where the renderer refreshed but main/preload didn't) or any IPC error —
+    // never leave the dialog spinning: fall back to the connect form.
+    if (typeof window.api?.aiHasKey !== "function") {
+      setHasKey(false);
+      toast.error("AI isn't wired up yet — fully quit and relaunch the app.");
+      return;
+    }
+    let cancelled = false;
+    window.api
+      .aiHasKey()
+      .then((v) => {
+        if (!cancelled) setHasKey(v);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setHasKey(false);
+          toast.error("Couldn't reach the key store — try relaunching the app.");
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [open]);
 
   const connect = async () => {
     const k = keyInput.trim();
     if (!k) return;
+    if (typeof window.api?.aiSetKey !== "function") {
+      toast.error("AI isn't wired up yet — fully quit and relaunch the app.");
+      return;
+    }
     setBusy(true);
     try {
       await window.api.aiSetKey(k);
-      setHasKey(await window.api.aiHasKey());
-      if (!(await window.api.aiHasKey())) toast.error("Couldn't store the key.");
+      const ok = await window.api.aiHasKey();
+      setHasKey(ok);
+      if (!ok) toast.error("Couldn't store the key.");
     } catch (e) {
       toast.error((e as Error)?.message ?? "Couldn't store the key.");
     } finally {
@@ -58,6 +86,10 @@ export function AiDialog({
   const generate = async () => {
     const p = prompt.trim();
     if (!p) return;
+    if (typeof window.api?.aiGenerate !== "function") {
+      toast.error("AI isn't wired up yet — fully quit and relaunch the app.");
+      return;
+    }
     setBusy(true);
     try {
       const res = await window.api.aiGenerate(p);
