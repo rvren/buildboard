@@ -57,6 +57,7 @@ import { CommandPalette } from "./CommandPalette";
 import { ShortcutsDialog } from "./ShortcutsDialog";
 import { FindReplaceDialog } from "./FindReplaceDialog";
 import { QuickInsertDialog } from "./QuickInsertDialog";
+import { ResponsivePreviewDialog } from "./ResponsivePreviewDialog";
 import { GettingStarted } from "./onboarding/GettingStarted";
 import { NavRail } from "./NavRail";
 import { ensureFontLoaded } from "@/lib/designSystem";
@@ -308,6 +309,7 @@ export default function EditorPage() {
       <ShortcutsDialog />
       <FindReplaceDialog />
       <QuickInsertDialog />
+      <ResponsivePreviewDialog />
 
       <DragOverlay dropAnimation={null}>
         {activeLabel ? (

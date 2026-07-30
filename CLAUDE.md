@@ -154,7 +154,7 @@ design system, and higher-fidelity code export.
 - [x] **B5-5** — Per-node conditional visibility (`visibleIf` binding, schema v8): hidden in preview + wrapped in `{cond && (…)}` on export → `v0.1.51`
 - [ ] **B5-6** — Canvas rulers + live selection dimensions / spacing readout (canvas UX)
 - [x] **B5-7** — Duplicate project from the dashboard (deep-clone with instance/def id remap) — already shipped (store `duplicateProject` + ProjectCard menu); verified
-- [ ] **B5-8** — Side-by-side multi-breakpoint preview (sm/md/lg at once) (responsive)
+- [x] **B5-8** — Side-by-side responsive preview: the active screen at sm/md/lg at once (breakpoint-aware StaticNode) → `v0.1.52`
 - [x] **B5-9** — Auto-snapshot ("Before restore") the live project before every restore, so a restore is itself undoable → `v0.1.46` _(interval snapshots deferred)_
 - [ ] **B5-10** — Tab-order / focus-order overlay on the canvas (accessibility)
 

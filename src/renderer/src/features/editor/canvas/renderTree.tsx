@@ -1,12 +1,27 @@
 import * as React from "react";
 import type { DesignNode } from "@/types";
 import { defFor } from "@/lib/nodeDefs";
-import { stylesToTailwind, sizeStyle } from "@/lib/styles";
+import {
+  stylesToTailwind,
+  sizeStyle,
+  effectiveTokens,
+  type ActiveBreakpoint,
+} from "@/lib/styles";
 import { cn } from "@/lib/utils";
 import { useComponentDefs, resolveInstance } from "./componentDefs";
 
-/** Pure, non-interactive render of a node subtree (used by thumbnails). */
-export function StaticNode({ node }: { node: DesignNode }) {
+/**
+ * Pure, non-interactive render of a node subtree (thumbnails, static HTML export,
+ * responsive preview). `bp` applies the responsive cascade for that breakpoint —
+ * default "base" (the design styles).
+ */
+export function StaticNode({
+  node,
+  bp = "base",
+}: {
+  node: DesignNode;
+  bp?: ActiveBreakpoint;
+}) {
   const defs = useComponentDefs();
 
   // Instances render through their design-system definition.
@@ -18,21 +33,22 @@ export function StaticNode({ node }: { node: DesignNode }) {
           missing component
         </span>
       );
-    return <StaticNode node={resolved} />;
+    return <StaticNode node={resolved} bp={bp} />;
   }
 
   const def = defFor(node.type);
-  const className = cn(stylesToTailwind(node.styles));
+  const eff = effectiveTokens(node, bp);
+  const className = cn(stylesToTailwind(eff));
   const children = node.children
     .filter((c) => !c.hidden)
-    .map((c) => <StaticNode key={c.id} node={c} />);
+    .map((c) => <StaticNode key={c.id} node={c} bp={bp} />);
   return (
     <>
       {def.render({
         node,
         className,
         children,
-        rootProps: { style: sizeStyle(node.styles) },
+        rootProps: { style: sizeStyle(eff) },
       })}
     </>
   );

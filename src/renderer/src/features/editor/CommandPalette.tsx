@@ -150,6 +150,13 @@ export function CommandPalette({ project }: { project: Project }) {
         run: () => s.setFindReplaceOpen(true),
       },
       {
+        id: "responsive-preview",
+        label: "Responsive preview (sm / md / lg)",
+        icon: MonitorSmartphone,
+        keywords: "responsive breakpoint preview mobile tablet desktop",
+        run: () => s.setResponsivePreviewOpen(true),
+      },
+      {
         id: "toggle-theme",
         label: "Toggle light / dark theme",
         icon: SunMoon,
