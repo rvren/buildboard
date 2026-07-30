@@ -126,7 +126,7 @@ design system, and higher-fidelity code export.
 - [x] **B3-5** — Wrap selection in a Container ("Group", ⌘G) → `v0.1.29`
 - [x] **B3-6** — Multi-select on canvas (shift-click) + bulk delete → `v0.1.31` _(bulk move deferred: flow layout has no free positioning)_
 - [x] **B3-7** — Component content slots: override a definition's descendant text (Heading/Button/Link…) per-instance, resolved in renderer + codegen → `v0.1.32`
-- [ ] **B3-8** — One-click Next.js App Router scaffold export (real code)
+- [x] **B3-8** — One-click Next.js (App Router) scaffold export: app/<route>/page.tsx per screen + layout, globals/tokens, components, next/tailwind/tsconfig → `v0.1.33`
 - [ ] **B3-9** — Snapping / smart-guides while dragging on the canvas (canvas UX)
 - [ ] **B3-10** — Per-project favicon + PWA/meta settings, exported (apps/websites)
 

@@ -50,7 +50,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { generatePageCode } from "@/lib/codegen";
-import { downloadText, exportProjectZip } from "@/lib/export";
+import { downloadText, exportProjectZip, exportNextProjectZip } from "@/lib/export";
 import { DataSourcesDialog } from "./data/DataSourcesDialog";
 import { GitHubDialog } from "./publish/GitHubDialog";
 import { AiDialog } from "./ai/AiDialog";
@@ -342,6 +342,15 @@ export function TopBar({ project }: { project: Project }) {
             >
               <Package className="h-4 w-4" />
               Whole project (.zip)
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={async () => {
+                await exportNextProjectZip(project);
+                toast.success("Next.js app exported");
+              }}
+            >
+              <AppWindow className="h-4 w-4" />
+              Next.js app (App Router)
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

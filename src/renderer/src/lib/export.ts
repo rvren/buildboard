@@ -105,6 +105,221 @@ export async function exportProjectZip(project: Project) {
   triggerDownload(`${pascalCase(project.name) || "project"}.zip`, blob);
 }
 
+/** Route segment for a screen: its `path`, else a slug of its name. "/" → index. */
+function routeSegment(name: string, path: string | undefined): string {
+  const raw = (path ?? "").trim().replace(/^\/+|\/+$/g, "");
+  if (raw) return raw.toLowerCase();
+  const slug = name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return slug || "page";
+}
+
+/**
+ * One-click Next.js (App Router) scaffold: `app/<route>/page.tsx` per screen,
+ * a root layout, globals + tokens, components, and the config a real Next app
+ * needs. Each `page.tsx` is the SAME codegen output as the plain export (default
+ * export + metadata), so the App Router picks it up directly.
+ */
+export async function exportNextProjectZip(project: Project) {
+  const zip = new JSZip();
+  const root = zip.folder(pascalCase(project.name) || "project")!;
+  const app = root.folder("app")!;
+
+  // Routes: first screen is the index ("/"); others get their own segment.
+  const usedRoutes = new Set<string>();
+  project.screens.forEach((screen, i) => {
+    const code = generatePageCode(screen, project);
+    if (i === 0) {
+      app.file("page.tsx", code);
+      return;
+    }
+    let seg = routeSegment(screen.name, screen.path);
+    let dedup = seg;
+    let n = 2;
+    while (usedRoutes.has(dedup)) dedup = `${seg}-${n++}`;
+    usedRoutes.add(dedup);
+    app.folder(dedup)!.file("page.tsx", code);
+  });
+
+  app.file("layout.tsx", rootLayout(project));
+  app.file(
+    "globals.css",
+    `@import "./design-tokens.css";\n\n@tailwind base;\n@tailwind components;\n@tailwind utilities;\n`
+  );
+
+  const t = project.designSystem?.tokens;
+  if (t) {
+    app.file(
+      "design-tokens.css",
+      `:root {\n${paletteVarBlock(t.light, t.radius)}\n}\n\n` +
+        `.dark {\n${paletteVarBlock(t.dark, t.radius)}\n}\n\n` +
+        `.bg-brand { background-image: linear-gradient(135deg, hsl(var(--brand-from)), hsl(var(--brand-to))); }\n`
+    );
+  }
+
+  const comps = project.designSystem?.components ?? [];
+  if (comps.length) {
+    const cf = root.folder("components")!;
+    const cseen = new Map<string, number>();
+    for (const def of comps) {
+      let name = pascalCase(def.name) || "Component";
+      const k = cseen.get(name) ?? 0;
+      cseen.set(name, k + 1);
+      if (k > 0) name = `${name}${k + 1}`;
+      cf.file(`${name}.tsx`, generateComponentCode(def.root, project));
+    }
+  }
+
+  root.file("package.json", nextPackageJson(project.name));
+  root.file("next.config.mjs", `/** @type {import('next').NextConfig} */\nconst nextConfig = {};\nexport default nextConfig;\n`);
+  root.file(
+    "postcss.config.js",
+    `module.exports = { plugins: { tailwindcss: {}, autoprefixer: {} } };\n`
+  );
+  root.file("tailwind.config.ts", nextTailwindConfig());
+  root.file("tsconfig.json", nextTsconfig());
+  root.file(
+    "README.md",
+    `# ${project.name}\n\nExported from BuildBoard as a Next.js (App Router) app.\n\n` +
+      "```bash\nnpm install\nnpm run dev\n```\n\n" +
+      `Routes live under \`app/\`. Components reference shadcn/ui primitives — run ` +
+      `\`npx shadcn@latest init\` and add the referenced primitives (button, input, …) ` +
+      `to compile. The design system is in \`app/design-tokens.css\`.\n`
+  );
+
+  const blob = await zip.generateAsync({ type: "blob" });
+  triggerDownload(`${pascalCase(project.name) || "project"}-next.zip`, blob);
+}
+
+function rootLayout(project: Project): string {
+  const title = JSON.stringify(project.name);
+  const desc = JSON.stringify(
+    project.description?.trim() || `${project.name} — built with BuildBoard`
+  );
+  return `import "./globals.css";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: ${title},
+  description: ${desc},
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body>{children}</body>
+    </html>
+  );
+}
+`;
+}
+
+function nextPackageJson(name: string): string {
+  return (
+    JSON.stringify(
+      {
+        name: (pascalCase(name) || "project").toLowerCase(),
+        private: true,
+        scripts: {
+          dev: "next dev",
+          build: "next build",
+          start: "next start",
+        },
+        dependencies: {
+          next: "^14.2.0",
+          react: "^18.3.1",
+          "react-dom": "^18.3.1",
+        },
+        devDependencies: {
+          "@types/node": "^20",
+          "@types/react": "^18",
+          "@types/react-dom": "^18",
+          autoprefixer: "^10.4.0",
+          postcss: "^8.4.0",
+          tailwindcss: "^3.4.0",
+          typescript: "^5.4.0",
+        },
+      },
+      null,
+      2
+    ) + "\n"
+  );
+}
+
+function nextTailwindConfig(): string {
+  const c = (name: string) =>
+    `${name}: { DEFAULT: "hsl(var(--${name}))", foreground: "hsl(var(--${name}-foreground))" }`;
+  return `import type { Config } from "tailwindcss";
+
+const config: Config = {
+  darkMode: ["class"],
+  content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
+  theme: {
+    extend: {
+      colors: {
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        ${c("card")},
+        ${c("popover")},
+        ${c("primary")},
+        ${c("secondary")},
+        ${c("muted")},
+        ${c("accent")},
+        ${c("destructive")},
+      },
+      borderRadius: {
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
+      },
+    },
+  },
+  plugins: [],
+};
+
+export default config;
+`;
+}
+
+function nextTsconfig(): string {
+  return (
+    JSON.stringify(
+      {
+        compilerOptions: {
+          target: "ES2017",
+          lib: ["dom", "dom.iterable", "esnext"],
+          allowJs: true,
+          skipLibCheck: true,
+          strict: true,
+          noEmit: true,
+          esModuleInterop: true,
+          module: "esnext",
+          moduleResolution: "bundler",
+          resolveJsonModule: true,
+          isolatedModules: true,
+          jsx: "preserve",
+          incremental: true,
+          plugins: [{ name: "next" }],
+          paths: { "@/*": ["./*"] },
+        },
+        include: ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+        exclude: ["node_modules"],
+      },
+      null,
+      2
+    ) + "\n"
+  );
+}
+
 /** shadcn-style Tailwind config wired to the exported `design-tokens.css` vars. */
 function tailwindConfig(): string {
   const c = (name: string) =>
