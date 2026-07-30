@@ -158,6 +158,20 @@ design system, and higher-fidelity code export.
 - [x] **B5-9** — Auto-snapshot ("Before restore") the live project before every restore, so a restore is itself undoable → `v0.1.46` _(interval snapshots deferred)_
 - [x] **B5-10** — Reshaped: focus-order (tab order) list for the current screen — numbered, click-to-select → `v0.1.53` _(canvas overlay → list to avoid pan/zoom positioning fragility)_
 
+### Next batch — Batch 6 (refill; Batch 5 = 10/10 → 75% refill fired)
+> Curated de-duped against everything shipped, balanced across themes and anchored to the vision
+> (designers → apps/websites → real, accessible code). New node types + interactions + portability.
+- [ ] **B6-1** — Project export / import as a single `.json` file (full-project round-trip) (data ownership)
+- [ ] **B6-2** — Table node bound to array data → real `<table>` rows on export (dynamic apps)
+- [ ] **B6-3** — Per-node hover style variant → exported `hover:` Tailwind classes (design → real code)
+- [ ] **B6-4** — Canvas minimap for quick navigation of a busy board (canvas UX)
+- [ ] **B6-5** — Breakpoint-specific visibility (show/hide per sm/md/lg) → responsive `hidden`/`block` (responsive)
+- [ ] **B6-6** — Mock-data generator from a data source's schema, for previewing without a live API (dynamic)
+- [ ] **B6-7** — Node lock (prevent select/move/edit) with a Layers-panel toggle (authoring)
+- [ ] **B6-8** — Animation / transition presets (fade / slide / scale) on nodes, exported as CSS classes (real code)
+- [ ] **B6-9** — Color-blindness simulation preview overlay (accessibility)
+- [ ] **B6-10** — Keyboard canvas navigation: arrow keys select parent / child / sibling (canvas UX + a11y)
+
 ## Process architecture
 
 - **src/main/** (Node, privileged): app lifecycle + SQLite. `index.ts` (window, load renderer),
