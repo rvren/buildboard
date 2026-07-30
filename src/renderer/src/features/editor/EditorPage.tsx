@@ -52,6 +52,7 @@ import { OverviewView } from "./overview/OverviewView";
 import { SystemLeft, SystemMain } from "./system/SystemView";
 import { ArchLeft, ArchMain } from "./architecture/ArchitectureView";
 import { CommandPalette } from "./CommandPalette";
+import { ShortcutsDialog } from "./ShortcutsDialog";
 import { GettingStarted } from "./onboarding/GettingStarted";
 import { NavRail } from "./NavRail";
 import { ensureFontLoaded } from "@/lib/designSystem";
@@ -287,6 +288,7 @@ export default function EditorPage() {
       </DragStateContext.Provider>
 
       <CommandPalette project={project} />
+      <ShortcutsDialog />
 
       <DragOverlay dropAnimation={null}>
         {activeLabel ? (
@@ -501,6 +503,12 @@ function useKeyboardShortcuts() {
       )
         return;
       const store = useEditor.getState();
+      // Keyboard-shortcuts cheatsheet: "?" (Shift+/) toggles it.
+      if (e.key === "?" && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        e.preventDefault();
+        store.setShortcutsOpen(!store.shortcutsOpen);
+        return;
+      }
       // Undo / redo (no node selection required).
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z") {
         e.preventDefault();

@@ -112,6 +112,8 @@ interface EditorState {
   setDataDialogOpen: (v: boolean) => void;
   commandOpen: boolean;
   setCommandOpen: (v: boolean) => void;
+  shortcutsOpen: boolean;
+  setShortcutsOpen: (v: boolean) => void;
   githubDialogOpen: boolean;
   setGithubDialogOpen: (v: boolean) => void;
 
@@ -370,6 +372,8 @@ export const useEditor = create<EditorState>()(
       setDataDialogOpen: (v) => set({ dataDialogOpen: v }),
       commandOpen: false,
       setCommandOpen: (v) => set({ commandOpen: v }),
+      shortcutsOpen: false,
+      setShortcutsOpen: (v) => set({ shortcutsOpen: v }),
       githubDialogOpen: false,
       setGithubDialogOpen: (v) => set({ githubDialogOpen: v }),
 

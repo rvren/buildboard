@@ -11,7 +11,13 @@ import {
   FileText,
   Search,
   CornerDownLeft,
+  Keyboard,
+  Component,
+  Network,
+  Home,
+  SunMoon,
 } from "lucide-react";
+import { useTheme } from "@/store/theme";
 import type { NodeType, Project } from "@/types";
 import {
   Dialog,
@@ -96,6 +102,54 @@ export function CommandPalette({ project }: { project: Project }) {
         icon: Workflow,
         keywords: "flow map workflow",
         run: () => s.setEditorView("flow"),
+      },
+      {
+        id: "view-overview",
+        label: "Switch to Overview",
+        icon: Home,
+        keywords: "overview home summary",
+        run: () => s.setEditorView("overview"),
+      },
+      {
+        id: "view-system",
+        label: "Switch to Design System",
+        icon: Component,
+        keywords: "design system tokens components palette",
+        run: () => s.setEditorView("system"),
+      },
+      {
+        id: "view-architecture",
+        label: "Switch to Architecture",
+        icon: Network,
+        keywords: "architecture services diagram mermaid",
+        run: () => s.setEditorView("architecture"),
+      },
+      {
+        id: "add-screen",
+        label: "Add screen",
+        icon: Plus,
+        keywords: "new screen page add create",
+        run: () => {
+          s.setEditorView("design");
+          s.addScreen();
+        },
+      },
+      {
+        id: "shortcuts",
+        label: "Show keyboard shortcuts",
+        icon: Keyboard,
+        keywords: "shortcuts keys help cheatsheet",
+        run: () => s.setShortcutsOpen(true),
+      },
+      {
+        id: "toggle-theme",
+        label: "Toggle light / dark theme",
+        icon: SunMoon,
+        keywords: "theme dark light mode appearance",
+        run: () => {
+          const t = useTheme.getState();
+          t.setTheme(t.theme === "dark" ? "light" : "dark");
+        },
       },
       {
         id: "data",
