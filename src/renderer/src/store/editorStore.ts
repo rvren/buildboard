@@ -39,6 +39,7 @@ import {
   updateNodeById,
 } from "@/lib/tree";
 import { defFor } from "@/lib/nodeDefs";
+import { persistence } from "@/lib/persistence";
 
 export type EditorView =
   | "overview"
@@ -1302,7 +1303,7 @@ let _saveTimer: ReturnType<typeof setTimeout> | null = null;
 
 function _flush() {
   _saveTimer = null;
-  for (const p of _pending.values()) void window.api.saveProject(p);
+  for (const p of _pending.values()) void persistence.saveProject(p);
   _pending.clear();
 }
 
@@ -1341,7 +1342,7 @@ function historyRedo() {
 export async function initEditorStore(): Promise<void> {
   _hydrating = true;
   try {
-    const loaded = (await window.api.listProjects()).map(hydrateProject);
+    const loaded = (await persistence.listProjects()).map(hydrateProject);
     useEditor.setState({ projects: loaded });
     _prevProjects = useEditor.getState().projects;
   } finally {
@@ -1380,7 +1381,7 @@ useEditor.subscribe((state) => {
 
   const nextIds = new Set(next.map((p) => p.id));
   for (const p of prev) {
-    if (!nextIds.has(p.id)) void window.api.deleteProject(p.id);
+    if (!nextIds.has(p.id)) void persistence.deleteProject(p.id);
   }
   const prevById = new Map(prev.map((p) => [p.id, p] as const));
   for (const p of next) {

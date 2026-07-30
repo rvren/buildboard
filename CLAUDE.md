@@ -155,6 +155,24 @@ stored as **JSON columns** — the correct normalization boundary, not EAV.
 - Bump `SCHEMA_VERSION` in `dbCore.ts` and add `ALTER TABLE`/backfill behind the `user_version` gate
   for future migrations — never rescan on every boot.
 
+## One codebase, two targets (web + desktop)
+
+`src/renderer/src` is the **single** app, built for both:
+- **Desktop** — `electron-vite` bundles it into the Electron shell; persistence goes through
+  `window.api` → SQLite. Build/run: `npm run dev` / `build` / `package`.
+- **Web** — `npm run build:web` (plain Vite, `vite.web.config.ts`, base `/buildboard/app/`, output
+  `dist-web`) builds the **same** renderer for the browser; persistence falls back to `localStorage`.
+  Deployed by `.github/workflows/pages.yml` to `rvren.github.io/buildboard/app/` (the marketing landing
+  stays at `/buildboard/`, static `site/`).
+
+The only thing that differs is persistence: **`lib/persistence.ts`** defines one `Persistence`
+interface with an Electron adapter (`window.api`) and a `localStorage` adapter, chosen at runtime by
+whether `window.api` exists (`isDesktop`). The store (`editorStore.ts` persistence section) and
+`theme.ts` talk only to `persistence.*` — never `window.api` directly — so both targets share every
+feature and never drift. `public/theme-boot.js` is the no-flash theme bootstrap for both (same-origin
+so the strict CSP allows it). Note: the web target has `localStorage`'s ~5 MB limit and no SQL
+migrations (it stores the same `Project` JSON; `normalizeTokens`/`hydrateProject` backfill).
+
 ## Frontend conventions
 
 - **Routing**: `createHashRouter` (works under `file://`) with two routes — dashboard `#/` and editor

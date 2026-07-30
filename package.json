@@ -1,6 +1,6 @@
 {
   "name": "buildboard",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "description": "A local-first, design-to-code studio desktop app.",
   "author": "Renjith Rajendran Viswalekshmi",
   "private": true,
@@ -8,6 +8,8 @@
   "scripts": {
     "dev": "electron-vite dev",
     "build": "electron-vite build",
+    "build:web": "vite build --config vite.web.config.ts",
+    "preview:web": "vite preview --config vite.web.config.ts",
     "preview": "electron-vite preview",
     "start": "electron-vite preview",
     "lint": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",

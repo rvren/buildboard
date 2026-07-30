@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persistence } from "@/lib/persistence";
 
 type Theme = "light" | "dark";
 
@@ -17,7 +18,7 @@ function apply(theme: Theme) {
 // synchronously at boot by the no-flash script in index.html.
 function initialTheme(): Theme {
   try {
-    return window.api.getThemeSync().mode === "dark" ? "dark" : "light";
+    return persistence.getThemeSync().mode === "dark" ? "dark" : "light";
   } catch {
     return "light";
   }
@@ -29,12 +30,12 @@ export const useTheme = create<ThemeState>()((set, get) => ({
     const next = get().theme === "dark" ? "light" : "dark";
     apply(next);
     set({ theme: next });
-    void window.api.setTheme(next);
+    void persistence.setTheme(next);
   },
   setTheme: (t) => {
     apply(t);
     set({ theme: t });
-    void window.api.setTheme(t);
+    void persistence.setTheme(t);
   },
 }));
 
