@@ -112,7 +112,7 @@ design system, and higher-fidelity code export.
 - [x] **B2-5** — Production export: per-component files + Tailwind/globals/package.json scaffold + Copy JSX → `v0.1.17`
 - [x] **B2-6** — Image upload → data URI (PNG/JPG/SVG/WebP/GIF, ≤2 MB) w/ thumbnail; self-contained so it bundles on export → `v0.1.20`
 - [x] **B2-7** — Component usage insights: per-component "N× · M screens" (or "Unused") badge in the components manager → `v0.1.21`
-- [ ] **B2-8** — Color-scale generator + contrast checker for tokens (design system)
+- [x] **B2-8** — WCAG contrast checker in the tokens editor: live AA/AAA grade + ratio per fg/bg token pair (per active mode) → `v0.1.22`
 - [ ] **B2-9** — Keyboard-shortcuts cheatsheet (?) + more command-palette actions (app polish)
 - [ ] **B2-10** — Dashboard project templates / starter projects (getting started)
 

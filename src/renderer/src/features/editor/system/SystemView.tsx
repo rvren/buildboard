@@ -309,6 +309,88 @@ function TokensToolbar({ project }: { project: Project }) {
   );
 }
 
+// ---- WCAG contrast (design-system tokens) --------------------------------
+function hexToRgb(hex: string): [number, number, number] | null {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+  if (!m) return null;
+  const n = parseInt(m[1], 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+function relLuminance([r, g, b]: [number, number, number]): number {
+  const f = (c: number) => {
+    const s = c / 255;
+    return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+  };
+  return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+}
+/** WCAG 2.1 contrast ratio (1–21) between two hex colors, or null if unparseable. */
+function contrastRatio(fg: string, bg: string): number | null {
+  const a = hexToRgb(fg);
+  const b = hexToRgb(bg);
+  if (!a || !b) return null;
+  const la = relLuminance(a);
+  const lb = relLuminance(b);
+  return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+}
+
+const CONTRAST_PAIRS: { label: string; fg: keyof ThemePalette; bg: keyof ThemePalette }[] = [
+  { label: "Body text", fg: "foreground", bg: "background" },
+  { label: "Card", fg: "cardForeground", bg: "card" },
+  { label: "Muted", fg: "mutedForeground", bg: "muted" },
+  { label: "Primary", fg: "primaryForeground", bg: "primary" },
+  { label: "Secondary", fg: "secondaryForeground", bg: "secondary" },
+  { label: "Accent", fg: "accentForeground", bg: "accent" },
+  { label: "Destructive", fg: "destructiveForeground", bg: "destructive" },
+];
+
+/** Reads each fg/bg token pair and flags WCAG AA/AAA (normal-text) contrast. */
+function ContrastChecker({ palette }: { palette: ThemePalette }) {
+  return (
+    <div className="space-y-1.5">
+      <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">
+        Contrast (WCAG · normal text)
+      </p>
+      <div className="space-y-1">
+        {CONTRAST_PAIRS.map((p) => {
+          const ratio = contrastRatio(palette[p.fg], palette[p.bg]);
+          const grade =
+            ratio == null ? "—" : ratio >= 7 ? "AAA" : ratio >= 4.5 ? "AA" : "Fail";
+          const tone =
+            grade === "AAA" || grade === "AA"
+              ? "text-emerald-600 dark:text-emerald-400"
+              : grade === "Fail"
+                ? "text-destructive"
+                : "text-muted-foreground";
+          return (
+            <div
+              key={p.label}
+              className="flex items-center gap-2 rounded-md border border-border/50 px-2 py-1"
+              title={`${p.label}: ${palette[p.fg]} on ${palette[p.bg]}`}
+            >
+              <span
+                className="grid h-5 w-5 shrink-0 place-items-center rounded text-[10px] font-bold"
+                style={{ background: palette[p.bg], color: palette[p.fg] }}
+              >
+                Aa
+              </span>
+              <span className="flex-1 text-[11px] text-muted-foreground">{p.label}</span>
+              <span className="text-[11px] tabular-nums text-muted-foreground">
+                {ratio == null ? "—" : `${ratio.toFixed(2)}:1`}
+              </span>
+              <span className={cn("w-8 text-right text-[10px] font-semibold", tone)}>
+                {grade}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+      <p className="px-0.5 text-[10px] leading-relaxed text-muted-foreground/70">
+        AA needs 4.5:1, AAA needs 7:1 for normal text. Fix "Fail" pairs before export.
+      </p>
+    </div>
+  );
+}
+
 function TokensPanel({ project }: { project: Project }) {
   const tokens = project.designSystem.tokens;
   const updateTokens = useEditor((s) => s.updateTokens);
@@ -401,6 +483,8 @@ function TokensPanel({ project }: { project: Project }) {
             />
           </div>
         </div>
+
+        <ContrastChecker palette={palette} />
 
         {/* live preview of the active mode */}
         <div
