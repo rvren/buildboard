@@ -44,6 +44,32 @@ const SHADOW: Record<string, string> = {
   xl: "shadow-xl",
 };
 
+// Literal opacity classes (Tailwind's fixed scale) so the JIT compiler picks them
+// up — dynamic `opacity-${n}` strings would never be generated. Values snap to 5.
+const OPACITY: Record<number, string> = {
+  0: "opacity-0",
+  5: "opacity-5",
+  10: "opacity-10",
+  15: "opacity-15",
+  20: "opacity-20",
+  25: "opacity-25",
+  30: "opacity-30",
+  35: "opacity-35",
+  40: "opacity-40",
+  45: "opacity-45",
+  50: "opacity-50",
+  55: "opacity-55",
+  60: "opacity-60",
+  65: "opacity-65",
+  70: "opacity-70",
+  75: "opacity-75",
+  80: "opacity-80",
+  85: "opacity-85",
+  90: "opacity-90",
+  95: "opacity-95",
+  100: "opacity-100",
+};
+
 const FONT_SIZE: Record<string, string> = {
   xs: "text-xs",
   sm: "text-sm",
@@ -136,6 +162,10 @@ export function stylesToTailwind(s: StyleTokens): string {
   if (s.border) cls.push("border");
   if (s.radius && RADIUS[s.radius]) cls.push(RADIUS[s.radius]);
   if (s.shadow && SHADOW[s.shadow]) cls.push(SHADOW[s.shadow]);
+  if (s.opacity != null && s.opacity < 100) {
+    const snapped = Math.max(0, Math.min(100, Math.round(s.opacity / 5) * 5));
+    if (OPACITY[snapped]) cls.push(OPACITY[snapped]);
+  }
 
   // Typography
   if (s.fontSize && FONT_SIZE[s.fontSize]) cls.push(FONT_SIZE[s.fontSize]);

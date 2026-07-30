@@ -150,7 +150,7 @@ design system, and higher-fidelity code export.
 - [x] **B5-1** — Icon node: searchable lucide-icon primitive (69 curated icons), rendered on canvas + exported as a real lucide import → `v0.1.47`
 - [x] **B5-2** — Component library export/import as JSON (fresh id remap on import) — share components between projects → `v0.1.49`
 - [x] **B5-3** — Static HTML export: one self-contained .html per screen (rendered from the canvas tree via renderToStaticMarkup) + index → `v0.1.48`
-- [ ] **B5-4** — Elevation / shadow scale tokens in the design system (beyond color/radius)
+- [x] **B5-4** — Reshaped: per-node opacity style (canvas + export, shared class map) → `v0.1.50` _(shadow scale already exists per-node; custom var-based shadow scales deferred — would risk the core style mapping)_
 - [ ] **B5-5** — Per-node conditional visibility bound to data (dynamic apps)
 - [ ] **B5-6** — Canvas rulers + live selection dimensions / spacing readout (canvas UX)
 - [x] **B5-7** — Duplicate project from the dashboard (deep-clone with instance/def id remap) — already shipped (store `duplicateProject` + ProjectCard menu); verified

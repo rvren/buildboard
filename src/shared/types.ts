@@ -43,6 +43,8 @@ export interface StyleTokens {
   radius?: "none" | "sm" | "md" | "lg" | "xl" | "2xl" | "full";
   border?: boolean;
   shadow?: "none" | "sm" | "md" | "lg" | "xl";
+  opacity?: number; // 0-100; snaps to Tailwind's opacity scale on export
+
   // typography
   fontSize?: "xs" | "sm" | "base" | "lg" | "xl" | "2xl" | "3xl" | "4xl";
   fontWeight?: "normal" | "medium" | "semibold" | "bold";

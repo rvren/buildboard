@@ -971,6 +971,22 @@ function AppearanceSection({ node }: { node: DesignNode }) {
           onCheckedChange={(c) => set({ border: c })}
         />
       </Row>
+      <Row label="Opacity">
+        <div className="flex items-center gap-2">
+          <input
+            type="range"
+            min={0}
+            max={100}
+            step={5}
+            value={s.opacity ?? 100}
+            onChange={(e) => set({ opacity: Number(e.target.value) })}
+            className="flex-1 accent-[hsl(var(--primary))]"
+          />
+          <span className="w-8 text-right text-[11px] tabular-nums text-muted-foreground">
+            {s.opacity ?? 100}
+          </span>
+        </div>
+      </Row>
     </Section>
   );
 }
