@@ -28,6 +28,8 @@ const GROUPS: { title: string; items: [string, string][] }[] = [
       [`${MOD} V`, "Paste"],
       [`${MOD} D`, "Duplicate selection"],
       [`${MOD} G`, "Group selection in a Container"],
+      [`${MOD} ↑ / ↓`, "Move node up / down among siblings"],
+      ["Shift-click", "Add to multi-selection"],
       ["Delete", "Delete selection"],
       ["Esc", "Select parent / deselect"],
     ],

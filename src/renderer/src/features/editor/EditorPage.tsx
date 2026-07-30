@@ -552,6 +552,12 @@ function useKeyboardShortcuts() {
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "g") {
         e.preventDefault();
         store.wrapSelection(id);
+      } else if ((e.metaKey || e.ctrlKey) && e.key === "ArrowUp") {
+        e.preventDefault();
+        store.reorderNode(id, -1);
+      } else if ((e.metaKey || e.ctrlKey) && e.key === "ArrowDown") {
+        e.preventDefault();
+        store.reorderNode(id, 1);
       } else if (e.key === "Escape") {
         // Step up the tree: select the parent, or deselect at the root.
         const root = store.currentRoot();
