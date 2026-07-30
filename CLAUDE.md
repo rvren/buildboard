@@ -107,8 +107,8 @@ design system, and higher-fidelity code export.
 - [x] **B2-1** — Layers panel: inline rename (dbl-click) + hide/show toggle (persisted) + reorder → `v0.1.12`
 - [x] **B2-2** — Copy / cut / paste nodes across screens (⌘C/⌘X/⌘V, app clipboard) → `v0.1.13`
 - [x] **B2-3** — Link primitive (<a href>, editable text/href, exported) + Navbar starter uses it → `v0.1.14`
-- [ ] **B2-4** — Device-width artboard presets (mobile/tablet/desktop) + quick resize (websites & pages)
-- [ ] **B2-5** — Production export: multi-file project + per-component files + copy JSX (export/ownership)
+- [x] **B2-4** — Device-width presets → covered by the breakpoint switcher (resizes the active artboard sm/md/lg); per-screen device sizing deferred
+- [x] **B2-5** — Production export: per-component files + Tailwind/globals/package.json scaffold + Copy JSX → `v0.1.17`
 - [ ] **B2-6** — Image & asset handling (import SVG/PNG, bundle on export) (design authoring)
 - [ ] **B2-7** — Component usage insights ("N instances across M screens") (design system)
 - [ ] **B2-8** — Color-scale generator + contrast checker for tokens (design system)

@@ -12,12 +12,14 @@ import {
   Bookmark,
   FileText,
   ChevronRight,
+  Code2,
   Component as ComponentIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { DesignNode, NodeAction, SchemaField, Screen } from "@/types";
 import { ITEM_SOURCE, SCREEN_SOURCE } from "@/types";
 import { defFor } from "@/lib/nodeDefs";
+import { generateComponentCode } from "@/lib/codegen";
 import { effectiveTokens } from "@/lib/styles";
 import { findNode, findParent, findPath, findRepeatAncestor } from "@/lib/tree";
 import { itemFields } from "@/lib/dataSource";
@@ -363,6 +365,8 @@ function NodeHeader({ node }: { node: DesignNode }) {
   const deleteNode = useEditor((s) => s.deleteNode);
   const addPreset = useEditor((s) => s.addPreset);
   const createComponentFromNode = useEditor((s) => s.createComponentFromNode);
+  const project = useEditor((s) => s.currentProject());
+  const screen = useEditor((s) => s.currentScreen());
 
   return (
     <div className="flex items-center gap-2 border-b px-3.5 py-2.5">
@@ -374,6 +378,20 @@ function NodeHeader({ node }: { node: DesignNode }) {
         onChange={(e) => renameNode(node.id, e.target.value)}
         className="min-w-0 flex-1 bg-transparent text-sm font-medium outline-none"
       />
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-7 w-7 text-muted-foreground hover:text-primary"
+        title="Copy JSX"
+        onClick={() => {
+          void navigator.clipboard
+            .writeText(generateComponentCode(node, project, screen?.dataSourceId))
+            .then(() => toast.success("JSX copied"))
+            .catch(() => toast.error("Couldn't copy"));
+        }}
+      >
+        <Code2 className="h-3.5 w-3.5" />
+      </Button>
       {!isRoot && (
         <div className="flex">
           <Button
