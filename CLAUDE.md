@@ -104,7 +104,7 @@ design system, and higher-fidelity code export.
 > ⚠️ **75% refill fired** at Batch 1 = 9/11 (82%). Curated ~10, de-duped against everything shipped,
 > balanced across the themes and anchored to the vision (designers → apps/websites → real code).
 - [x] **B2-1** — Layers panel: inline rename (dbl-click) + hide/show toggle (persisted) + reorder → `v0.1.12`
-- [ ] **B2-2** — Copy / paste / duplicate elements across screens (design authoring)
+- [x] **B2-2** — Copy / cut / paste nodes across screens (⌘C/⌘X/⌘V, app clipboard) → `v0.1.13`
 - [ ] **B2-3** — Nav component + Link primitive for multi-page sites (websites & pages)
 - [ ] **B2-4** — Device-width artboard presets (mobile/tablet/desktop) + quick resize (websites & pages)
 - [ ] **B2-5** — Production export: multi-file project + per-component files + copy JSX (export/ownership)

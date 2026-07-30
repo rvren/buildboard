@@ -66,6 +66,8 @@ export function parseView(v: string | undefined | null): EditorView {
  * calls it so every existing caller updates the route with no code changes.
  * Store code can't use `useNavigate`, hence this small registry.
  */
+/** App-level node clipboard (copy on one screen, paste on another). */
+let _clipboard: DesignNode | null = null;
 let _viewNav: ((view: EditorView) => void) | null = null;
 export function registerViewNavigator(fn: ((view: EditorView) => void) | null) {
   _viewNav = fn;
@@ -149,6 +151,10 @@ interface EditorState {
   duplicateNode: (nodeId: string) => void;
   /** Toggle a node's hidden flag (Layers panel show/hide). */
   toggleNodeHidden: (nodeId: string) => void;
+  /** Copy / cut a node to the app clipboard; paste into the selection or root. */
+  copyNode: (nodeId: string) => void;
+  cutNode: (nodeId: string) => void;
+  pasteNode: () => void;
 
   // ----- bindings & actions
   setNodeBinding: (
@@ -659,6 +665,43 @@ export const useEditor = create<EditorState>()(
             updateNodeById(root, nodeId, (n) => ({ ...n, hidden: !n.hidden }))
           )
         ),
+
+      copyNode: (nodeId) => {
+        const root = get().currentRoot();
+        const n = root ? findNode(root, nodeId) : null;
+        if (n) _clipboard = cloneNodeWithNewIds(n, uid);
+      },
+
+      cutNode: (nodeId) => {
+        get().copyNode(nodeId);
+        get().deleteNode(nodeId);
+      },
+
+      pasteNode: () => {
+        if (!_clipboard) return;
+        const clone = cloneNodeWithNewIds(_clipboard, uid);
+        const st = get();
+        const root = st.currentRoot();
+        if (!root) return;
+        // Target: the selected container, else beside the selection, else the root.
+        let parentId = root.id;
+        let index = -1;
+        const selId = st.selectedNodeId;
+        if (selId && selId !== root.id) {
+          const sel = findNode(root, selId);
+          if (sel && defFor(sel.type).canHaveChildren) {
+            parentId = sel.id;
+          } else if (sel) {
+            const p = findParent(root, selId);
+            if (p) {
+              parentId = p.parent.id;
+              index = p.index + 1;
+            }
+          }
+        }
+        set((s) => withActiveRoot(s, (r) => insertChild(r, parentId, clone, index)));
+        set({ selectedNodeId: clone.id });
+      },
 
       deleteNode: (nodeId) => {
         const root = get().currentRoot();

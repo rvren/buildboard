@@ -508,6 +508,30 @@ function useKeyboardShortcuts() {
         else store.undo();
         return;
       }
+      // Clipboard: copy / cut the selection, paste into the selection or root.
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "v") {
+        e.preventDefault();
+        store.pasteNode();
+        return;
+      }
+      if (
+        (e.metaKey || e.ctrlKey) &&
+        e.key.toLowerCase() === "c" &&
+        store.selectedNodeId
+      ) {
+        e.preventDefault();
+        store.copyNode(store.selectedNodeId);
+        return;
+      }
+      if (
+        (e.metaKey || e.ctrlKey) &&
+        e.key.toLowerCase() === "x" &&
+        store.selectedNodeId
+      ) {
+        e.preventDefault();
+        store.cutNode(store.selectedNodeId);
+        return;
+      }
       const id = store.selectedNodeId;
       if (!id) return;
       if (e.key === "Delete" || e.key === "Backspace") {
