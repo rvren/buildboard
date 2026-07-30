@@ -216,10 +216,23 @@ export default function EditorPage() {
     } else if (data?.kind === "node") {
       const root = store.currentRoot();
       if (!root) return;
-      const loc = findParent(root, data.nodeId);
-      let index = res.index;
-      if (loc && loc.parent.id === res.parentId && loc.index < index) index -= 1;
-      store.moveNode(data.nodeId, res.parentId, index);
+      const selected = store.selectedNodeIds;
+      const bulk =
+        selected.length > 1 && selected.includes(data.nodeId);
+      if (bulk) {
+        // Bulk move/nest: drop every selected node into the target container
+        // (skip the target itself and any node that contains it).
+        for (const id of selected) {
+          if (id === res.parentId) continue;
+          if (isAncestor(root, id, res.parentId)) continue;
+          store.moveNode(id, res.parentId, -1);
+        }
+      } else {
+        const loc = findParent(root, data.nodeId);
+        let index = res.index;
+        if (loc && loc.parent.id === res.parentId && loc.index < index) index -= 1;
+        store.moveNode(data.nodeId, res.parentId, index);
+      }
     } else if (data?.kind === "field") {
       handleFieldDrop(data, overId);
     }
