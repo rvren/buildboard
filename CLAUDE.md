@@ -78,7 +78,7 @@ patch version in `package.json`, and commit.
 batch to this list — curated from the `ROADMAP.md` backlog, de-duped against everything already
 shipped — and tell the maintainer the queue was refilled.
 
-### Current batch — Batch 1 · shipped 10 / 11 (91%)
+### Current batch — Batch 1 · shipped 11 / 11 (100%) 🎉
 Curated for the designer → real-code job (apps **and** websites): richer canvas design, a stronger
 design system, and higher-fidelity code export.
 - [x] **0** — Desktop conversion (Electron + normalized SQLite) → `v0.1.0`
@@ -97,7 +97,8 @@ design system, and higher-fidelity code export.
       _(space-drag pan + wheel zoom-to-cursor already existed)_
 - [x] **8** — Getting started: guided empty-state overlay + 4 one-click starter layouts → `v0.1.8`
 - [x] **9** — Adding & placing: drop-target fill + droppable-zone outlines while dragging, live empty-hint → `v0.1.10`
-- [ ] **10** — Select · move · nest: multi-select, clearer drop zones, snapping & smart guides
+- [x] **10** — Select · move · nest: clickable ancestor breadcrumb + Esc-selects-parent → `v0.1.11`
+      _(multi-select + snapping/smart-guides remain in the backlog)_
 
 ### Next batch — Batch 2 (refill; queued after Batch 1 #9–#10)
 > ⚠️ **75% refill fired** at Batch 1 = 9/11 (82%). Curated ~10, de-duped against everything shipped,

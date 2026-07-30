@@ -11,6 +11,7 @@ import {
   Database,
   Bookmark,
   FileText,
+  ChevronRight,
   Component as ComponentIcon,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -18,7 +19,7 @@ import type { DesignNode, NodeAction, SchemaField, Screen } from "@/types";
 import { ITEM_SOURCE, SCREEN_SOURCE } from "@/types";
 import { defFor } from "@/lib/nodeDefs";
 import { effectiveTokens } from "@/lib/styles";
-import { findNode, findRepeatAncestor } from "@/lib/tree";
+import { findNode, findParent, findPath, findRepeatAncestor } from "@/lib/tree";
 import { itemFields } from "@/lib/dataSource";
 import { useEditor } from "@/store/editorStore";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -61,6 +62,7 @@ export function PropertiesPanel() {
           Component
         </div>
       )}
+      {node && <SelectionBreadcrumb node={node} />}
       <ScrollArea className="flex-1">
         {editingComponentId && <VariantsManager defId={editingComponentId} />}
         {node && (
@@ -246,6 +248,35 @@ function InstanceProps({ node }: { node: DesignNode }) {
           </Section>
         )}
       </ScrollArea>
+    </div>
+  );
+}
+
+/** Clickable ancestor path (Root › Container › Button) for navigating nesting. */
+function SelectionBreadcrumb({ node }: { node: DesignNode }) {
+  const root = useEditor((s) => s.currentRoot());
+  const setSelected = useEditor((s) => s.setSelected);
+  const path = root ? findPath(root, node.id) : null;
+  if (!path || path.length < 2) return null;
+  return (
+    <div className="flex flex-wrap items-center gap-0.5 border-b px-2.5 py-1.5 text-[11px] text-muted-foreground">
+      {path.map((n, i) => {
+        const last = i === path.length - 1;
+        return (
+          <span key={n.id} className="flex items-center gap-0.5">
+            <button
+              onClick={() => setSelected(n.id)}
+              className={
+                "max-w-[92px] truncate rounded px-1 py-0.5 hover:bg-muted hover:text-foreground " +
+                (last ? "font-medium text-foreground" : "")
+              }
+            >
+              {n.name || defFor(n.type).label}
+            </button>
+            {!last && <ChevronRight className="h-3 w-3 shrink-0 opacity-40" />}
+          </span>
+        );
+      })}
     </div>
   );
 }

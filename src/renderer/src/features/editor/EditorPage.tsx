@@ -517,7 +517,10 @@ function useKeyboardShortcuts() {
         e.preventDefault();
         store.duplicateNode(id);
       } else if (e.key === "Escape") {
-        store.setSelected(null);
+        // Step up the tree: select the parent, or deselect at the root.
+        const root = store.currentRoot();
+        const p = root ? findParent(root, id) : null;
+        store.setSelected(p ? p.parent.id : null);
       }
     };
     window.addEventListener("keydown", handler);
