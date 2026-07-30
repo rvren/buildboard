@@ -78,7 +78,7 @@ patch version in `package.json`, and commit.
 batch to this list — curated from the `ROADMAP.md` backlog, de-duped against everything already
 shipped — and tell the maintainer the queue was refilled.
 
-### Current batch — Batch 1 · shipped 8 / 11 (73%)
+### Current batch — Batch 1 · shipped 9 / 11 (82%)
 Curated for the designer → real-code job (apps **and** websites): richer canvas design, a stronger
 design system, and higher-fidelity code export.
 - [x] **0** — Desktop conversion (Electron + normalized SQLite) → `v0.1.0`
@@ -95,9 +95,23 @@ design system, and higher-fidelity code export.
       rest of Batch 1 focuses there (export-polish · assets · usage-insights moved to the backlog).
 - [x] **7** — Canvas navigation: real fit-to-screen + auto-fit on entry, click-% → 100%, ⌘0/⌘=/⌘- shortcuts → `v0.1.7`
       _(space-drag pan + wheel zoom-to-cursor already existed)_
-- [ ] **8** — Getting started: guided empty state, starter layouts, clearer drag-to-add hints
+- [x] **8** — Getting started: guided empty-state overlay + 4 one-click starter layouts → `v0.1.8`
 - [ ] **9** — Adding & placing: live drop indicators / insertion lines when dropping in & reordering
 - [ ] **10** — Select · move · nest: multi-select, clearer drop zones, snapping & smart guides
+
+### Next batch — Batch 2 (refill; queued after Batch 1 #9–#10)
+> ⚠️ **75% refill fired** at Batch 1 = 9/11 (82%). Curated ~10, de-duped against everything shipped,
+> balanced across the themes and anchored to the vision (designers → apps/websites → real code).
+- [ ] **B2-1** — Layers panel: drag-reorder, inline rename, hide / lock (design authoring)
+- [ ] **B2-2** — Copy / paste / duplicate elements across screens (design authoring)
+- [ ] **B2-3** — Nav component + Link primitive for multi-page sites (websites & pages)
+- [ ] **B2-4** — Device-width artboard presets (mobile/tablet/desktop) + quick resize (websites & pages)
+- [ ] **B2-5** — Production export: multi-file project + per-component files + copy JSX (export/ownership)
+- [ ] **B2-6** — Image & asset handling (import SVG/PNG, bundle on export) (design authoring)
+- [ ] **B2-7** — Component usage insights ("N instances across M screens") (design system)
+- [ ] **B2-8** — Color-scale generator + contrast checker for tokens (design system)
+- [ ] **B2-9** — Keyboard-shortcuts cheatsheet (?) + more command-palette actions (app polish)
+- [ ] **B2-10** — Dashboard project templates / starter projects (getting started)
 
 ## Process architecture
 

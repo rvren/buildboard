@@ -138,6 +138,8 @@ interface EditorState {
 
   // ----- nodes
   addNode: (parentId: string, type: NodeType, index?: number) => string | null;
+  /** Append a starter layout's subtree(s) to the active root (fresh ids). */
+  insertStarter: (children: DesignNode[]) => void;
   moveNode: (nodeId: string, newParentId: string, index: number) => void;
   reorderNode: (nodeId: string, direction: -1 | 1) => void;
   updateNodeProps: (nodeId: string, props: Record<string, any>) => void;
@@ -544,6 +546,17 @@ export const useEditor = create<EditorState>()(
             selectedNodeId: null,
           };
         }),
+
+      insertStarter: (children) =>
+        set((s) =>
+          withActiveRoot(s, (root) => ({
+            ...root,
+            children: [
+              ...root.children,
+              ...children.map((c) => cloneNodeWithNewIds(c, uid)),
+            ],
+          }))
+        ),
 
       addNode: (parentId, type, index = -1) => {
         const root = get().currentRoot();
