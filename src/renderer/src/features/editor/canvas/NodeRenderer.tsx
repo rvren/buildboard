@@ -115,7 +115,15 @@ export function NodeRenderer({ node, isRoot = false }: Props) {
       selected &&
       "ring-2 ring-primary ring-offset-1 ring-offset-background",
     !previewMode && !selected && hovered && !isDragging && "ring-1 ring-primary/50",
-    !previewMode && isDropTarget && "ring-2 ring-primary ring-dashed",
+    // During a drag, faintly outline every container that can accept children so
+    // valid drop zones are discoverable; the actual target gets a strong fill.
+    !previewMode &&
+      isDragging &&
+      def.canHaveChildren &&
+      !isDropTarget &&
+      !selfDragging &&
+      "ring-1 ring-primary/20",
+    !previewMode && isDropTarget && "ring-2 ring-primary bg-primary/5",
     selfDragging && "opacity-40"
   );
 
@@ -158,7 +166,9 @@ export function NodeRenderer({ node, isRoot = false }: Props) {
   let children: React.ReactNode = undefined;
   if (def.canHaveChildren) {
     if (node.children.length === 0) {
-      children = previewMode ? undefined : [<EmptyHint key="__hint" />];
+      children = previewMode
+        ? undefined
+        : [<EmptyHint key="__hint" active={isDropTarget} />];
     } else if (previewMode && node.repeat) {
       // In preview, expand the template once per array item.
       const arr = resolveArray(node.repeat, bindCtx);
@@ -181,10 +191,17 @@ export function NodeRenderer({ node, isRoot = false }: Props) {
   );
 }
 
-function EmptyHint() {
+function EmptyHint({ active }: { active?: boolean }) {
   return (
-    <div className="pointer-events-none flex w-full flex-1 items-center justify-center rounded-md border border-dashed border-muted-foreground/30 py-3 text-xs text-muted-foreground/70">
-      Drop components here
+    <div
+      className={cn(
+        "pointer-events-none flex w-full flex-1 items-center justify-center rounded-md border border-dashed py-3 text-xs transition-colors",
+        active
+          ? "border-primary bg-primary/10 font-medium text-primary"
+          : "border-muted-foreground/30 text-muted-foreground/70"
+      )}
+    >
+      {active ? "Release to drop" : "Drop components here"}
     </div>
   );
 }

@@ -78,7 +78,7 @@ patch version in `package.json`, and commit.
 batch to this list — curated from the `ROADMAP.md` backlog, de-duped against everything already
 shipped — and tell the maintainer the queue was refilled.
 
-### Current batch — Batch 1 · shipped 9 / 11 (82%)
+### Current batch — Batch 1 · shipped 10 / 11 (91%)
 Curated for the designer → real-code job (apps **and** websites): richer canvas design, a stronger
 design system, and higher-fidelity code export.
 - [x] **0** — Desktop conversion (Electron + normalized SQLite) → `v0.1.0`
@@ -96,7 +96,7 @@ design system, and higher-fidelity code export.
 - [x] **7** — Canvas navigation: real fit-to-screen + auto-fit on entry, click-% → 100%, ⌘0/⌘=/⌘- shortcuts → `v0.1.7`
       _(space-drag pan + wheel zoom-to-cursor already existed)_
 - [x] **8** — Getting started: guided empty-state overlay + 4 one-click starter layouts → `v0.1.8`
-- [ ] **9** — Adding & placing: live drop indicators / insertion lines when dropping in & reordering
+- [x] **9** — Adding & placing: drop-target fill + droppable-zone outlines while dragging, live empty-hint → `v0.1.10`
 - [ ] **10** — Select · move · nest: multi-select, clearer drop zones, snapping & smart guides
 
 ### Next batch — Batch 2 (refill; queued after Batch 1 #9–#10)
