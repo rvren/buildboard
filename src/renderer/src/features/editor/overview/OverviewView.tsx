@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { motion } from "framer-motion";
 import {
   LayoutTemplate,
@@ -14,6 +15,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   CircleDashed,
+  Globe,
   type LucideIcon,
 } from "lucide-react";
 import type { DesignNode, Project, DataSource } from "@/types";
@@ -376,8 +378,93 @@ export function OverviewView({ project }: { project: Project }) {
             setEditorView("design");
           }}
         />
+
+        <SiteSettingsSection project={project} />
       </div>
     </motion.div>
+  );
+}
+
+/** Favicon + PWA/theme-color settings, exported as a manifest + <head> meta. */
+function SiteSettingsSection({ project }: { project: Project }) {
+  const updateProjectMeta = useEditor((s) => s.updateProjectMeta);
+  const meta = project.meta ?? {};
+  const iconRef = useRef<HTMLInputElement>(null);
+
+  const pickIcon = (file: File | undefined) => {
+    if (!file) return;
+    if (file.size > 512 * 1024) return; // favicons are tiny; cap at 512 KB
+    const reader = new FileReader();
+    reader.onload = () =>
+      updateProjectMeta(project.id, { icon: String(reader.result ?? "") });
+    reader.readAsDataURL(file);
+  };
+
+  return (
+    <section className="mt-6">
+      <div className="rounded-2xl border border-border/70 bg-card/50 p-5">
+        <div className="mb-3 flex items-center gap-2">
+          <Globe className="h-4 w-4 text-muted-foreground" />
+          <h2 className="text-sm font-semibold">Site settings</h2>
+          <span className="text-xs text-muted-foreground">
+            Favicon + theme color — exported as a PWA manifest and metadata
+          </span>
+        </div>
+        <div className="flex flex-wrap items-center gap-6">
+          <div className="flex items-center gap-3">
+            {meta.icon ? (
+              <img
+                src={meta.icon}
+                alt="Favicon"
+                className="h-10 w-10 rounded-lg border border-border object-cover"
+              />
+            ) : (
+              <div className="grid h-10 w-10 place-items-center rounded-lg border border-dashed border-border text-muted-foreground">
+                <Globe className="h-4 w-4" />
+              </div>
+            )}
+            <div className="flex flex-col gap-1">
+              <button
+                onClick={() => iconRef.current?.click()}
+                className="text-xs font-medium text-primary hover:underline"
+              >
+                {meta.icon ? "Replace favicon" : "Upload favicon"}
+              </button>
+              {meta.icon && (
+                <button
+                  onClick={() => updateProjectMeta(project.id, { icon: undefined })}
+                  className="text-[11px] text-muted-foreground hover:text-foreground"
+                >
+                  Remove
+                </button>
+              )}
+            </div>
+            <input
+              ref={iconRef}
+              type="file"
+              accept="image/png,image/svg+xml,image/x-icon,image/webp"
+              className="hidden"
+              onChange={(e) => {
+                pickIcon(e.target.files?.[0]);
+                e.target.value = "";
+              }}
+            />
+          </div>
+          <label className="flex items-center gap-2 text-xs text-muted-foreground">
+            Theme color
+            <input
+              type="color"
+              value={meta.themeColor ?? "#00a562"}
+              onChange={(e) =>
+                updateProjectMeta(project.id, { themeColor: e.target.value })
+              }
+              className="h-7 w-10 cursor-pointer rounded border border-border bg-transparent"
+            />
+            <span className="tabular-nums">{meta.themeColor ?? "#00a562"}</span>
+          </label>
+        </div>
+      </div>
+    </section>
   );
 }
 

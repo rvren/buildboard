@@ -13,6 +13,7 @@ import type {
   NodeAction,
   NodeType,
   Project,
+  ProjectMeta,
   ProjectMode,
   Screen,
   StyleTokens,
@@ -128,6 +129,8 @@ interface EditorState {
     templateId: string
   ) => string;
   renameProject: (id: string, name: string) => void;
+  /** Patch a project's site meta (favicon + PWA/theme-color). */
+  updateProjectMeta: (id: string, patch: Partial<ProjectMeta>) => void;
   deleteProject: (id: string) => void;
   duplicateProject: (id: string) => void;
   setProjectMode: (id: string, mode: ProjectMode) => void;
@@ -412,6 +415,15 @@ export const useEditor = create<EditorState>()(
         set((s) => ({
           projects: s.projects.map((p) =>
             p.id === id ? touch({ ...p, name }) : p
+          ),
+        })),
+
+      updateProjectMeta: (id, patch) =>
+        set((s) => ({
+          projects: s.projects.map((p) =>
+            p.id === id
+              ? touch({ ...p, meta: { ...(p.meta ?? {}), ...patch } })
+              : p
           ),
         })),
 

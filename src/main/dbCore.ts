@@ -38,7 +38,7 @@ export const PALETTE_KEYS = [
   "brandTo",
 ] as const;
 
-const SCHEMA_VERSION = 5;
+const SCHEMA_VERSION = 6;
 
 export function openDb(path: string): Database.Database {
   const db = new DatabaseCtor(path);
@@ -62,6 +62,7 @@ export function ensureSchema(db: Database.Database): void {
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
       description TEXT,
+      meta TEXT,
       mode TEXT NOT NULL,
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL
@@ -239,6 +240,13 @@ export function ensureSchema(db: Database.Database): void {
     // v5: per-node hidden flag (Layers panel show/hide).
     if (!nodeCols.includes("hidden")) {
       db.exec("ALTER TABLE nodes ADD COLUMN hidden INTEGER");
+    }
+    // v6: per-project site meta (favicon + PWA/theme-color), JSON bag.
+    const projectCols = (
+      db.prepare("PRAGMA table_info(projects)").all() as { name: string }[]
+    ).map((c) => c.name);
+    if (!projectCols.includes("meta")) {
+      db.exec("ALTER TABLE projects ADD COLUMN meta TEXT");
     }
     db.pragma(`user_version = ${SCHEMA_VERSION}`);
   }

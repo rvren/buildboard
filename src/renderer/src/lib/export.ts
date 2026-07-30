@@ -172,6 +172,29 @@ export async function exportNextProjectZip(project: Project) {
     }
   }
 
+  // Favicon + PWA manifest from the project's site meta.
+  const meta = project.meta ?? {};
+  const pub = root.folder("public")!;
+  const iconFile = meta.icon ? dataUriToFile(pub, "favicon", meta.icon) : null;
+  pub.file(
+    "manifest.json",
+    JSON.stringify(
+      {
+        name: project.name,
+        short_name: project.name.slice(0, 12),
+        start_url: "/",
+        display: "standalone",
+        background_color: "#ffffff",
+        theme_color: meta.themeColor ?? "#00a562",
+        ...(iconFile
+          ? { icons: [{ src: `/${iconFile.name}`, sizes: "any", type: iconFile.mime }] }
+          : {}),
+      },
+      null,
+      2
+    ) + "\n"
+  );
+
   root.file("package.json", nextPackageJson(project.name));
   root.file("next.config.mjs", `/** @type {import('next').NextConfig} */\nconst nextConfig = {};\nexport default nextConfig;\n`);
   root.file(
@@ -193,17 +216,55 @@ export async function exportNextProjectZip(project: Project) {
   triggerDownload(`${pascalCase(project.name) || "project"}-next.zip`, blob);
 }
 
+const MIME_EXT: Record<string, string> = {
+  "image/png": "png",
+  "image/svg+xml": "svg",
+  "image/x-icon": "ico",
+  "image/vnd.microsoft.icon": "ico",
+  "image/webp": "webp",
+  "image/jpeg": "jpg",
+  "image/gif": "gif",
+};
+
+/** Decode a data URI into a zip file; returns its written name + mime. */
+function dataUriToFile(
+  folder: JSZip,
+  base: string,
+  dataUri: string
+): { name: string; mime: string } | null {
+  const m = /^data:([^;,]+)(;base64)?,(.*)$/s.exec(dataUri);
+  if (!m) return null;
+  const mime = m[1] || "application/octet-stream";
+  const isBase64 = !!m[2];
+  const payload = m[3];
+  const name = `${base}.${MIME_EXT[mime] ?? "img"}`;
+  if (isBase64) folder.file(name, payload, { base64: true });
+  else folder.file(name, decodeURIComponent(payload));
+  return { name, mime };
+}
+
 function rootLayout(project: Project): string {
   const title = JSON.stringify(project.name);
   const desc = JSON.stringify(
     project.description?.trim() || `${project.name} — built with BuildBoard`
   );
+  const meta = project.meta ?? {};
+  const themeColor = meta.themeColor ?? "#00a562";
+  const iconExt = meta.icon
+    ? MIME_EXT[/^data:([^;,]+)/.exec(meta.icon)?.[1] ?? ""] ?? "img"
+    : null;
+  const iconsBlock = iconExt ? `\n  icons: { icon: "/favicon.${iconExt}" },` : "";
   return `import "./globals.css";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 
 export const metadata: Metadata = {
   title: ${title},
   description: ${desc},
+  manifest: "/manifest.json",${iconsBlock}
+};
+
+export const viewport: Viewport = {
+  themeColor: ${JSON.stringify(themeColor)},
 };
 
 export default function RootLayout({

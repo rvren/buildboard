@@ -32,6 +32,7 @@ function sampleProject(): Project {
     id: "p1",
     name: "Smoke Project",
     description: "round-trip",
+    meta: { themeColor: "#00a562", icon: "data:image/svg+xml,<svg/>" },
     mode: "dynamic",
     createdAt: 1000,
     updatedAt: 2000,
@@ -88,6 +89,10 @@ export function runSmoke(): void {
     const p = getProject(db, "p1");
     assert(p, "project reloads");
     assert(p!.name === orig.name && p!.mode === "dynamic", "scalar fields");
+    assert(
+      p!.meta?.themeColor === "#00a562" && p!.meta?.icon?.startsWith("data:"),
+      "project meta (favicon + theme color) survives",
+    );
     // node tree
     const root = p!.screens[0].root;
     assert(root.children.length === 3, "root has 3 children (order preserved)");

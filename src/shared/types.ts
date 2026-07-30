@@ -286,10 +286,19 @@ export interface Architecture {
   sequences: SequenceDiagram[];
 }
 
+/** Site-level settings, exported as PWA manifest + `<head>` metadata. */
+export interface ProjectMeta {
+  /** Browser theme color (hex), used for the manifest + theme-color meta. */
+  themeColor?: string;
+  /** Favicon / app icon as a self-contained data URI. */
+  icon?: string;
+}
+
 export interface Project {
   id: string;
   name: string;
   description?: string;
+  meta?: ProjectMeta;
   mode: ProjectMode;
   createdAt: number;
   updatedAt: number;

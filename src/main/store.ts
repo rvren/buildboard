@@ -157,9 +157,17 @@ const saveTx = (db: Database.Database, p: Project) => {
   db.prepare("DELETE FROM projects WHERE id = ?").run(p.id); // cascades to all children
 
   db.prepare(
-    `INSERT INTO projects(id, name, description, mode, created_at, updated_at)
-     VALUES(?,?,?,?,?,?)`,
-  ).run(p.id, p.name, p.description ?? null, p.mode, p.createdAt, p.updatedAt);
+    `INSERT INTO projects(id, name, description, meta, mode, created_at, updated_at)
+     VALUES(?,?,?,?,?,?,?)`,
+  ).run(
+    p.id,
+    p.name,
+    p.description ?? null,
+    p.meta ? JSON.stringify(p.meta) : null,
+    p.mode,
+    p.createdAt,
+    p.updatedAt,
+  );
 
   // screens + their node trees
   p.screens.forEach((s, i) => {
@@ -275,6 +283,7 @@ export function getProject(db: Database.Database, id: string): Project | null {
         id: string;
         name: string;
         description: string | null;
+        meta: string | null;
         mode: string;
         created_at: number;
         updated_at: number;
@@ -347,6 +356,7 @@ export function getProject(db: Database.Database, id: string): Project | null {
     id: row.id,
     name: row.name,
     description: row.description ?? undefined,
+    meta: pj<Project["meta"]>(row.meta) ?? undefined,
     mode: row.mode as Project["mode"],
     createdAt: row.created_at,
     updatedAt: row.updated_at,
