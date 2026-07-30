@@ -142,7 +142,7 @@ design system, and higher-fidelity code export.
 - [ ] **B4-7** — Global find & replace of text content across all screens (authoring)
 - [ ] **B4-8** — Quick-insert palette (⌘/): add a node by name at the current selection (canvas UX)
 - [ ] **B4-9** — DB version snapshots: restorable per-project timeline (data ownership)
-- [ ] **B4-10** — Node alignment / justify quick controls in the Properties panel (canvas UX)
+- [x] **B4-10** — One-click alignment presets (left/center/right/space-between) that set up flexbox for you → `v0.1.37`
 
 ## Process architecture
 

@@ -14,6 +14,10 @@ import {
   ChevronRight,
   Code2,
   Component as ComponentIcon,
+  AlignHorizontalJustifyStart,
+  AlignHorizontalJustifyCenter,
+  AlignHorizontalJustifyEnd,
+  AlignHorizontalSpaceBetween,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { DesignNode, NodeAction, SchemaField, Screen } from "@/types";
@@ -688,8 +692,43 @@ function LayoutSection({ node }: { node: DesignNode }) {
   const s = effectiveTokens(node, activeBreakpoint);
   const set = (patch: Partial<typeof s>) => setStyles(node.id, patch);
 
+  // One-click alignment presets — set up flexbox for the designer in one tap.
+  const quickAlign = (justify: typeof s.justify, align?: typeof s.align) =>
+    set({ display: "flex", direction: "row", justify, ...(align ? { align } : {}) });
+  const alignBtns: {
+    icon: typeof AlignHorizontalJustifyStart;
+    tip: string;
+    on: () => void;
+    active: boolean;
+  }[] = [
+    { icon: AlignHorizontalJustifyStart, tip: "Align left", on: () => quickAlign("start"), active: s.display === "flex" && s.justify === "start" },
+    { icon: AlignHorizontalJustifyCenter, tip: "Center", on: () => quickAlign("center", "center"), active: s.display === "flex" && s.justify === "center" },
+    { icon: AlignHorizontalJustifyEnd, tip: "Align right", on: () => quickAlign("end"), active: s.display === "flex" && s.justify === "end" },
+    { icon: AlignHorizontalSpaceBetween, tip: "Space between", on: () => quickAlign("between"), active: s.display === "flex" && s.justify === "between" },
+  ];
+
   return (
     <Section title="Layout">
+      <Row label="Quick align">
+        <div className="flex items-center gap-0.5 rounded-md border border-border/70 p-0.5">
+          {alignBtns.map((b, i) => (
+            <button
+              key={i}
+              type="button"
+              title={b.tip}
+              onClick={b.on}
+              className={
+                "grid h-6 flex-1 place-items-center rounded transition-colors " +
+                (b.active
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground")
+              }
+            >
+              <b.icon className="h-3.5 w-3.5" />
+            </button>
+          ))}
+        </div>
+      </Row>
       <Row label="Display">
         <Segmented
           value={s.display}
