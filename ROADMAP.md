@@ -1,8 +1,11 @@
 # BuildBoard — Roadmap
 
-Source of truth for shipping. BuildBoard grows as an **infinite loop of ~100-feature batches**;
-features ship **on demand** (when the maintainer says go), each as its own gated patch release on top
-of the existing app. This file is process-only — nothing here renders in the UI.
+Source of truth for shipping. BuildBoard is a design-to-code studio for **product designers** — design
+**applications and websites**, then **export real React + Tailwind code** — and every queued feature
+must move a designer closer to shippable code from their design. The roadmap grows as an **infinite
+loop of ~100-feature batches**; features ship **on demand** (when the maintainer says go), each as its
+own gated patch release on top of the existing app. This file is process-only — nothing here renders in
+the UI.
 
 ## The live queue lives in `CLAUDE.md`
 
@@ -52,8 +55,8 @@ from. Run `/next` (or say "next") to ship the next queued feature end-to-end.
   ~100 new features before the current one is exhausted.
 - Every batch upholds the bar: WYSIWYG-export fidelity, edit-once components, own-your-data, offline
   zero-config, additive/zero-regression, genuinely useful, de-duplicated against shipped/queued items,
-  balanced across the themes (Design authoring · Design system · Data & logic · Export/ownership ·
-  App polish), prioritized (top ~10 surfaced).
+  balanced across the themes (Design authoring · Design system · Data & logic · Websites & pages ·
+  Export/ownership · App polish), prioritized (top ~10 surfaced).
 
 ## Backlog catalog (the "100s" — seeds future batches; all offline)
 
@@ -69,6 +72,10 @@ in light/dark side-by-side · usage/insights per definition · orphaned-token cl
 **Data & logic:** requests through main (CORS-free) · response caching · pagination/repeater
 enhancements · mock/constant sources from schema · bindings preview inline · per-screen primary
 source · request history · environment variables for URLs/tokens.
+
+**Websites & pages:** multi-page projects with a real page tree · links & navigation between pages ·
+per-page meta (title/description/OG) · responsive breakpoints → responsive Tailwind · reusable
+header/footer sections · anchor/scroll links · favicon & basic SEO on export · static-site export target.
 
 **Export / ownership:** multi-file project export · per-component file export · copy node JSX ·
 Tailwind config export from tokens · portable `.bbproj` import/export · project duplicate/backup ·

@@ -1,9 +1,16 @@
 # CLAUDE.md — BuildBoard
 
-Guidance for working in this repo. BuildBoard is a **local-first, offline design-to-code studio**
-desktop app (Electron + React): build interfaces on an infinite canvas, wire in live data, manage a
-themed design system, sketch architecture — then export clean React + Tailwind. Everything runs
-on-device; projects live in a local SQLite database.
+Guidance for working in this repo. BuildBoard is a **local-first design-to-code studio** desktop app
+(Electron + React) **for product designers**: design **applications and websites** on an infinite
+canvas — with a themed design system, live data, and architecture sketches — then **export them into
+real, production code** (clean React + Tailwind). What you design **is** what ships: no redraw, no
+handoff, no drift between the mockup and the codebase. Everything runs on-device; projects live in a
+local SQLite database.
+
+**Who it's for & the job it does:** a product designer opens BuildBoard, lays out the screens/pages of
+an app or site, wires real data and a reusable design system, and walks away with a working React +
+Tailwind codebase — not a static comp to be re-implemented by an engineer. Every feature should move a
+designer closer to *shippable code from their design*.
 
 ## Product doctrine — DESIGN-TO-CODE FIDELITY (applies to EVERY new feature)
 
@@ -72,17 +79,19 @@ batch to this list — curated from the `ROADMAP.md` backlog, de-duped against e
 shipped — and tell the maintainer the queue was refilled.
 
 ### Current batch — Batch 1 · shipped 2 / 11 (18%)
+Curated for the designer → real-code job (apps **and** websites): richer canvas design, a stronger
+design system, and higher-fidelity code export.
 - [x] **0** — Desktop conversion (Electron + normalized SQLite) → `v0.1.0`
 - [x] **1** — Local project search & filter on the dashboard → `v0.1.1`
-- [ ] **2** — Autosave history & undo/redo backed by the DB
-- [ ] **3** — Project import / export (portable `.bbproj` bundle)
-- [ ] **4** — Command-palette actions (jump view/screen, add node, run data source)
-- [ ] **5** — Component usage insights ("N instances across M screens")
-- [ ] **6** — Screen templates & duplicate-as-template
-- [ ] **7** — Data-source requests through main (CORS-free fetch + response cache)
-- [ ] **8** — Export polish: multi-file project export + copy-node JSX
-- [ ] **9** — Design-system token presets & import
-- [ ] **10** — Recent projects, window-state persistence, native macOS menu
+- [ ] **2** — Undo / redo with autosave history (DB-backed edit timeline)
+- [ ] **3** — Responsive breakpoints per screen → responsive Tailwind on export
+- [ ] **4** — Design-system component variants (props-driven, a real component API)
+- [ ] **5** — Design tokens import / export (palette + typography; bring/sync a theme)
+- [ ] **6** — Multi-page websites: links, nav, and per-page meta (title/description)
+- [ ] **7** — Canvas precision: multi-select, align / distribute, snapping & smart guides
+- [ ] **8** — Production export: multi-file project, per-component files, copy JSX, Tailwind config from tokens
+- [ ] **9** — Image & asset handling (import SVG/PNG, bundle on export)
+- [ ] **10** — Component usage insights ("N instances across M screens")
 
 ## Process architecture
 

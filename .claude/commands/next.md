@@ -44,8 +44,9 @@ npm run build
 After ticking, compute the batch progress. If **≥ 75%** of the current batch is shipped, append a
 fresh **~10-item** batch to the "Current batch" list in `CLAUDE.md`, curated from the backlog catalog
 in `ROADMAP.md`, de-duped against everything already shipped, balanced across the themes (Design
-authoring · Design system · Data & logic · Export/ownership · App polish). Tell the maintainer the
-queue was refilled.
+authoring · Design system · Data & logic · Websites & pages · Export/ownership · App polish) and
+anchored to the product's job: help a product designer design apps/websites and export real code.
+Tell the maintainer the queue was refilled.
 
 ## 7. Report
 Say what shipped, the new version, and the batch progress (e.g. "shipped 2/11 · 18%").
