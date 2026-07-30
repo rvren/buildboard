@@ -19,6 +19,7 @@ import {
 import type { DesignNode, Project, DataSource } from "@/types";
 import { useEditor } from "@/store/editorStore";
 import { useTheme } from "@/store/theme";
+import { auditProject } from "@/lib/a11y";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { MiniPreview } from "@/features/dashboard/MiniPreview";
@@ -367,8 +368,92 @@ export function OverviewView({ project }: { project: Project }) {
             )}
           </ModulePanel>
         </div>
+
+        <AccessibilitySection
+          project={project}
+          onJump={(screenId) => {
+            selectScreen(screenId);
+            setEditorView("design");
+          }}
+        />
       </div>
     </motion.div>
+  );
+}
+
+/** Accessibility audit summary — flags a11y issues before export. */
+function AccessibilitySection({
+  project,
+  onJump,
+}: {
+  project: Project;
+  onJump: (screenId: string) => void;
+}) {
+  const issues = auditProject(project);
+  const errors = issues.filter((i) => i.severity === "error").length;
+
+  return (
+    <section className="mt-6">
+      <div className="rounded-2xl border border-border/70 bg-card/50 p-5">
+        <div className="mb-3 flex items-center gap-2">
+          {issues.length === 0 ? (
+            <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+          ) : (
+            <AlertTriangle
+              className={cn(
+                "h-4 w-4",
+                errors ? "text-destructive" : "text-amber-500"
+              )}
+            />
+          )}
+          <h2 className="text-sm font-semibold">Accessibility</h2>
+          <span className="text-xs text-muted-foreground">
+            {issues.length === 0
+              ? "No issues found"
+              : `${issues.length} issue${issues.length === 1 ? "" : "s"}${
+                  errors ? ` · ${errors} to fix` : ""
+                }`}
+          </span>
+        </div>
+        {issues.length === 0 ? (
+          <p className="text-xs text-muted-foreground">
+            Every screen passes the built-in checks (alt text, labels, heading
+            order). Your exported code stays accessible.
+          </p>
+        ) : (
+          <ul className="space-y-1.5">
+            {issues.slice(0, 8).map((issue) => (
+              <li key={`${issue.nodeId}-${issue.message}`}>
+                <button
+                  onClick={() => onJump(issue.screenId)}
+                  className="flex w-full items-start gap-2 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-muted/50"
+                >
+                  <span
+                    className={cn(
+                      "mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full",
+                      issue.severity === "error"
+                        ? "bg-destructive"
+                        : "bg-amber-500"
+                    )}
+                  />
+                  <span className="flex-1 text-xs">
+                    {issue.message}
+                    <span className="ml-1.5 text-muted-foreground">
+                      · {issue.screenName}
+                    </span>
+                  </span>
+                </button>
+              </li>
+            ))}
+            {issues.length > 8 && (
+              <li className="px-2 text-[11px] text-muted-foreground">
+                +{issues.length - 8} more…
+              </li>
+            )}
+          </ul>
+        )}
+      </div>
+    </section>
   );
 }
 

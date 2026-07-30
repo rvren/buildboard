@@ -116,6 +116,20 @@ design system, and higher-fidelity code export.
 - [x] **B2-9** — Shortcuts cheatsheet (press `?`) + 7 new command-palette actions (views, add screen, shortcuts, theme toggle) → `v0.1.23`
 - [x] **B2-10** — Dashboard "Start from" templates (Blank · Landing · Sign-up · Catalog) — composes existing STARTERS into a seeded first screen → `v0.1.24`
 
+### Next batch — Batch 3 (refill; Batch 2 = 10/10 → 75% refill fired)
+> Curated de-duped against everything shipped, balanced across the themes and anchored to the vision
+> (designers → apps/websites → real, accessible code). Screen ops + selection ergonomics + a11y.
+- [x] **B3-1** — Accessibility audit panel: walks the tree, flags missing alt text, empty headings/buttons/links, link-without-href, heading-level skips → `v0.1.25`
+- [x] **B3-2** — Duplicate screen (deep-clone with fresh ids) from the screen switcher → `v0.1.26`
+- [x] **B3-3** — Reorder screens (move left/right) in the screen switcher → `v0.1.27`
+- [x] **B3-4** — Theme preset gallery: apply a curated light+dark palette to the design system in one click → `v0.1.28`
+- [x] **B3-5** — Wrap selection in a Container ("Group", ⌘G) → `v0.1.29`
+- [ ] **B3-6** — Multi-select on canvas (shift-click) + bulk delete/move (selection ergonomics)
+- [ ] **B3-7** — Component props/slots: expose editable text as named props on a definition (design system)
+- [ ] **B3-8** — One-click Next.js App Router scaffold export (real code)
+- [ ] **B3-9** — Snapping / smart-guides while dragging on the canvas (canvas UX)
+- [ ] **B3-10** — Per-project favicon + PWA/meta settings, exported (apps/websites)
+
 ## Process architecture
 
 - **src/main/** (Node, privileged): app lifecycle + SQLite. `index.ts` (window, load renderer),
