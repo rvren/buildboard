@@ -134,7 +134,7 @@ design system, and higher-fidelity code export.
 > Curated de-duped against everything shipped, balanced across themes and anchored to the vision
 > (designers → apps/websites → real, accessible code). Completes selection/design-system/export threads.
 - [ ] **B4-1** — Bulk move/nest for the multi-selection (drag several nodes into a container at once)
-- [ ] **B4-2** — Per-node ARIA authoring (aria-label / role) surfaced in Properties + exported (a11y)
+- [x] **B4-2** — Per-node ARIA authoring (aria-label / role) in Properties → exported as aria-label/role attrs → `v0.1.36`
 - [ ] **B4-3** — Component content slots → real typed React props on exported component files (design system → real code)
 - [ ] **B4-4** — One-click Vite + React Router SPA scaffold export (complements the Next.js export)
 - [ ] **B4-5** — Spacing & typography scale tokens in the design system (beyond color)

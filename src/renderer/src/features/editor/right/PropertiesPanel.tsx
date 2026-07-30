@@ -79,6 +79,7 @@ export function PropertiesPanel() {
             <SpacingSection node={node} />
             <TypographySection node={node} />
             <AppearanceSection node={node} />
+            <AriaSection node={node} />
           </>
         )}
       </ScrollArea>
@@ -470,6 +471,30 @@ function NodeHeader({ node }: { node: DesignNode }) {
 }
 
 /* ------------------------------------------------------------------ Content */
+/** Accessibility authoring for any node: aria-label + ARIA role, exported to code. */
+function AriaSection({ node }: { node: DesignNode }) {
+  const setProps = useEditor((s) => s.updateNodeProps);
+  const p = node.props;
+  return (
+    <Section title="Accessibility">
+      <Row label="ARIA label">
+        <TextControl
+          value={p.ariaLabel ?? ""}
+          placeholder="Describes this element for screen readers"
+          onChange={(v) => setProps(node.id, { ariaLabel: v })}
+        />
+      </Row>
+      <Row label="Role">
+        <TextControl
+          value={p.role ?? ""}
+          placeholder="e.g. navigation, banner, main"
+          onChange={(v) => setProps(node.id, { role: v })}
+        />
+      </Row>
+    </Section>
+  );
+}
+
 function ContentSection({ node }: { node: DesignNode }) {
   const setProps = useEditor((s) => s.updateNodeProps);
   const p = node.props;

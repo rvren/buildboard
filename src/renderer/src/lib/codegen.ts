@@ -209,6 +209,13 @@ function walk(node: DesignNode, depth: number, ctx: Ctx): WalkResult {
     }
   }
 
+  // Accessibility authoring: generic aria-label / role on any node.
+  const ariaLabel =
+    typeof node.props.ariaLabel === "string" ? node.props.ariaLabel.trim() : "";
+  if (ariaLabel) attrs.push(`aria-label="${ariaLabel.replace(/"/g, "&quot;")}"`);
+  const role = typeof node.props.role === "string" ? node.props.role.trim() : "";
+  if (role) attrs.push(`role="${role.replace(/"/g, "&quot;")}"`);
+
   if (repeated) attrs.push(`key={i}`);
   if (className) attrs.push(`className="${className}"`);
   const attrStr = attrs.length ? " " + attrs.join(" ") : "";
