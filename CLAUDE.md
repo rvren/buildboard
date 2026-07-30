@@ -139,7 +139,7 @@ design system, and higher-fidelity code export.
 - [ ] **B4-4** — One-click Vite + React Router SPA scaffold export (complements the Next.js export)
 - [ ] **B4-5** — Spacing & typography scale tokens in the design system (beyond color)
 - [ ] **B4-6** — Left "Pages" panel: screen thumbnails + reorder + rename (navigation)
-- [ ] **B4-7** — Global find & replace of text content across all screens (authoring)
+- [x] **B4-7** — Global find & replace of text across all screens + components (case option, live match count) → `v0.1.38`
 - [ ] **B4-8** — Quick-insert palette (⌘/): add a node by name at the current selection (canvas UX)
 - [ ] **B4-9** — DB version snapshots: restorable per-project timeline (data ownership)
 - [x] **B4-10** — One-click alignment presets (left/center/right/space-between) that set up flexbox for you → `v0.1.37`

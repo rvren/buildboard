@@ -53,6 +53,7 @@ import { SystemLeft, SystemMain } from "./system/SystemView";
 import { ArchLeft, ArchMain } from "./architecture/ArchitectureView";
 import { CommandPalette } from "./CommandPalette";
 import { ShortcutsDialog } from "./ShortcutsDialog";
+import { FindReplaceDialog } from "./FindReplaceDialog";
 import { GettingStarted } from "./onboarding/GettingStarted";
 import { NavRail } from "./NavRail";
 import { ensureFontLoaded } from "@/lib/designSystem";
@@ -289,6 +290,7 @@ export default function EditorPage() {
 
       <CommandPalette project={project} />
       <ShortcutsDialog />
+      <FindReplaceDialog />
 
       <DragOverlay dropAnimation={null}>
         {activeLabel ? (

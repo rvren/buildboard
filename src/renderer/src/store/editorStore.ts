@@ -131,6 +131,15 @@ interface EditorState {
   renameProject: (id: string, name: string) => void;
   /** Patch a project's site meta (favicon + PWA/theme-color). */
   updateProjectMeta: (id: string, patch: Partial<ProjectMeta>) => void;
+  // ----- global find & replace (text content across all screens + components)
+  findReplaceOpen: boolean;
+  setFindReplaceOpen: (v: boolean) => void;
+  countTextMatches: (find: string, caseSensitive: boolean) => number;
+  replaceTextEverywhere: (
+    find: string,
+    replace: string,
+    caseSensitive: boolean
+  ) => number;
   deleteProject: (id: string) => void;
   duplicateProject: (id: string) => void;
   setProjectMode: (id: string, mode: ProjectMode) => void;
@@ -310,6 +319,43 @@ function withRoot(
  * fan-out path: because instances render through their definition, editing a
  * definition updates every instance across all screens.
  */
+/** Text-bearing props scanned by global find & replace. */
+const TEXT_REPLACE_PROPS = [
+  "content",
+  "label",
+  "placeholder",
+  "alt",
+  "href",
+  "fallback",
+] as const;
+
+function countOccurrences(hay: string, needle: string, cs: boolean): number {
+  if (!needle) return 0;
+  const h = cs ? hay : hay.toLowerCase();
+  const n = cs ? needle : needle.toLowerCase();
+  let count = 0;
+  let i = h.indexOf(n);
+  while (i !== -1) {
+    count++;
+    i = h.indexOf(n, i + n.length);
+  }
+  return count;
+}
+
+function replaceOccurrences(
+  hay: string,
+  needle: string,
+  repl: string,
+  cs: boolean
+): { result: string; n: number } {
+  const n = countOccurrences(hay, needle, cs);
+  if (n === 0) return { result: hay, n: 0 };
+  if (cs) return { result: hay.split(needle).join(repl), n };
+  // Case-insensitive replace preserving non-matched text.
+  const esc = needle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return { result: hay.replace(new RegExp(esc, "gi"), repl), n };
+}
+
 function withActiveRoot(
   state: EditorState,
   updater: (root: DesignNode) => DesignNode
@@ -433,6 +479,69 @@ export const useEditor = create<EditorState>()(
           currentProjectId:
             s.currentProjectId === id ? null : s.currentProjectId,
         })),
+
+      findReplaceOpen: false,
+      setFindReplaceOpen: (v) => set({ findReplaceOpen: v }),
+
+      countTextMatches: (find, caseSensitive) => {
+        const project = get().currentProject();
+        if (!project || !find) return 0;
+        let count = 0;
+        const scan = (n: DesignNode) => {
+          for (const key of TEXT_REPLACE_PROPS) {
+            const val = n.props?.[key];
+            if (typeof val === "string")
+              count += countOccurrences(val, find, caseSensitive);
+          }
+          for (const c of n.children ?? []) scan(c);
+        };
+        project.screens.forEach((sc) => scan(sc.root));
+        project.designSystem.components.forEach((c) => scan(c.root));
+        return count;
+      },
+
+      replaceTextEverywhere: (find, replace, caseSensitive) => {
+        if (!find) return 0;
+        let count = 0;
+        const remap = (n: DesignNode): DesignNode => {
+          let props = n.props;
+          for (const key of TEXT_REPLACE_PROPS) {
+            const val = props?.[key];
+            if (typeof val === "string" && val) {
+              const { result, n: hits } = replaceOccurrences(
+                val,
+                find,
+                replace,
+                caseSensitive
+              );
+              if (hits > 0) {
+                count += hits;
+                props = { ...props, [key]: result };
+              }
+            }
+          }
+          const children = (n.children ?? []).map(remap);
+          return props === n.props ? { ...n, children } : { ...n, props, children };
+        };
+        set((s) => ({
+          projects: s.projects.map((p) =>
+            p.id === s.currentProjectId
+              ? touch({
+                  ...p,
+                  screens: p.screens.map((sc) => ({ ...sc, root: remap(sc.root) })),
+                  designSystem: {
+                    ...p.designSystem,
+                    components: p.designSystem.components.map((c) => ({
+                      ...c,
+                      root: remap(c.root),
+                    })),
+                  },
+                })
+              : p
+          ),
+        }));
+        return count;
+      },
 
       setProjectMode: (id, mode) =>
         set((s) => ({

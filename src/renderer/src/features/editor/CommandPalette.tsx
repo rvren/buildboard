@@ -16,6 +16,7 @@ import {
   Network,
   Home,
   SunMoon,
+  Replace,
 } from "lucide-react";
 import { useTheme } from "@/store/theme";
 import type { NodeType, Project } from "@/types";
@@ -140,6 +141,13 @@ export function CommandPalette({ project }: { project: Project }) {
         icon: Keyboard,
         keywords: "shortcuts keys help cheatsheet",
         run: () => s.setShortcutsOpen(true),
+      },
+      {
+        id: "find-replace",
+        label: "Find & replace text",
+        icon: Replace,
+        keywords: "find replace text search rename content",
+        run: () => s.setFindReplaceOpen(true),
       },
       {
         id: "toggle-theme",
