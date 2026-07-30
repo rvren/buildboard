@@ -14,6 +14,8 @@ import {
   Check,
   ChevronDown,
   Search,
+  Undo2,
+  Redo2,
 } from "lucide-react";
 import type { ProjectMode } from "@/types";
 import { toast } from "sonner";
@@ -49,6 +51,10 @@ export function TopBar({ project }: { project: Project }) {
   const setGithubOpen = useEditor((s) => s.setGithubDialogOpen);
   const setCommandOpen = useEditor((s) => s.setCommandOpen);
   const currentScreen = useEditor((s) => s.currentScreen());
+  const canUndo = useEditor((s) => s.canUndo);
+  const canRedo = useEditor((s) => s.canRedo);
+  const undo = useEditor((s) => s.undo);
+  const redo = useEditor((s) => s.redo);
   useTheme((s) => s.theme);
 
   const [editingName, setEditingName] = useState(false);
@@ -87,6 +93,29 @@ export function TopBar({ project }: { project: Project }) {
         mode={project.mode}
         onChange={(m) => setProjectMode(project.id, m)}
       />
+
+      {/* Undo / redo */}
+      <Separator orientation="vertical" className="mx-1 h-5" />
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-7 w-7"
+        onClick={undo}
+        disabled={!canUndo}
+        title="Undo (⌘Z)"
+      >
+        <Undo2 className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-7 w-7"
+        onClick={redo}
+        disabled={!canRedo}
+        title="Redo (⌘⇧Z)"
+      >
+        <Redo2 className="h-4 w-4" />
+      </Button>
 
       {/* Screen switcher (design view only) */}
       <Separator orientation="vertical" className="mx-1 h-5" />

@@ -78,6 +78,11 @@ interface EditorState {
   viewport: Viewport;
   previewMode: boolean;
   setPreviewMode: (v: boolean) => void;
+  /** Editor undo/redo over the active project's edits (in-session history). */
+  canUndo: boolean;
+  canRedo: boolean;
+  undo: () => void;
+  redo: () => void;
   editorView: "overview" | "design" | "flow" | "system" | "architecture";
   setEditorView: (
     v: "overview" | "design" | "flow" | "system" | "architecture"
@@ -305,6 +310,10 @@ export const useEditor = create<EditorState>()(
       viewport: { x: 0, y: 0, zoom: 1 },
       previewMode: false,
       setPreviewMode: (v) => set({ previewMode: v, selectedNodeId: null }),
+      canUndo: false,
+      canRedo: false,
+      undo: () => historyUndo(),
+      redo: () => historyRedo(),
       editorView: "overview",
       // Switching top-level views exits component-edit mode so the Insert palette
       // shows custom components again (create-and-edit re-enters it explicitly after).
@@ -1111,6 +1120,37 @@ function _flush() {
   _pending.clear();
 }
 
+// ---------------------------------------------------------------------------
+// Undo / redo — an in-session history of the `projects` snapshot. Immutable
+// store updates make each snapshot cheap (unchanged projects share references).
+// History is editor-scoped: it resets when the active project changes, and
+// undo/redo restore a prior snapshot (which then autosaves like any edit).
+// ---------------------------------------------------------------------------
+
+const HISTORY_LIMIT = 100;
+const _past: Project[][] = [];
+const _future: Project[][] = [];
+let _applyingHistory = false;
+let _prevProjectId: string | null = null;
+
+function historyUndo() {
+  if (_past.length === 0) return;
+  _future.push(useEditor.getState().projects);
+  const prev = _past.pop()!;
+  _applyingHistory = true;
+  useEditor.setState({ projects: prev, canUndo: _past.length > 0, canRedo: true });
+  _applyingHistory = false;
+}
+
+function historyRedo() {
+  if (_future.length === 0) return;
+  _past.push(useEditor.getState().projects);
+  const nextSnap = _future.pop()!;
+  _applyingHistory = true;
+  useEditor.setState({ projects: nextSnap, canUndo: true, canRedo: _future.length > 0 });
+  _applyingHistory = false;
+}
+
 /** Load persisted projects once, before the app renders. */
 export async function initEditorStore(): Promise<void> {
   _hydrating = true;
@@ -1123,12 +1163,34 @@ export async function initEditorStore(): Promise<void> {
   }
 }
 
-// Diff-by-reference autosave: immutable updates give changed projects new refs.
+// Diff-by-reference autosave (+ undo history): immutable updates give changed
+// projects new refs.
 useEditor.subscribe((state) => {
+  // Reset history when the active project changes — undo is editor-scoped.
+  if (state.currentProjectId !== _prevProjectId) {
+    _prevProjectId = state.currentProjectId;
+    _past.length = 0;
+    _future.length = 0;
+    if (state.canUndo || state.canRedo) {
+      useEditor.setState({ canUndo: false, canRedo: false });
+    }
+  }
+
   const next = state.projects;
   if (_hydrating || next === _prevProjects) return;
   const prev = _prevProjects;
   _prevProjects = next;
+
+  // Record an undo entry for edits made while a project is open (not for
+  // undo/redo itself, which sets _applyingHistory).
+  if (!_applyingHistory && state.currentProjectId) {
+    _past.push(prev);
+    if (_past.length > HISTORY_LIMIT) _past.shift();
+    _future.length = 0;
+    if (!state.canUndo || state.canRedo) {
+      useEditor.setState({ canUndo: true, canRedo: false });
+    }
+  }
 
   const nextIds = new Set(next.map((p) => p.id));
   for (const p of prev) {

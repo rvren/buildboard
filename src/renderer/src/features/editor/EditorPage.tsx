@@ -501,6 +501,13 @@ function useKeyboardShortcuts() {
       )
         return;
       const store = useEditor.getState();
+      // Undo / redo (no node selection required).
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z") {
+        e.preventDefault();
+        if (e.shiftKey) store.redo();
+        else store.undo();
+        return;
+      }
       const id = store.selectedNodeId;
       if (!id) return;
       if (e.key === "Delete" || e.key === "Backspace") {
