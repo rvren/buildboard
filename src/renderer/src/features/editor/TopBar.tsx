@@ -55,6 +55,7 @@ import {
   exportProjectZip,
   exportNextProjectZip,
   exportViteProjectZip,
+  exportStaticHtmlZip,
 } from "@/lib/export";
 import { DataSourcesDialog } from "./data/DataSourcesDialog";
 import { GitHubDialog } from "./publish/GitHubDialog";
@@ -365,6 +366,15 @@ export function TopBar({ project }: { project: Project }) {
             >
               <AppWindow className="h-4 w-4" />
               Vite + React Router (SPA)
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={async () => {
+                await exportStaticHtmlZip(project);
+                toast.success("Static HTML exported");
+              }}
+            >
+              <FileCode className="h-4 w-4" />
+              Static HTML (no framework)
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

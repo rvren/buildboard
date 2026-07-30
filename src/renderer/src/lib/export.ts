@@ -3,6 +3,7 @@ import type { Project, ThemePalette } from "@/types";
 import { generatePageCode, generateComponentCode } from "@/lib/codegen";
 import { hexToHslTriple, PALETTE_VARS } from "@/lib/designSystem";
 import { architectureMarkdown } from "@/lib/architecture";
+import { screenToHtml } from "@/lib/htmlExport";
 
 /** Emit a `{ --var: H S% L%; … }` block body from a palette + radius. */
 function paletteVarBlock(palette: ThemePalette, radius: number): string {
@@ -110,6 +111,39 @@ export async function exportProjectZip(project: Project) {
 
   const blob = await zip.generateAsync({ type: "blob" });
   triggerDownload(`${pascalCase(project.name) || "project"}.zip`, blob);
+}
+
+/**
+ * Framework-free static HTML export: one self-contained `.html` per screen
+ * (rendered from the same tree the canvas shows), plus an index that links them.
+ */
+export async function exportStaticHtmlZip(project: Project) {
+  const zip = new JSZip();
+  const folder = zip.folder(pascalCase(project.name) || "project")!;
+  const seen = new Map<string, number>();
+  const links: { file: string; name: string }[] = [];
+
+  for (const screen of project.screens) {
+    let base = routeSegment(screen.name, screen.path);
+    const n = seen.get(base) ?? 0;
+    seen.set(base, n + 1);
+    if (n > 0) base = `${base}-${n + 1}`;
+    const file = `${base}.html`;
+    folder.file(file, screenToHtml(screen, project));
+    links.push({ file, name: screen.name });
+  }
+
+  folder.file(
+    "index.html",
+    `<!doctype html>\n<html lang="en"><head><meta charset="UTF-8" />` +
+      `<title>${project.name}</title></head><body style="font-family:system-ui;padding:2rem">` +
+      `<h1>${project.name}</h1><ul>` +
+      links.map((l) => `<li><a href="./${l.file}">${l.name}</a></li>`).join("") +
+      `</ul></body></html>\n`
+  );
+
+  const blob = await zip.generateAsync({ type: "blob" });
+  triggerDownload(`${pascalCase(project.name) || "project"}-html.zip`, blob);
 }
 
 /** Route segment for a screen: its `path`, else a slug of its name. "/" → index. */
