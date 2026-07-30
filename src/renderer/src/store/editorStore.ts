@@ -495,6 +495,13 @@ export const useEditor = create<EditorState>()(
       },
 
       restoreProjectSnapshot: async (snapshotId) => {
+        // Safety net: snapshot the current state before overwriting it, so a
+        // restore is itself undoable.
+        const current = get().currentProject();
+        if (current) {
+          await persistence.saveProject(current);
+          await persistence.createSnapshot(current.id, "Before restore");
+        }
         const restored = await persistence.restoreSnapshot(snapshotId);
         if (!restored) return;
         set((s) => ({

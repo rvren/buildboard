@@ -153,9 +153,9 @@ design system, and higher-fidelity code export.
 - [ ] **B5-4** — Elevation / shadow scale tokens in the design system (beyond color/radius)
 - [ ] **B5-5** — Per-node conditional visibility bound to data (dynamic apps)
 - [ ] **B5-6** — Canvas rulers + live selection dimensions / spacing readout (canvas UX)
-- [ ] **B5-7** — Duplicate project from the dashboard (deep-clone) (data ownership)
+- [x] **B5-7** — Duplicate project from the dashboard (deep-clone with instance/def id remap) — already shipped (store `duplicateProject` + ProjectCard menu); verified
 - [ ] **B5-8** — Side-by-side multi-breakpoint preview (sm/md/lg at once) (responsive)
-- [ ] **B5-9** — Auto-snapshot before a restore + optional interval snapshots (safety; extends B4-9)
+- [x] **B5-9** — Auto-snapshot ("Before restore") the live project before every restore, so a restore is itself undoable → `v0.1.46` _(interval snapshots deferred)_
 - [ ] **B5-10** — Tab-order / focus-order overlay on the canvas (accessibility)
 
 ## Process architecture
