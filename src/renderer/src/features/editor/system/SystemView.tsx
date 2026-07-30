@@ -9,6 +9,7 @@ import { ComponentDefsProvider } from "@/features/editor/canvas/componentDefs";
 import { generateComponentCode } from "@/lib/codegen";
 import { tokenStyle, ensureFontLoaded, DS_FONTS, tokensToCss } from "@/lib/designSystem";
 import { downloadText } from "@/lib/export";
+import { THEME_PRESETS } from "@/lib/themePresets";
 import { useEditor } from "@/store/editorStore";
 import { useTheme } from "@/store/theme";
 import { Button } from "@/components/ui/button";
@@ -432,6 +433,33 @@ function TokensPanel({ project }: { project: Project }) {
         </div>
 
         <TokensToolbar project={project} />
+
+        <div className="space-y-1.5">
+          <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">
+            Theme presets
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {THEME_PRESETS.map((preset) => (
+              <button
+                key={preset.id}
+                type="button"
+                title={`Apply ${preset.name}`}
+                onClick={() => {
+                  updateThemeToken("light", preset.light);
+                  updateThemeToken("dark", preset.dark);
+                  toast.success(`${preset.name} theme applied`);
+                }}
+                className="flex items-center gap-1.5 rounded-md border border-border/70 bg-card px-2 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <span
+                  className="h-3 w-3 rounded-full border border-black/10"
+                  style={{ background: preset.swatch }}
+                />
+                {preset.name}
+              </button>
+            ))}
+          </div>
+        </div>
 
         {TOKEN_GROUPS.map((group) => (
           <div key={group.title} className="space-y-2.5">
