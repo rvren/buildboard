@@ -243,6 +243,185 @@ function dataUriToFile(
   return { name, mime };
 }
 
+/**
+ * One-click Vite + React Router (SPA) scaffold: `src/pages/<Name>Page.tsx` per
+ * screen, an `App.tsx` route table, globals + tokens, components, and Vite config.
+ * The page files are the SAME codegen output as every other export.
+ */
+export async function exportViteProjectZip(project: Project) {
+  const zip = new JSZip();
+  const root = zip.folder(pascalCase(project.name) || "project")!;
+  const src = root.folder("src")!;
+  const pagesDir = src.folder("pages")!;
+
+  // One page component + one route per screen (first screen is the index "/").
+  const usedRoutes = new Set<string>();
+  const seenNames = new Map<string, number>();
+  const routes = project.screens.map((screen, i) => {
+    let comp = pascalCase(screen.name) + "Page";
+    const dup = seenNames.get(comp) ?? 0;
+    seenNames.set(comp, dup + 1);
+    if (dup > 0) comp = `${comp}${dup + 1}`;
+    pagesDir.file(`${comp}.tsx`, generatePageCode(screen, project));
+
+    let path = i === 0 ? "/" : "/" + routeSegment(screen.name, screen.path);
+    while (i !== 0 && usedRoutes.has(path)) path = `${path}-${usedRoutes.size}`;
+    usedRoutes.add(path);
+    return { comp, path };
+  });
+
+  src.file("App.tsx", viteApp(routes));
+  src.file(
+    "main.tsx",
+    `import React from "react";
+import ReactDOM from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import App from "./App";
+import "./index.css";
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  </React.StrictMode>
+);
+`
+  );
+
+  const t = project.designSystem?.tokens;
+  src.file(
+    "index.css",
+    (t
+      ? `:root {\n${paletteVarBlock(t.light, t.radius)}\n}\n\n.dark {\n${paletteVarBlock(t.dark, t.radius)}\n}\n\n` +
+        `.bg-brand { background-image: linear-gradient(135deg, hsl(var(--brand-from)), hsl(var(--brand-to))); }\n\n`
+      : "") + `@tailwind base;\n@tailwind components;\n@tailwind utilities;\n`
+  );
+
+  const comps = project.designSystem?.components ?? [];
+  if (comps.length) {
+    const cf = src.folder("components")!;
+    const cseen = new Map<string, number>();
+    for (const def of comps) {
+      let name = pascalCase(def.name) || "Component";
+      const k = cseen.get(name) ?? 0;
+      cseen.set(name, k + 1);
+      if (k > 0) name = `${name}${k + 1}`;
+      cf.file(`${name}.tsx`, generateComponentCode(def.root, project));
+    }
+  }
+
+  // index.html with favicon + theme-color from the project's site meta.
+  const meta = project.meta ?? {};
+  const iconFile = meta.icon ? dataUriToFile(root, "favicon", meta.icon) : null;
+  root.file("index.html", viteIndexHtml(project, iconFile));
+  root.file("package.json", vitePackageJson(project.name));
+  root.file("vite.config.ts", viteConfig());
+  root.file("tailwind.config.js", tailwindConfig());
+  root.file(
+    "postcss.config.js",
+    `module.exports = { plugins: { tailwindcss: {}, autoprefixer: {} } };\n`
+  );
+  root.file("tsconfig.json", nextTsconfig());
+  root.file(
+    "README.md",
+    `# ${project.name}\n\nExported from BuildBoard as a Vite + React Router SPA.\n\n` +
+      "```bash\nnpm install\nnpm run dev\n```\n\n" +
+      `Routes are wired in \`src/App.tsx\`. Components reference shadcn/ui primitives — ` +
+      `run \`npx shadcn@latest init\` and add the referenced primitives to compile.\n`
+  );
+
+  const blob = await zip.generateAsync({ type: "blob" });
+  triggerDownload(`${pascalCase(project.name) || "project"}-vite.zip`, blob);
+}
+
+function viteApp(routes: { comp: string; path: string }[]): string {
+  const imports = routes
+    .map((r) => `import ${r.comp} from "./pages/${r.comp}";`)
+    .join("\n");
+  const routeEls = routes
+    .map((r) => `        <Route path="${r.path}" element={<${r.comp} />} />`)
+    .join("\n");
+  return `import { Routes, Route } from "react-router-dom";
+${imports}
+
+export default function App() {
+  return (
+    <Routes>
+${routeEls}
+    </Routes>
+  );
+}
+`;
+}
+
+function viteIndexHtml(
+  project: Project,
+  icon: { name: string; mime: string } | null
+): string {
+  const meta = project.meta ?? {};
+  const themeColor = meta.themeColor ?? "#00a562";
+  const iconTag = icon
+    ? `\n    <link rel="icon" type="${icon.mime}" href="/${icon.name}" />`
+    : "";
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="${themeColor}" />${iconTag}
+    <title>${project.name}</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+`;
+}
+
+function vitePackageJson(name: string): string {
+  return (
+    JSON.stringify(
+      {
+        name: (pascalCase(name) || "project").toLowerCase(),
+        private: true,
+        type: "module",
+        scripts: { dev: "vite", build: "tsc && vite build", preview: "vite preview" },
+        dependencies: {
+          react: "^18.3.1",
+          "react-dom": "^18.3.1",
+          "react-router-dom": "^6.28.0",
+        },
+        devDependencies: {
+          "@types/react": "^18",
+          "@types/react-dom": "^18",
+          "@vitejs/plugin-react": "^4.3.0",
+          autoprefixer: "^10.4.0",
+          postcss: "^8.4.0",
+          tailwindcss: "^3.4.0",
+          typescript: "^5.4.0",
+          vite: "^5.4.0",
+        },
+      },
+      null,
+      2
+    ) + "\n"
+  );
+}
+
+function viteConfig(): string {
+  return `import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import { resolve } from "node:path";
+
+export default defineConfig({
+  plugins: [react()],
+  resolve: { alias: { "@": resolve(__dirname, "src") } },
+});
+`;
+}
+
 function rootLayout(project: Project): string {
   const title = JSON.stringify(project.name);
   const desc = JSON.stringify(

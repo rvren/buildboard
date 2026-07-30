@@ -50,7 +50,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { generatePageCode } from "@/lib/codegen";
-import { downloadText, exportProjectZip, exportNextProjectZip } from "@/lib/export";
+import {
+  downloadText,
+  exportProjectZip,
+  exportNextProjectZip,
+  exportViteProjectZip,
+} from "@/lib/export";
 import { DataSourcesDialog } from "./data/DataSourcesDialog";
 import { GitHubDialog } from "./publish/GitHubDialog";
 import { AiDialog } from "./ai/AiDialog";
@@ -351,6 +356,15 @@ export function TopBar({ project }: { project: Project }) {
             >
               <AppWindow className="h-4 w-4" />
               Next.js app (App Router)
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={async () => {
+                await exportViteProjectZip(project);
+                toast.success("Vite app exported");
+              }}
+            >
+              <AppWindow className="h-4 w-4" />
+              Vite + React Router (SPA)
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
