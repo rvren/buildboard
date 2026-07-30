@@ -230,6 +230,8 @@ interface EditorState {
   createComponentFromNode: (nodeId: string, name: string) => string | null;
   renameComponentDefinition: (id: string, name: string) => void;
   deleteComponentDefinition: (id: string) => void;
+  /** Import component definitions (from a JSON library) with fresh ids. */
+  importComponents: (defs: ComponentDefinition[]) => number;
   createInstance: (
     parentId: string,
     defId: string,
@@ -1327,6 +1329,44 @@ export const useEditor = create<EditorState>()(
             }),
           };
         }),
+
+      importComponents: (defs) => {
+        if (!Array.isArray(defs) || !defs.length) return 0;
+        // Fresh def ids + node ids; remap nested instanceOf references.
+        const idMap = new Map<string, string>();
+        for (const d of defs) if (d?.id) idMap.set(d.id, uid("comp"));
+        const remap = (node: DesignNode): DesignNode => ({
+          ...node,
+          instanceOf:
+            node.instanceOf && idMap.has(node.instanceOf)
+              ? idMap.get(node.instanceOf)
+              : node.instanceOf,
+          children: (node.children ?? []).map(remap),
+        });
+        const cloned: ComponentDefinition[] = defs
+          .filter((d) => d && d.root && d.id)
+          .map((d) => ({
+            id: idMap.get(d.id)!,
+            name: d.name || "Component",
+            variants: d.variants,
+            root: remap(cloneNodeWithNewIds(d.root, uid)),
+          }));
+        if (!cloned.length) return 0;
+        set((s) => ({
+          projects: s.projects.map((p) =>
+            p.id === s.currentProjectId
+              ? touch({
+                  ...p,
+                  designSystem: {
+                    ...p.designSystem,
+                    components: [...p.designSystem.components, ...cloned],
+                  },
+                })
+              : p
+          ),
+        }));
+        return cloned.length;
+      },
 
       createInstance: (parentId, defId, index = -1) => {
         const project = get().currentProject();

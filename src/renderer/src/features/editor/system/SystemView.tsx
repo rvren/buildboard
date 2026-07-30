@@ -719,6 +719,34 @@ function ComponentsSection({ project }: { project: Project }) {
   );
   const createInstance = useEditor((s) => s.createInstance);
   const editComponent = useEditor((s) => s.editComponent);
+  const importComponents = useEditor((s) => s.importComponents);
+  const libRef = useRef<HTMLInputElement>(null);
+
+  const slug = project.name.replace(/\s+/g, "-").toLowerCase() || "components";
+  const exportLibrary = () => {
+    if (!components.length) {
+      toast.error("No components to export");
+      return;
+    }
+    downloadText(`${slug}-components.json`, JSON.stringify(components, null, 2));
+    toast.success("Component library exported");
+  };
+  const onImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    void file.text().then((text) => {
+      try {
+        const parsed = JSON.parse(text);
+        const defs = Array.isArray(parsed) ? parsed : parsed?.components;
+        const n = importComponents(defs);
+        if (n > 0) toast.success(`Imported ${n} component${n === 1 ? "" : "s"}`);
+        else toast.error("No components found in that file");
+      } catch {
+        toast.error("Invalid components file");
+      }
+    });
+  };
 
   const edit = (id: string) => editComponent(id);
 
@@ -738,7 +766,34 @@ function ComponentsSection({ project }: { project: Project }) {
         <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground/70">
           Components
         </h2>
-        <NewComponentButton count={components.length} className="h-7" />
+        <div className="flex items-center gap-1.5">
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 gap-1.5"
+            onClick={exportLibrary}
+          >
+            <Download className="h-3.5 w-3.5" />
+            Export
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 gap-1.5"
+            onClick={() => libRef.current?.click()}
+          >
+            <Upload className="h-3.5 w-3.5" />
+            Import
+          </Button>
+          <input
+            ref={libRef}
+            type="file"
+            accept="application/json,.json"
+            className="hidden"
+            onChange={onImportFile}
+          />
+          <NewComponentButton count={components.length} className="h-7" />
+        </div>
       </div>
 
       {components.length === 0 ? (
