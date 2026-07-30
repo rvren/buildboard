@@ -146,6 +146,10 @@ interface EditorState {
     patch: Partial<Pick<Screen, "title" | "description" | "path">>
   ) => void;
   deleteScreen: (id: string) => void;
+  /** Deep-clone a screen (fresh node ids) and select the copy. */
+  duplicateScreen: (id: string) => void;
+  /** Move a screen left/right in the switcher order. */
+  moveScreen: (id: string, dir: -1 | 1) => void;
 
   // ----- nodes
   addNode: (parentId: string, type: NodeType, index?: number) => string | null;
@@ -520,6 +524,47 @@ export const useEditor = create<EditorState>()(
             ),
             currentScreenId: screen.id,
             selectedNodeId: null,
+          };
+        }),
+
+      duplicateScreen: (id) =>
+        set((s) => {
+          const project = s.projects.find((p) => p.id === s.currentProjectId);
+          const src = project?.screens.find((sc) => sc.id === id);
+          if (!project || !src) return {};
+          const idx = project.screens.findIndex((sc) => sc.id === id);
+          const copy: Screen = {
+            ...src,
+            id: uid("screen"),
+            name: `${src.name} copy`,
+            x: src.x + 1280 + 120,
+            root: cloneNodeWithNewIds(src.root, uid),
+          };
+          const screens = [...project.screens];
+          screens.splice(idx + 1, 0, copy);
+          return {
+            projects: s.projects.map((p) =>
+              p.id === project.id ? touch({ ...p, screens }) : p
+            ),
+            currentScreenId: copy.id,
+            selectedNodeId: null,
+          };
+        }),
+
+      moveScreen: (id, dir) =>
+        set((s) => {
+          const project = s.projects.find((p) => p.id === s.currentProjectId);
+          if (!project) return {};
+          const idx = project.screens.findIndex((sc) => sc.id === id);
+          const to = idx + dir;
+          if (idx < 0 || to < 0 || to >= project.screens.length) return {};
+          const screens = [...project.screens];
+          const [moved] = screens.splice(idx, 1);
+          screens.splice(to, 0, moved);
+          return {
+            projects: s.projects.map((p) =>
+              p.id === project.id ? touch({ ...p, screens }) : p
+            ),
           };
         }),
 

@@ -16,6 +16,10 @@ import {
   Search,
   Undo2,
   Redo2,
+  Copy,
+  ArrowLeft,
+  ArrowRight,
+  Trash2,
   AppWindow,
   Smartphone,
   Tablet,
@@ -56,6 +60,9 @@ export function TopBar({ project }: { project: Project }) {
   const currentScreenId = useEditor((s) => s.currentScreenId);
   const selectScreen = useEditor((s) => s.selectScreen);
   const addScreen = useEditor((s) => s.addScreen);
+  const duplicateScreen = useEditor((s) => s.duplicateScreen);
+  const moveScreen = useEditor((s) => s.moveScreen);
+  const deleteScreen = useEditor((s) => s.deleteScreen);
   const renameProject = useEditor((s) => s.renameProject);
   const setProjectMode = useEditor((s) => s.setProjectMode);
   const previewMode = useEditor((s) => s.previewMode);
@@ -171,20 +178,62 @@ export function TopBar({ project }: { project: Project }) {
           editorView !== "design" && "pointer-events-none opacity-40"
         )}
       >
-        {project.screens.map((screen) => (
-          <button
+        {project.screens.map((screen, i) => (
+          <div
             key={screen.id}
-            onClick={() => selectScreen(screen.id)}
             className={cn(
-              "flex h-7 items-center gap-1.5 whitespace-nowrap rounded-md px-2.5 text-xs font-medium transition-colors",
+              "flex h-7 items-center whitespace-nowrap rounded-md text-xs font-medium transition-colors",
               currentScreenId === screen.id
                 ? "bg-muted text-foreground"
                 : "text-muted-foreground hover:bg-muted/60"
             )}
           >
-            <MonitorSmartphone className="h-3.5 w-3.5" />
-            {screen.name}
-          </button>
+            <button
+              onClick={() => selectScreen(screen.id)}
+              className="flex h-full items-center gap-1.5 rounded-l-md pl-2.5 pr-1.5"
+            >
+              <MonitorSmartphone className="h-3.5 w-3.5" />
+              {screen.name}
+            </button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className="grid h-full place-items-center rounded-r-md pr-1.5 pl-0.5 opacity-60 hover:opacity-100"
+                  title="Screen options"
+                >
+                  <ChevronDown className="h-3 w-3" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-40">
+                <DropdownMenuItem onClick={() => duplicateScreen(screen.id)}>
+                  <Copy className="h-3.5 w-3.5" />
+                  Duplicate
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  disabled={i === 0}
+                  onClick={() => moveScreen(screen.id, -1)}
+                >
+                  <ArrowLeft className="h-3.5 w-3.5" />
+                  Move left
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  disabled={i === project.screens.length - 1}
+                  onClick={() => moveScreen(screen.id, 1)}
+                >
+                  <ArrowRight className="h-3.5 w-3.5" />
+                  Move right
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  disabled={project.screens.length <= 1}
+                  onClick={() => deleteScreen(screen.id)}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         ))}
         <Button
           variant="ghost"
