@@ -235,6 +235,7 @@ function walk(node: DesignNode, depth: number, ctx: Ctx): WalkResult {
   } else {
     el.push(`${pad}<${spec.tag}${attrStr}>`);
     for (const child of node.children) {
+      if (child.hidden) continue; // hidden nodes are omitted from export
       const res = walk(child, elDepth + 1, ctx);
       el.push(...res.lines);
       imports.push(...res.imports);

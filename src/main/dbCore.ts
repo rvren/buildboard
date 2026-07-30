@@ -38,7 +38,7 @@ export const PALETTE_KEYS = [
   "brandTo",
 ] as const;
 
-const SCHEMA_VERSION = 4;
+const SCHEMA_VERSION = 5;
 
 export function openDb(path: string): Database.Database {
   const db = new DatabaseCtor(path);
@@ -102,7 +102,8 @@ export function ensureSchema(db: Database.Database): void {
       instance_of TEXT,
       overrides TEXT,
       responsive TEXT,
-      variant TEXT
+      variant TEXT,
+      hidden INTEGER
     );
     CREATE INDEX IF NOT EXISTS idx_nodes_owner ON nodes(project_id, owner_kind, owner_id);
 
@@ -234,6 +235,10 @@ export function ensureSchema(db: Database.Database): void {
       if (!screenCols.includes(col)) {
         db.exec(`ALTER TABLE screens ADD COLUMN ${col} TEXT`);
       }
+    }
+    // v5: per-node hidden flag (Layers panel show/hide).
+    if (!nodeCols.includes("hidden")) {
+      db.exec("ALTER TABLE nodes ADD COLUMN hidden INTEGER");
     }
     db.pragma(`user_version = ${SCHEMA_VERSION}`);
   }

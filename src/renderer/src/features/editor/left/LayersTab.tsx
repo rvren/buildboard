@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { DesignNode } from "@/types";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -5,6 +6,8 @@ import {
   ChevronDown,
   Copy,
   Trash2,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { listRow } from "@/lib/motion";
 import { defFor } from "@/lib/nodeDefs";
@@ -41,7 +44,16 @@ function LayerRow({
   const reorderNode = useEditor((s) => s.reorderNode);
   const duplicateNode = useEditor((s) => s.duplicateNode);
   const deleteNode = useEditor((s) => s.deleteNode);
+  const renameNode = useEditor((s) => s.renameNode);
+  const toggleNodeHidden = useEditor((s) => s.toggleNodeHidden);
   const selected = selectedId === node.id;
+  const [editing, setEditing] = useState(false);
+  const [name, setName] = useState(node.name || def.label);
+
+  const commit = () => {
+    renameNode(node.id, name.trim() || def.label);
+    setEditing(false);
+  };
 
   return (
     <motion.div layout="position" variants={listRow} initial="initial" animate="animate" exit="exit">
@@ -52,7 +64,8 @@ function LayerRow({
           "group flex h-8 cursor-pointer items-center gap-2 rounded-md pr-1 text-sm transition-colors",
           selected
             ? "bg-primary/10 text-foreground ring-1 ring-primary/20"
-            : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            : "text-muted-foreground hover:bg-muted hover:text-foreground",
+          node.hidden && "opacity-50"
         )}
       >
         <Icon
@@ -61,7 +74,41 @@ function LayerRow({
             selected && "text-primary"
           )}
         />
-        <span className="flex-1 truncate">{node.name || def.label}</span>
+        {editing ? (
+          <input
+            autoFocus
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onBlur={commit}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") commit();
+              if (e.key === "Escape") setEditing(false);
+            }}
+            onClick={(e) => e.stopPropagation()}
+            className="min-w-0 flex-1 rounded bg-background px-1 text-sm outline-none ring-1 ring-primary/40"
+          />
+        ) : (
+          <span
+            className="flex-1 truncate"
+            onDoubleClick={(e) => {
+              e.stopPropagation();
+              setName(node.name || def.label);
+              setEditing(true);
+            }}
+          >
+            {node.name || def.label}
+          </span>
+        )}
+
+        {!isRoot && (
+          <IconBtn
+            onClick={() => toggleNodeHidden(node.id)}
+            title={node.hidden ? "Show" : "Hide"}
+            className={node.hidden ? "opacity-100" : "opacity-0 group-hover:opacity-100"}
+          >
+            {node.hidden ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+          </IconBtn>
+        )}
 
         {!isRoot && (
           <div className="flex items-center opacity-0 transition-opacity group-hover:opacity-100">

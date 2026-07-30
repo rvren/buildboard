@@ -23,9 +23,9 @@ export function StaticNode({ node }: { node: DesignNode }) {
 
   const def = defFor(node.type);
   const className = cn(stylesToTailwind(node.styles));
-  const children = node.children.map((c) => (
-    <StaticNode key={c.id} node={c} />
-  ));
+  const children = node.children
+    .filter((c) => !c.hidden)
+    .map((c) => <StaticNode key={c.id} node={c} />);
   return (
     <>
       {def.render({

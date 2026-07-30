@@ -182,7 +182,9 @@ export function NodeRenderer({ node, isRoot = false }: Props) {
           )
         : node.children.map((c) => <NodeRenderer key={c.id} node={c} />);
     } else {
-      children = node.children.map((c) => <NodeRenderer key={c.id} node={c} />);
+      children = node.children
+        .filter((c) => !c.hidden)
+        .map((c) => <NodeRenderer key={c.id} node={c} />);
     }
   }
 

@@ -101,6 +101,8 @@ export interface DesignNode {
   overrides?: Record<string, any>;
   /** Selected variant id (of the definition's `variants`) for this instance. */
   variant?: string;
+  /** Hidden from the canvas, preview, and export (toggled in the Layers panel). */
+  hidden?: boolean;
 }
 
 export interface Screen {

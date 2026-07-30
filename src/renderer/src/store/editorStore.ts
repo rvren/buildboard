@@ -147,6 +147,8 @@ interface EditorState {
   renameNode: (nodeId: string, name: string) => void;
   deleteNode: (nodeId: string) => void;
   duplicateNode: (nodeId: string) => void;
+  /** Toggle a node's hidden flag (Layers panel show/hide). */
+  toggleNodeHidden: (nodeId: string) => void;
 
   // ----- bindings & actions
   setNodeBinding: (
@@ -648,6 +650,13 @@ export const useEditor = create<EditorState>()(
         set((s) =>
           withActiveRoot(s, (root) =>
             updateNodeById(root, nodeId, (n) => ({ ...n, name }))
+          )
+        ),
+
+      toggleNodeHidden: (nodeId) =>
+        set((s) =>
+          withActiveRoot(s, (root) =>
+            updateNodeById(root, nodeId, (n) => ({ ...n, hidden: !n.hidden }))
           )
         ),
 

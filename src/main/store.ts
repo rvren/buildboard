@@ -52,9 +52,9 @@ function insertNodeTree(
 ): void {
   db.prepare(
     `INSERT INTO nodes(id, project_id, owner_kind, owner_id, parent_id, order_index,
-       type, name, props, styles, bindings, action, repeat, instance_of, overrides, responsive, variant)
+       type, name, props, styles, bindings, action, repeat, instance_of, overrides, responsive, variant, hidden)
      VALUES(@id,@project_id,@owner_kind,@owner_id,@parent_id,@order_index,
-       @type,@name,@props,@styles,@bindings,@action,@repeat,@instance_of,@overrides,@responsive,@variant)`,
+       @type,@name,@props,@styles,@bindings,@action,@repeat,@instance_of,@overrides,@responsive,@variant,@hidden)`,
   ).run({
     id: node.id,
     project_id: projectId,
@@ -73,6 +73,7 @@ function insertNodeTree(
     overrides: j(node.overrides),
     responsive: j(node.responsive),
     variant: node.variant ?? null,
+    hidden: node.hidden ? 1 : null,
   });
   const children = node.children ?? [];
   for (let i = 0; i < children.length; i++) {
@@ -95,6 +96,7 @@ interface NodeRow {
   overrides: string | null;
   responsive: string | null;
   variant: string | null;
+  hidden: number | null;
 }
 
 function loadNodeTree(
@@ -133,6 +135,7 @@ function loadNodeTree(
     const responsive = pj<DesignNode["responsive"]>(r.responsive);
     if (responsive) node.responsive = responsive;
     if (r.variant != null) node.variant = r.variant;
+    if (r.hidden) node.hidden = true;
     byId.set(r.id, node);
   }
 
