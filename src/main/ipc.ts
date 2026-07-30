@@ -2,7 +2,15 @@ import { BrowserWindow, ipcMain } from "electron";
 import type { Project, ThemeMode } from "@shared/types";
 import { CH } from "@shared/constants";
 import { db, getSetting, setSetting } from "./db";
-import { deleteProject, listProjects, saveProject } from "./store";
+import {
+  deleteProject,
+  listProjects,
+  saveProject,
+  listSnapshots,
+  createSnapshot,
+  restoreSnapshot,
+  deleteSnapshot,
+} from "./store";
 import { clearAiKey, hasAiKey, setAiKey } from "./secrets";
 import { aiGenerate } from "./ai";
 
@@ -26,6 +34,20 @@ export function registerIpc(_getWindow: () => BrowserWindow | null): void {
   ipcMain.handle(CH.deleteProject, (_e, id: string) => {
     deleteProject(db(), id);
   });
+
+  // ---- version snapshots ----
+  ipcMain.handle(CH.listSnapshots, (_e, projectId: string) =>
+    listSnapshots(db(), projectId),
+  );
+  ipcMain.handle(CH.createSnapshot, (_e, projectId: string, label: string) =>
+    createSnapshot(db(), projectId, label, Date.now()),
+  );
+  ipcMain.handle(CH.restoreSnapshot, (_e, snapshotId: string) =>
+    restoreSnapshot(db(), snapshotId),
+  );
+  ipcMain.handle(CH.deleteSnapshot, (_e, snapshotId: string) =>
+    deleteSnapshot(db(), snapshotId),
+  );
 
   // ---- AI (BYO Anthropic key) ----
   ipcMain.handle(CH.aiHasKey, () => hasAiKey());

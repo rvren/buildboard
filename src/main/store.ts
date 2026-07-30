@@ -13,6 +13,7 @@ import type {
   SchemaField,
   SeqStep,
   SequenceDiagram,
+  SnapshotMeta,
   ThemeMode,
   ThemePalette,
 } from "@shared/types";
@@ -266,6 +267,66 @@ export function saveProject(db: Database.Database, project: Project): void {
 
 export function deleteProject(db: Database.Database, id: string): void {
   db.prepare("DELETE FROM projects WHERE id = ?").run(id);
+  // Snapshots have no FK cascade (see dbCore) — clean them up here.
+  db.prepare("DELETE FROM project_snapshots WHERE project_id = ?").run(id);
+}
+
+// ---- version snapshots (restorable project timeline) ----
+
+export function listSnapshots(
+  db: Database.Database,
+  projectId: string,
+): SnapshotMeta[] {
+  return (
+    db
+      .prepare(
+        "SELECT id, project_id, label, created_at FROM project_snapshots WHERE project_id = ? ORDER BY created_at DESC",
+      )
+      .all(projectId) as {
+      id: string;
+      project_id: string;
+      label: string | null;
+      created_at: number;
+    }[]
+  ).map((r) => ({
+    id: r.id,
+    projectId: r.project_id,
+    label: r.label ?? "Snapshot",
+    createdAt: r.created_at,
+  }));
+}
+
+export function createSnapshot(
+  db: Database.Database,
+  projectId: string,
+  label: string,
+  now: number,
+): SnapshotMeta | null {
+  const project = getProject(db, projectId);
+  if (!project) return null;
+  const id = `snap_${now.toString(36)}_${Math.floor(now % 1000)}`;
+  db.prepare(
+    "INSERT INTO project_snapshots(id, project_id, label, created_at, data) VALUES(?,?,?,?,?)",
+  ).run(id, projectId, label, now, JSON.stringify(project));
+  return { id, projectId, label, createdAt: now };
+}
+
+export function restoreSnapshot(
+  db: Database.Database,
+  snapshotId: string,
+): Project | null {
+  const row = db
+    .prepare("SELECT data FROM project_snapshots WHERE id = ?")
+    .get(snapshotId) as { data: string } | undefined;
+  if (!row) return null;
+  const project = JSON.parse(row.data) as Project;
+  project.updatedAt = Date.now();
+  saveProject(db, project); // overwrite the live project with the snapshot
+  return project;
+}
+
+export function deleteSnapshot(db: Database.Database, snapshotId: string): void {
+  db.prepare("DELETE FROM project_snapshots WHERE id = ?").run(snapshotId);
 }
 
 // ---- read ----

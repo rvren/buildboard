@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
   LayoutTemplate,
@@ -16,11 +16,15 @@ import {
   AlertTriangle,
   CircleDashed,
   Globe,
+  History,
+  Trash2,
   type LucideIcon,
 } from "lucide-react";
-import type { DesignNode, Project, DataSource } from "@/types";
+import { toast } from "sonner";
+import type { DesignNode, Project, DataSource, SnapshotMeta } from "@/types";
 import { useEditor } from "@/store/editorStore";
 import { useTheme } from "@/store/theme";
+import { persistence } from "@/lib/persistence";
 import { auditProject } from "@/lib/a11y";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -380,8 +384,108 @@ export function OverviewView({ project }: { project: Project }) {
         />
 
         <SiteSettingsSection project={project} />
+
+        <VersionHistorySection project={project} />
       </div>
     </motion.div>
+  );
+}
+
+/** Restorable version snapshots of the project (data you own). */
+function VersionHistorySection({ project }: { project: Project }) {
+  const createSnapshot = useEditor((s) => s.createProjectSnapshot);
+  const restoreSnapshot = useEditor((s) => s.restoreProjectSnapshot);
+  const [snaps, setSnaps] = useState<SnapshotMeta[]>([]);
+  const [label, setLabel] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const refresh = useCallback(() => {
+    void persistence.listSnapshots(project.id).then(setSnaps);
+  }, [project.id]);
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  const save = async () => {
+    setBusy(true);
+    try {
+      await createSnapshot(label);
+      setLabel("");
+      refresh();
+      toast.success("Snapshot saved");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const restore = async (id: string) => {
+    await restoreSnapshot(id);
+    toast.success("Snapshot restored");
+  };
+
+  const remove = async (id: string) => {
+    await persistence.deleteSnapshot(id);
+    refresh();
+  };
+
+  return (
+    <section className="mt-6">
+      <div className="rounded-2xl border border-border/70 bg-card/50 p-5">
+        <div className="mb-3 flex items-center gap-2">
+          <History className="h-4 w-4 text-muted-foreground" />
+          <h2 className="text-sm font-semibold">Version history</h2>
+          <span className="text-xs text-muted-foreground">
+            Save restorable snapshots of this project
+          </span>
+        </div>
+        <div className="mb-3 flex items-center gap-2">
+          <input
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && void save()}
+            placeholder="Snapshot label (optional)"
+            className="h-8 flex-1 rounded-md border border-border bg-transparent px-2.5 text-xs outline-none focus:ring-2 focus:ring-ring"
+          />
+          <Button size="sm" variant="brand" className="h-8" disabled={busy} onClick={save}>
+            <Plus className="h-3.5 w-3.5" />
+            Save snapshot
+          </Button>
+        </div>
+        {snaps.length === 0 ? (
+          <p className="text-xs text-muted-foreground">
+            No snapshots yet. Save one before a risky change so you can roll back.
+          </p>
+        ) : (
+          <ul className="divide-y divide-border/50">
+            {snaps.map((snap) => (
+              <li key={snap.id} className="flex items-center gap-2 py-1.5">
+                <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="flex-1 truncate text-xs">
+                  {snap.label}
+                  <span className="ml-1.5 text-muted-foreground">
+                    · {relativeTime(snap.createdAt)}
+                  </span>
+                </span>
+                <button
+                  onClick={() => restore(snap.id)}
+                  className="rounded-md px-2 py-1 text-[11px] font-medium text-primary hover:bg-primary/10"
+                >
+                  Restore
+                </button>
+                <button
+                  onClick={() => remove(snap.id)}
+                  className="grid h-6 w-6 place-items-center rounded-md text-muted-foreground hover:text-destructive"
+                  title="Delete snapshot"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </section>
   );
 }
 

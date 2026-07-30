@@ -13,4 +13,8 @@ export const CH = {
   aiSetKey: "ai:set-key",
   aiClearKey: "ai:clear-key",
   aiGenerate: "ai:generate",
+  listSnapshots: "snapshots:list",
+  createSnapshot: "snapshots:create",
+  restoreSnapshot: "snapshots:restore",
+  deleteSnapshot: "snapshots:delete",
 } as const;

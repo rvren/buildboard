@@ -322,6 +322,14 @@ export interface Viewport {
 
 export type ThemeState = { mode: ThemeMode };
 
+/** A restorable point-in-time snapshot of a project (metadata only; no tree). */
+export interface SnapshotMeta {
+  id: string;
+  projectId: string;
+  label: string;
+  createdAt: number;
+}
+
 export interface BuildBoardApi {
   /** Persisted projects, hydrated from the normalized SQLite tables. */
   listProjects: () => Promise<Project[]>;
@@ -338,6 +346,11 @@ export interface BuildBoardApi {
   aiGenerate: (
     prompt: string
   ) => Promise<{ ok: true; nodes: DesignNode[] } | { ok: false; error: string }>;
+  // Restorable per-project version snapshots (the project tree, versioned).
+  listSnapshots: (projectId: string) => Promise<SnapshotMeta[]>;
+  createSnapshot: (projectId: string, label: string) => Promise<SnapshotMeta | null>;
+  restoreSnapshot: (snapshotId: string) => Promise<Project | null>;
+  deleteSnapshot: (snapshotId: string) => Promise<void>;
 }
 
 declare global {

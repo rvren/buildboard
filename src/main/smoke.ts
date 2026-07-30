@@ -3,7 +3,15 @@ import { join } from "node:path";
 import { rmSync } from "node:fs";
 import type { DesignNode, Project, ThemePalette } from "@shared/types";
 import { openDb, PALETTE_KEYS } from "./dbCore";
-import { deleteProject, getProject, listProjects, saveProject } from "./store";
+import {
+  deleteProject,
+  getProject,
+  listProjects,
+  saveProject,
+  createSnapshot,
+  listSnapshots,
+  restoreSnapshot,
+} from "./store";
 
 // Headless data-layer smoke: round-trip a fully-populated Project through the
 // normalized SQLite schema (save → reload) and assert the deep tree survives.
@@ -136,9 +144,19 @@ export function runSmoke(): void {
     assert(p!.architecture.sequences[0].steps.length === 2, "sequence steps");
     assert(p!.architecture.interactions[0].from === "svc1", "interaction");
 
+    // version snapshots: create → survives a project rewrite → restore
+    createSnapshot(db, "p1", "v1", 5000);
+    assert(listSnapshots(db, "p1").length === 1, "snapshot created");
+    saveProject(db, { ...orig, name: "Renamed" }); // full-rewrite must NOT wipe snapshots
+    assert(listSnapshots(db, "p1").length === 1, "snapshot survives project rewrite");
+    const restored = restoreSnapshot(db, listSnapshots(db, "p1")[0].id);
+    assert(restored?.name === "Smoke Project", "restore returns snapshot project");
+    assert(getProject(db, "p1")!.name === "Smoke Project", "restore overwrites live project");
+
     // delete cascades
     deleteProject(db, "p1");
     assert(listProjects(db).length === 0, "delete removes project");
+    assert(listSnapshots(db, "p1").length === 0, "delete removes snapshots too");
     assert(
       (db.prepare("SELECT COUNT(*) c FROM nodes").get() as { c: number }).c === 0,
       "delete cascades to nodes",

@@ -141,7 +141,7 @@ design system, and higher-fidelity code export.
 - [x] **B4-6** — Left "Pages" panel: screen thumbnails + select/rename/reorder/duplicate/delete → `v0.1.43`
 - [x] **B4-7** — Global find & replace of text across all screens + components (case option, live match count) → `v0.1.38`
 - [x] **B4-8** — Quick-insert palette (⌘/): type a node name → inserts at the selection (into container, else parent, else root) → `v0.1.39`
-- [ ] **B4-9** — DB version snapshots: restorable per-project timeline (data ownership)
+- [x] **B4-9** — DB version snapshots: save/restore/delete a per-project timeline (new `project_snapshots` table, no-cascade; works web + desktop) → `v0.1.45`
 - [x] **B4-10** — One-click alignment presets (left/center/right/space-between) that set up flexbox for you → `v0.1.37`
 
 ## Process architecture

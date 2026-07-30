@@ -15,6 +15,13 @@ const api: BuildBoardApi = {
   aiSetKey: (key: string) => ipcRenderer.invoke(CH.aiSetKey, key),
   aiClearKey: () => ipcRenderer.invoke(CH.aiClearKey),
   aiGenerate: (prompt: string) => ipcRenderer.invoke(CH.aiGenerate, prompt),
+  listSnapshots: (projectId: string) => ipcRenderer.invoke(CH.listSnapshots, projectId),
+  createSnapshot: (projectId: string, label: string) =>
+    ipcRenderer.invoke(CH.createSnapshot, projectId, label),
+  restoreSnapshot: (snapshotId: string) =>
+    ipcRenderer.invoke(CH.restoreSnapshot, snapshotId),
+  deleteSnapshot: (snapshotId: string) =>
+    ipcRenderer.invoke(CH.deleteSnapshot, snapshotId),
 };
 
 contextBridge.exposeInMainWorld("api", api);

@@ -197,6 +197,19 @@ export function ensureSchema(db: Database.Database): void {
       order_index INTEGER NOT NULL
     );
 
+    -- Restorable project snapshots. Deliberately NO foreign key: saveProject
+    -- rewrites the project row on every autosave (delete + reinsert), which would
+    -- cascade-wipe snapshots. We store the full Project JSON and clean up manually
+    -- in deleteProject.
+    CREATE TABLE IF NOT EXISTS project_snapshots (
+      id TEXT PRIMARY KEY,
+      project_id TEXT NOT NULL,
+      label TEXT,
+      created_at INTEGER NOT NULL,
+      data TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_snapshots_project ON project_snapshots(project_id);
+
     CREATE TABLE IF NOT EXISTS seq_steps (
       id TEXT PRIMARY KEY,
       sequence_id TEXT NOT NULL REFERENCES sequences(id) ON DELETE CASCADE,

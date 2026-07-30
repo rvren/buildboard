@@ -131,6 +131,10 @@ interface EditorState {
   renameProject: (id: string, name: string) => void;
   /** Patch a project's site meta (favicon + PWA/theme-color). */
   updateProjectMeta: (id: string, patch: Partial<ProjectMeta>) => void;
+  /** Save a restorable snapshot of the current project. */
+  createProjectSnapshot: (label: string) => Promise<void>;
+  /** Restore a snapshot into the live project (overwrites it). */
+  restoreProjectSnapshot: (snapshotId: string) => Promise<void>;
   // ----- global find & replace (text content across all screens + components)
   findReplaceOpen: boolean;
   setFindReplaceOpen: (v: boolean) => void;
@@ -481,6 +485,26 @@ export const useEditor = create<EditorState>()(
           currentProjectId:
             s.currentProjectId === id ? null : s.currentProjectId,
         })),
+
+      createProjectSnapshot: async (label) => {
+        const project = get().currentProject();
+        if (!project) return;
+        // Flush the latest state to the backend first so the snapshot is current.
+        await persistence.saveProject(project);
+        await persistence.createSnapshot(project.id, label.trim() || "Snapshot");
+      },
+
+      restoreProjectSnapshot: async (snapshotId) => {
+        const restored = await persistence.restoreSnapshot(snapshotId);
+        if (!restored) return;
+        set((s) => ({
+          projects: s.projects.map((p) =>
+            p.id === restored.id ? restored : p
+          ),
+          selectedNodeId: null,
+          selectedNodeIds: [],
+        }));
+      },
 
       findReplaceOpen: false,
       setFindReplaceOpen: (v) => set({ findReplaceOpen: v }),
