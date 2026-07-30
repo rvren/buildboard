@@ -321,6 +321,13 @@ export interface BuildBoardApi {
   /** Synchronous theme read for the no-flash boot script. */
   getThemeSync: () => ThemeState;
   setTheme: (mode: ThemeMode) => Promise<void>;
+  // AI generate-from-prompt (BYO Anthropic key; desktop only).
+  aiHasKey: () => Promise<boolean>;
+  aiSetKey: (key: string) => Promise<void>;
+  aiClearKey: () => Promise<void>;
+  aiGenerate: (
+    prompt: string
+  ) => Promise<{ ok: true; nodes: DesignNode[] } | { ok: false; error: string }>;
 }
 
 declare global {

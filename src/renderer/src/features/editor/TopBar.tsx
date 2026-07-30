@@ -20,6 +20,7 @@ import {
   Smartphone,
   Tablet,
   Monitor,
+  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 import type { Breakpoint, ProjectMode } from "@/types";
@@ -48,6 +49,8 @@ import { generatePageCode } from "@/lib/codegen";
 import { downloadText, exportProjectZip } from "@/lib/export";
 import { DataSourcesDialog } from "./data/DataSourcesDialog";
 import { GitHubDialog } from "./publish/GitHubDialog";
+import { AiDialog } from "./ai/AiDialog";
+import { isDesktop } from "@/lib/persistence";
 
 export function TopBar({ project }: { project: Project }) {
   const currentScreenId = useEditor((s) => s.currentScreenId);
@@ -74,6 +77,7 @@ export function TopBar({ project }: { project: Project }) {
 
   const [editingName, setEditingName] = useState(false);
   const [name, setName] = useState(project.name);
+  const [aiOpen, setAiOpen] = useState(false);
   const dataCount = project.dataSources?.length ?? 0;
 
   const commitName = () => {
@@ -205,6 +209,19 @@ export function TopBar({ project }: { project: Project }) {
             ⌘K
           </kbd>
         </button>
+        {isDesktop && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-1.5 text-primary hover:text-primary"
+            onClick={() => setAiOpen(true)}
+            title="Generate UI with AI"
+          >
+            <Sparkles className="h-4 w-4" />
+            AI
+          </Button>
+        )}
+        {isDesktop && <AiDialog open={aiOpen} onOpenChange={setAiOpen} />}
         <Button
           variant={previewMode ? "default" : "ghost"}
           size="sm"

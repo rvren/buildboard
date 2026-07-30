@@ -11,6 +11,10 @@ const api: BuildBoardApi = {
   deleteProject: (id: string): Promise<void> => ipcRenderer.invoke(CH.deleteProject, id),
   getThemeSync: (): ThemeState => ipcRenderer.sendSync(CH.themeSync),
   setTheme: (mode: ThemeMode): Promise<void> => ipcRenderer.invoke(CH.themeSet, mode),
+  aiHasKey: () => ipcRenderer.invoke(CH.aiHasKey),
+  aiSetKey: (key: string) => ipcRenderer.invoke(CH.aiSetKey, key),
+  aiClearKey: () => ipcRenderer.invoke(CH.aiClearKey),
+  aiGenerate: (prompt: string) => ipcRenderer.invoke(CH.aiGenerate, prompt),
 };
 
 contextBridge.exposeInMainWorld("api", api);

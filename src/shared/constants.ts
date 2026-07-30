@@ -9,4 +9,8 @@ export const CH = {
   listProjects: "projects:list",
   saveProject: "projects:save",
   deleteProject: "projects:delete",
+  aiHasKey: "ai:has-key",
+  aiSetKey: "ai:set-key",
+  aiClearKey: "ai:clear-key",
+  aiGenerate: "ai:generate",
 } as const;
