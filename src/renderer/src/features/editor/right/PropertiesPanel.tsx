@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import type { DesignNode, NodeAction, SchemaField, Screen } from "@/types";
 import { ITEM_SOURCE, SCREEN_SOURCE } from "@/types";
 import { defFor } from "@/lib/nodeDefs";
+import { textSlots } from "@/lib/instance";
 import { generateComponentCode } from "@/lib/codegen";
 import { effectiveTokens } from "@/lib/styles";
 import { findNode, findParent, findPath, findRepeatAncestor } from "@/lib/tree";
@@ -250,6 +251,28 @@ function InstanceProps({ node }: { node: DesignNode }) {
             </p>
           </Section>
         )}
+        {def && (() => {
+          const slots = textSlots(def);
+          if (!slots.length) return null;
+          return (
+            <Section title="Content slots">
+              <p className="px-0.5 pb-1 text-[11px] text-muted-foreground">
+                Override the text inside this instance without changing the
+                component.
+              </p>
+              {slots.map((slot) => (
+                <Row key={slot.key} label={slot.label}>
+                  <TextControl
+                    value={node.overrides?.[slot.key] ?? slot.defaultValue}
+                    onChange={(v) =>
+                      setInstanceOverride(node.id, { [slot.key]: v })
+                    }
+                  />
+                </Row>
+              ))}
+            </Section>
+          );
+        })()}
       </ScrollArea>
     </div>
   );

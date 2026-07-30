@@ -1,5 +1,6 @@
 import * as React from "react";
 import type { ComponentDefinition, DesignNode } from "@/types";
+import { resolveInstanceTree } from "@/lib/instance";
 
 /**
  * Design-system component definitions in scope for the tree currently being
@@ -39,12 +40,5 @@ export function resolveInstance(
   if (!node.instanceOf) return null;
   const def = defs.find((c) => c.id === node.instanceOf);
   if (!def) return null;
-  const variant = node.variant
-    ? def.variants?.find((v) => v.id === node.variant)
-    : undefined;
-  return {
-    ...def.root,
-    styles: { ...def.root.styles, ...(variant?.styles ?? {}) },
-    props: { ...def.root.props, ...(node.overrides ?? {}) },
-  };
+  return resolveInstanceTree(def, node);
 }

@@ -8,6 +8,7 @@ import type {
 } from "@/types";
 import { ITEM_SOURCE, SCREEN_SOURCE } from "@/types";
 import { responsiveClasses } from "@/lib/styles";
+import { resolveInstanceTree } from "@/lib/instance";
 import { defFor, type ImportSpec } from "@/lib/nodeDefs";
 
 const INDENT = "  ";
@@ -160,11 +161,7 @@ function walk(node: DesignNode, depth: number, ctx: Ctx): WalkResult {
       : undefined;
     const hasOverrides = !!node.overrides && Object.keys(node.overrides).length > 0;
     if (variant || hasOverrides) {
-      const resolved: DesignNode = {
-        ...def.root,
-        styles: { ...def.root.styles, ...(variant?.styles ?? {}) },
-        props: { ...def.root.props, ...(node.overrides ?? {}) },
-      };
+      const resolved = resolveInstanceTree(def, node);
       return walk(resolved, depth, ctx);
     }
     const name = registerDef(def, ctx);
