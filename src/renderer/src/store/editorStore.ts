@@ -162,6 +162,8 @@ interface EditorState {
   renameNode: (nodeId: string, name: string) => void;
   deleteNode: (nodeId: string) => void;
   duplicateNode: (nodeId: string) => void;
+  /** Wrap a node in a new Container ("group"); selects the container. */
+  wrapSelection: (nodeId: string) => void;
   /** Toggle a node's hidden flag (Layers panel show/hide). */
   toggleNodeHidden: (nodeId: string) => void;
   /** Copy / cut a node to the app clipboard; paste into the selection or root. */
@@ -787,6 +789,30 @@ export const useEditor = create<EditorState>()(
           )
         );
         set({ selectedNodeId: copy.id });
+      },
+
+      wrapSelection: (nodeId) => {
+        const root = get().currentRoot();
+        if (!root || root.id === nodeId) return;
+        const loc = findParent(root, nodeId);
+        const original = findNode(root, nodeId);
+        if (!loc || !original) return;
+        const container = createNode("Container");
+        container.styles = {
+          ...container.styles,
+          display: "flex",
+          direction: "col",
+          gap: 2,
+        };
+        container.name = "Group";
+        container.children = [original];
+        set((s) =>
+          withActiveRoot(s, (r) => {
+            const removed = removeNode(r, nodeId).tree;
+            return insertChild(removed, loc.parent.id, container, loc.index);
+          })
+        );
+        set({ selectedNodeId: container.id });
       },
 
       setNodeBinding: (nodeId, prop, binding) =>

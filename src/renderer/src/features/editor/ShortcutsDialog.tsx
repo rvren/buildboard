@@ -27,6 +27,7 @@ const GROUPS: { title: string; items: [string, string][] }[] = [
       [`${MOD} X`, "Cut selection"],
       [`${MOD} V`, "Paste"],
       [`${MOD} D`, "Duplicate selection"],
+      [`${MOD} G`, "Group selection in a Container"],
       ["Delete", "Delete selection"],
       ["Esc", "Select parent / deselect"],
     ],

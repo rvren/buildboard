@@ -548,6 +548,9 @@ function useKeyboardShortcuts() {
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "d") {
         e.preventDefault();
         store.duplicateNode(id);
+      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "g") {
+        e.preventDefault();
+        store.wrapSelection(id);
       } else if (e.key === "Escape") {
         // Step up the tree: select the parent, or deselect at the root.
         const root = store.currentRoot();
