@@ -275,3 +275,27 @@ export interface Viewport {
   y: number;
   zoom: number;
 }
+
+// ---------------------------------------------------------------------------
+// Desktop bridge — the renderer↔main surface. The renderer has no Node/DB
+// access; everything flows through the preload's typed `window.api`.
+// ---------------------------------------------------------------------------
+
+export type ThemeState = { mode: ThemeMode };
+
+export interface BuildBoardApi {
+  /** Persisted projects, hydrated from the normalized SQLite tables. */
+  listProjects: () => Promise<Project[]>;
+  /** Full-rewrite of one project (delete its rows + reinsert) in a transaction. */
+  saveProject: (project: Project) => Promise<void>;
+  deleteProject: (id: string) => Promise<void>;
+  /** Synchronous theme read for the no-flash boot script. */
+  getThemeSync: () => ThemeState;
+  setTheme: (mode: ThemeMode) => Promise<void>;
+}
+
+declare global {
+  interface Window {
+    api: BuildBoardApi;
+  }
+}

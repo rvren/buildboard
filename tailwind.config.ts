@@ -3,7 +3,10 @@ import animate from "tailwindcss-animate";
 
 export default {
   darkMode: ["class"],
-  content: ["./index.html", "./src/**/*.{ts,tsx}"],
+  content: [
+    "./src/renderer/index.html",
+    "./src/renderer/src/**/*.{ts,tsx}",
+  ],
   // These classes are composed dynamically from style tokens at runtime, so
   // Tailwind's content scanner can't see them as literals. Safelist the
   // finite ranges the editor can produce.

@@ -1,0 +1,16 @@
+import { contextBridge, ipcRenderer } from "electron";
+import type { BuildBoardApi, Project, ThemeMode, ThemeState } from "@shared/types";
+import { CH } from "@shared/constants";
+
+// The single renderer↔main surface. Everything the renderer can do to persist state
+// is here; there is no Node/DB access in the renderer itself.
+
+const api: BuildBoardApi = {
+  listProjects: (): Promise<Project[]> => ipcRenderer.invoke(CH.listProjects),
+  saveProject: (project: Project): Promise<void> => ipcRenderer.invoke(CH.saveProject, project),
+  deleteProject: (id: string): Promise<void> => ipcRenderer.invoke(CH.deleteProject, id),
+  getThemeSync: (): ThemeState => ipcRenderer.sendSync(CH.themeSync),
+  setTheme: (mode: ThemeMode): Promise<void> => ipcRenderer.invoke(CH.themeSet, mode),
+};
+
+contextBridge.exposeInMainWorld("api", api);

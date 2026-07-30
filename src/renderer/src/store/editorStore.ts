@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 import type {
   Architecture,
   ComponentDefinition,
@@ -298,8 +297,7 @@ function replaceInstances(
 }
 
 export const useEditor = create<EditorState>()(
-  persist(
-    (set, get) => ({
+  (set, get) => ({
       projects: [],
       currentProjectId: null,
       currentScreenId: null,
@@ -1077,34 +1075,71 @@ export const useEditor = create<EditorState>()(
         }
         return p.screens.find((s) => s.id === st.currentScreenId)?.root;
       },
-    }),
-    {
-      name: "buildboard-store",
-      version: 6,
-      partialize: (s) => ({ projects: s.projects }),
-      migrate: (persisted: any) => {
-        if (persisted?.projects) {
-          persisted.projects = persisted.projects.map((p: any) => {
-            const ds = p.designSystem ?? defaultDesignSystem();
-            return {
-              ...p,
-              mode: p.mode ?? "static",
-              dataSources: (p.dataSources ?? []).map((d: any) => ({
-                ...d,
-                kind: d.kind ?? "api",
-              })),
-              designSystem: {
-                ...ds,
-                tokens: normalizeTokens(ds.tokens),
-                presets: ds.presets ?? [],
-                components: ds.components ?? [],
-              },
-              architecture: p.architecture ?? defaultArchitecture(),
-            };
-          });
-        }
-        return persisted;
-      },
-    }
-  )
+    })
 );
+
+// ---------------------------------------------------------------------------
+// Persistence — normalized SQLite via the desktop bridge (window.api). The
+// store's action API is unchanged; only the backend moved off localStorage.
+// Boot hydrates from the DB; every mutation autosaves the changed project(s) on
+// a debounce, and removed projects are deleted.
+// ---------------------------------------------------------------------------
+
+/** Backfill any missing token keys on a hydrated project (old/partial palettes). */
+function hydrateProject(p: Project): Project {
+  const ds = p.designSystem ?? defaultDesignSystem();
+  return {
+    ...p,
+    designSystem: {
+      ...ds,
+      tokens: normalizeTokens(ds.tokens),
+      presets: ds.presets ?? [],
+      components: ds.components ?? [],
+    },
+    architecture: p.architecture ?? defaultArchitecture(),
+  };
+}
+
+let _hydrating = false;
+let _prevProjects: Project[] = [];
+const _pending = new Map<string, Project>();
+let _saveTimer: ReturnType<typeof setTimeout> | null = null;
+
+function _flush() {
+  _saveTimer = null;
+  for (const p of _pending.values()) void window.api.saveProject(p);
+  _pending.clear();
+}
+
+/** Load persisted projects once, before the app renders. */
+export async function initEditorStore(): Promise<void> {
+  _hydrating = true;
+  try {
+    const loaded = (await window.api.listProjects()).map(hydrateProject);
+    useEditor.setState({ projects: loaded });
+    _prevProjects = useEditor.getState().projects;
+  } finally {
+    _hydrating = false;
+  }
+}
+
+// Diff-by-reference autosave: immutable updates give changed projects new refs.
+useEditor.subscribe((state) => {
+  const next = state.projects;
+  if (_hydrating || next === _prevProjects) return;
+  const prev = _prevProjects;
+  _prevProjects = next;
+
+  const nextIds = new Set(next.map((p) => p.id));
+  for (const p of prev) {
+    if (!nextIds.has(p.id)) void window.api.deleteProject(p.id);
+  }
+  const prevById = new Map(prev.map((p) => [p.id, p] as const));
+  for (const p of next) {
+    if (prevById.get(p.id) !== p) _pending.set(p.id, p);
+  }
+  if (_pending.size) {
+    if (_saveTimer) clearTimeout(_saveTimer);
+    _saveTimer = setTimeout(_flush, 400);
+  }
+});
