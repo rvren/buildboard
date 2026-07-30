@@ -3,6 +3,7 @@ export type NodeType =
   | "Grid"
   | "Heading"
   | "Text"
+  | "Link"
   | "Button"
   | "Input"
   | "Textarea"

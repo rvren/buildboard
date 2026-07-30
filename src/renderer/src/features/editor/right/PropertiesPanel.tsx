@@ -466,6 +466,19 @@ function ContentSection({ node }: { node: DesignNode }) {
           </BindableField>
         </Section>
       );
+    case "Link":
+      return (
+        <Section title="Content">
+          <Row label="Text">
+            <BindableField node={node} prop="content">
+              <TextControl value={p.content} onChange={(v) => set({ content: v })} />
+            </BindableField>
+          </Row>
+          <Row label="Href">
+            <TextControl value={p.href ?? ""} onChange={(v) => set({ href: v })} />
+          </Row>
+        </Section>
+      );
     case "Button":
       return (
         <>

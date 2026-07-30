@@ -4,6 +4,7 @@ import {
   LayoutGrid,
   Heading as HeadingIcon,
   Type,
+  Link2,
   RectangleHorizontal,
   TextCursorInput,
   AlignLeft,
@@ -176,6 +177,29 @@ export const nodeDefs: Record<NodeType, NodeDef> = {
       tag: "p",
       imports: [],
       attrs: [],
+      text: node.props.content,
+    }),
+  },
+
+  Link: {
+    type: "Link",
+    label: "Link",
+    category: "Typography",
+    icon: Link2,
+    canHaveChildren: false,
+    defaultProps: { content: "Link", href: "/" },
+    defaultStyles: { textColor: "primary" },
+    // No functional href on the canvas so clicking selects (never navigates);
+    // codegen emits the real anchor.
+    render: ({ node, className, rootProps }) => (
+      <a className={className} {...rootProps}>
+        {node.props.content}
+      </a>
+    ),
+    codegen: (node) => ({
+      tag: "a",
+      imports: [],
+      attrs: [`href=${JSON.stringify(node.props.href || "#")}`],
       text: node.props.content,
     }),
   },

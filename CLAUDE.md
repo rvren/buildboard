@@ -105,7 +105,7 @@ design system, and higher-fidelity code export.
 > balanced across the themes and anchored to the vision (designers → apps/websites → real code).
 - [x] **B2-1** — Layers panel: inline rename (dbl-click) + hide/show toggle (persisted) + reorder → `v0.1.12`
 - [x] **B2-2** — Copy / cut / paste nodes across screens (⌘C/⌘X/⌘V, app clipboard) → `v0.1.13`
-- [ ] **B2-3** — Nav component + Link primitive for multi-page sites (websites & pages)
+- [x] **B2-3** — Link primitive (<a href>, editable text/href, exported) + Navbar starter uses it → `v0.1.14`
 - [ ] **B2-4** — Device-width artboard presets (mobile/tablet/desktop) + quick resize (websites & pages)
 - [ ] **B2-5** — Production export: multi-file project + per-component files + copy JSX (export/ownership)
 - [ ] **B2-6** — Image & asset handling (import SVG/PNG, bundle on export) (design authoring)

@@ -16,6 +16,7 @@ const INDENT = "  ";
 const TEXT_PROP: Partial<Record<string, string>> = {
   Heading: "content",
   Text: "content",
+  Link: "content",
   Button: "label",
   Badge: "label",
 };

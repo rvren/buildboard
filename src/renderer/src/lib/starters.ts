@@ -85,9 +85,9 @@ export const STARTERS: Starter[] = [
           n("Container", {
             styles: { display: "flex", direction: "row", align: "center", gap: 6 },
             children: [
-              n("Text", { props: { content: "Features" } }),
-              n("Text", { props: { content: "Pricing" } }),
-              n("Text", { props: { content: "About" } }),
+              n("Link", { props: { content: "Features", href: "#features" } }),
+              n("Link", { props: { content: "Pricing", href: "#pricing" } }),
+              n("Link", { props: { content: "About", href: "/about" } }),
               n("Button", { props: { label: "Sign in", variant: "outline" } }),
             ],
           }),
