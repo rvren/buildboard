@@ -54,6 +54,7 @@ import { ArchLeft, ArchMain } from "./architecture/ArchitectureView";
 import { CommandPalette } from "./CommandPalette";
 import { ShortcutsDialog } from "./ShortcutsDialog";
 import { FindReplaceDialog } from "./FindReplaceDialog";
+import { QuickInsertDialog } from "./QuickInsertDialog";
 import { GettingStarted } from "./onboarding/GettingStarted";
 import { NavRail } from "./NavRail";
 import { ensureFontLoaded } from "@/lib/designSystem";
@@ -291,6 +292,7 @@ export default function EditorPage() {
       <CommandPalette project={project} />
       <ShortcutsDialog />
       <FindReplaceDialog />
+      <QuickInsertDialog />
 
       <DragOverlay dropAnimation={null}>
         {activeLabel ? (
@@ -509,6 +511,12 @@ function useKeyboardShortcuts() {
       if (e.key === "?" && !e.metaKey && !e.ctrlKey && !e.altKey) {
         e.preventDefault();
         store.setShortcutsOpen(!store.shortcutsOpen);
+        return;
+      }
+      // Quick-insert palette: ⌘/ (Ctrl+/).
+      if ((e.metaKey || e.ctrlKey) && e.key === "/") {
+        e.preventDefault();
+        store.setQuickInsertOpen(!store.quickInsertOpen);
         return;
       }
       // Undo / redo (no node selection required).

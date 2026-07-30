@@ -134,6 +134,8 @@ interface EditorState {
   // ----- global find & replace (text content across all screens + components)
   findReplaceOpen: boolean;
   setFindReplaceOpen: (v: boolean) => void;
+  quickInsertOpen: boolean;
+  setQuickInsertOpen: (v: boolean) => void;
   countTextMatches: (find: string, caseSensitive: boolean) => number;
   replaceTextEverywhere: (
     find: string,
@@ -482,6 +484,8 @@ export const useEditor = create<EditorState>()(
 
       findReplaceOpen: false,
       setFindReplaceOpen: (v) => set({ findReplaceOpen: v }),
+      quickInsertOpen: false,
+      setQuickInsertOpen: (v) => set({ quickInsertOpen: v }),
 
       countTextMatches: (find, caseSensitive) => {
         const project = get().currentProject();

@@ -15,6 +15,7 @@ const GROUPS: { title: string; items: [string, string][] }[] = [
     title: "General",
     items: [
       [`${MOD} K`, "Command palette"],
+      [`${MOD} /`, "Quick-insert element"],
       ["?", "This shortcuts cheatsheet"],
       [`${MOD} Z`, "Undo"],
       [`${MOD} ⇧ Z`, "Redo"],
