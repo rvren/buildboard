@@ -24,6 +24,8 @@ import type { DesignNode, NodeAction, SchemaField, Screen } from "@/types";
 import { ITEM_SOURCE, SCREEN_SOURCE } from "@/types";
 import { defFor } from "@/lib/nodeDefs";
 import { textSlots } from "@/lib/instance";
+import { ICONS, ICON_NAMES } from "@/lib/icons";
+import { cn } from "@/lib/utils";
 import { generateComponentCode } from "@/lib/codegen";
 import { effectiveTokens } from "@/lib/styles";
 import { findNode, findParent, findPath, findRepeatAncestor } from "@/lib/tree";
@@ -475,6 +477,47 @@ function NodeHeader({ node }: { node: DesignNode }) {
 }
 
 /* ------------------------------------------------------------------ Content */
+/** Searchable icon picker for the Icon node (writes the lucide export name). */
+function IconPicker({
+  value,
+  onChange,
+}: {
+  value: string | undefined;
+  onChange: (v: string) => void;
+}) {
+  const [q, setQ] = useState("");
+  const names = q
+    ? ICON_NAMES.filter((n) => n.toLowerCase().includes(q.toLowerCase()))
+    : ICON_NAMES;
+  return (
+    <div className="space-y-2">
+      <TextControl value={q} onChange={setQ} placeholder="Search icons…" />
+      <div className="grid max-h-52 grid-cols-6 gap-1 overflow-y-auto scrollbar-thin">
+        {names.map((name) => {
+          const Cmp = ICONS[name];
+          const active = value === name;
+          return (
+            <button
+              key={name}
+              type="button"
+              title={name}
+              onClick={() => onChange(name)}
+              className={cn(
+                "grid aspect-square place-items-center rounded-md border transition-colors",
+                active
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
+              )}
+            >
+              <Cmp className="h-4 w-4" />
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 /** Accessibility authoring for any node: aria-label + ARIA role, exported to code. */
 function AriaSection({ node }: { node: DesignNode }) {
   const setProps = useEditor((s) => s.updateNodeProps);
@@ -650,6 +693,12 @@ function ContentSection({ node }: { node: DesignNode }) {
           <Row label="Alt">
             <TextControl value={p.alt} onChange={(v) => set({ alt: v })} />
           </Row>
+        </Section>
+      );
+    case "Icon":
+      return (
+        <Section title="Icon">
+          <IconPicker value={p.icon} onChange={(v) => set({ icon: v })} />
         </Section>
       );
     case "Avatar":

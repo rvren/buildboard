@@ -16,10 +16,12 @@ import {
   ToggleRight,
   CheckSquare,
   Component,
+  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 import type { DesignNode, NodeType, StyleTokens } from "@/types";
 import { cn } from "@/lib/utils";
+import { ICONS, iconImportName, iconJsxName } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -459,6 +461,30 @@ export const nodeDefs: Record<NodeType, NodeDef> = {
       extraClass: "object-cover",
       selfClosing: true,
     }),
+  },
+
+  Icon: {
+    type: "Icon",
+    label: "Icon",
+    category: "Display",
+    icon: Sparkles,
+    canHaveChildren: false,
+    defaultProps: { icon: "Star" },
+    defaultStyles: { textColor: "foreground" },
+    render: ({ node, className, rootProps }) => {
+      const Cmp = ICONS[node.props.icon] ?? ICONS.Star;
+      return <Cmp className={cn("h-6 w-6", className)} {...rootProps} />;
+    },
+    codegen: (node) => {
+      const name = node.props.icon && ICONS[node.props.icon] ? node.props.icon : "Star";
+      return {
+        tag: iconJsxName(name),
+        imports: [{ from: "lucide-react", names: [iconImportName(name)] }],
+        attrs: [],
+        extraClass: "h-6 w-6",
+        selfClosing: true,
+      };
+    },
   },
 
   Divider: {

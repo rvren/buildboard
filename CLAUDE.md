@@ -147,7 +147,7 @@ design system, and higher-fidelity code export.
 ### Next batch — Batch 5 (refill; Batch 4 = 10/10 → 75% refill fired)
 > Curated de-duped against everything shipped, balanced across themes and anchored to the vision
 > (designers → apps/websites → real, accessible code). New node types + export targets + safety.
-- [ ] **B5-1** — Icon node: insert lucide icons as a primitive (searchable), rendered + exported (authoring)
+- [x] **B5-1** — Icon node: searchable lucide-icon primitive (69 curated icons), rendered on canvas + exported as a real lucide import → `v0.1.47`
 - [ ] **B5-2** — Component library export / import as JSON — share reusable components between projects (design system)
 - [ ] **B5-3** — Static HTML export (framework-free): one self-contained .html per screen (real code)
 - [ ] **B5-4** — Elevation / shadow scale tokens in the design system (beyond color/radius)
