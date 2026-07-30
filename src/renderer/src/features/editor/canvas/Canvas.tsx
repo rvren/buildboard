@@ -285,6 +285,9 @@ function ScreensCanvas({ project }: { project: Project }) {
         </div>
       </div>
 
+      {/* Live dimensions of the selected element */}
+      <SelectionSizeBadge zoom={viewport.zoom} />
+
       {/* Zoom controls */}
       <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full border border-border/70 bg-card/85 p-1 shadow-soft-lg backdrop-blur-xl">
         <Button
@@ -359,6 +362,42 @@ function ComponentEditCanvas({
       <div className="canvas-grid absolute inset-0 flex items-center justify-center overflow-auto p-10 pt-16 [background-size:22px_22px]">
         <ComponentFrame definition={definition} />
       </div>
+    </div>
+  );
+}
+
+/** Live width×height (in design px) of the selected element, shown bottom-left. */
+function SelectionSizeBadge({ zoom }: { zoom: number }) {
+  const selectedId = useEditor((s) => s.selectedNodeId);
+  const previewMode = useEditor((s) => s.previewMode);
+  const [size, setSize] = React.useState<{ w: number; h: number } | null>(null);
+
+  React.useEffect(() => {
+    if (!selectedId || previewMode) {
+      setSize(null);
+      return;
+    }
+    const el = document.querySelector<HTMLElement>(
+      `[data-node-id="${selectedId}"]`
+    );
+    if (!el) {
+      setSize(null);
+      return;
+    }
+    const measure = () => {
+      const r = el.getBoundingClientRect();
+      setSize({ w: Math.round(r.width / zoom), h: Math.round(r.height / zoom) });
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [selectedId, zoom, previewMode]);
+
+  if (!size) return null;
+  return (
+    <div className="pointer-events-none absolute bottom-4 left-4 rounded-md border border-border/70 bg-card/90 px-2 py-1 text-[11px] font-medium tabular-nums text-muted-foreground shadow-soft backdrop-blur">
+      {size.w} × {size.h}
     </div>
   );
 }

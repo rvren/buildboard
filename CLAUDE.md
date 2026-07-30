@@ -152,7 +152,7 @@ design system, and higher-fidelity code export.
 - [x] **B5-3** — Static HTML export: one self-contained .html per screen (rendered from the canvas tree via renderToStaticMarkup) + index → `v0.1.48`
 - [x] **B5-4** — Reshaped: per-node opacity style (canvas + export, shared class map) → `v0.1.50` _(shadow scale already exists per-node; custom var-based shadow scales deferred — would risk the core style mapping)_
 - [x] **B5-5** — Per-node conditional visibility (`visibleIf` binding, schema v8): hidden in preview + wrapped in `{cond && (…)}` on export → `v0.1.51`
-- [ ] **B5-6** — Canvas rulers + live selection dimensions / spacing readout (canvas UX)
+- [x] **B5-6** — Reshaped: live selection dimensions badge (measured W×H in design px, zoom-aware) on the canvas → `v0.1.54` _(rulers deferred — pan/zoom overlay complexity)_
 - [x] **B5-7** — Duplicate project from the dashboard (deep-clone with instance/def id remap) — already shipped (store `duplicateProject` + ProjectCard menu); verified
 - [x] **B5-8** — Side-by-side responsive preview: the active screen at sm/md/lg at once (breakpoint-aware StaticNode) → `v0.1.52`
 - [x] **B5-9** — Auto-snapshot ("Before restore") the live project before every restore, so a restore is itself undoable → `v0.1.46` _(interval snapshots deferred)_
