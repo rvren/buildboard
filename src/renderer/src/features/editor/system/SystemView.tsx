@@ -1,13 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Copy, Plus, Trash2, Component, Pencil } from "lucide-react";
+import { Copy, Plus, Trash2, Component, Pencil, Download, Upload } from "lucide-react";
 import type { DesignNode, NodeType, Project, ThemePalette } from "@/types";
 import { createNode } from "@/lib/factory";
 import { nodeDefList, categoryOrder } from "@/lib/nodeDefs";
 import { StaticNode } from "@/features/editor/canvas/renderTree";
 import { ComponentDefsProvider } from "@/features/editor/canvas/componentDefs";
 import { generateComponentCode } from "@/lib/codegen";
-import { tokenStyle, ensureFontLoaded, DS_FONTS } from "@/lib/designSystem";
+import { tokenStyle, ensureFontLoaded, DS_FONTS, tokensToCss } from "@/lib/designSystem";
+import { downloadText } from "@/lib/export";
 import { useEditor } from "@/store/editorStore";
 import { useTheme } from "@/store/theme";
 import { Button } from "@/components/ui/button";
@@ -241,6 +242,73 @@ const TOKEN_GROUPS: {
   },
 ];
 
+/** Export the project's design tokens (JSON / CSS variables) and import a theme. */
+function TokensToolbar({ project }: { project: Project }) {
+  const tokens = project.designSystem.tokens;
+  const importTokens = useEditor((s) => s.importTokens);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const slug = project.name.replace(/\s+/g, "-").toLowerCase() || "theme";
+
+  const exportJson = () => {
+    downloadText(`${slug}-tokens.json`, JSON.stringify(tokens, null, 2));
+    toast.success("Tokens exported");
+  };
+  const copyCss = () => {
+    void navigator.clipboard
+      .writeText(tokensToCss(tokens))
+      .then(() => toast.success("CSS variables copied"))
+      .catch(() => toast.error("Couldn't copy"));
+  };
+  const onFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    void file.text().then((text) => {
+      try {
+        importTokens(JSON.parse(text));
+        toast.success("Tokens imported");
+      } catch {
+        toast.error("Invalid tokens file");
+      }
+    });
+  };
+
+  return (
+    <div className="flex gap-1.5">
+      <Button size="sm" variant="outline" className="h-7 flex-1 gap-1.5" onClick={exportJson}>
+        <Download className="h-3.5 w-3.5" />
+        Export
+      </Button>
+      <Button
+        size="sm"
+        variant="outline"
+        className="h-7 flex-1 gap-1.5"
+        onClick={() => fileRef.current?.click()}
+      >
+        <Upload className="h-3.5 w-3.5" />
+        Import
+      </Button>
+      <Button
+        size="sm"
+        variant="outline"
+        className="h-7 w-7 shrink-0 p-0"
+        title="Copy as CSS variables"
+        onClick={copyCss}
+      >
+        <Copy className="h-3.5 w-3.5" />
+      </Button>
+      <input
+        ref={fileRef}
+        type="file"
+        accept="application/json,.json"
+        className="hidden"
+        onChange={onFile}
+      />
+    </div>
+  );
+}
+
 function TokensPanel({ project }: { project: Project }) {
   const tokens = project.designSystem.tokens;
   const updateTokens = useEditor((s) => s.updateTokens);
@@ -280,6 +348,8 @@ function TokensPanel({ project }: { project: Project }) {
             palette. Toggle to edit the other mode.
           </p>
         </div>
+
+        <TokensToolbar project={project} />
 
         {TOKEN_GROUPS.map((group) => (
           <div key={group.title} className="space-y-2.5">

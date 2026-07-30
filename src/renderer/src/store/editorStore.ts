@@ -156,6 +156,8 @@ interface EditorState {
 
   // ----- design system (project-scoped)
   updateTokens: (patch: Partial<DesignTokens>) => void;
+  /** Replace the project's design tokens from imported JSON (normalized). */
+  importTokens: (raw: unknown) => void;
   /** Update one theme's palette (light or dark). */
   updateThemeToken: (mode: ThemeMode, patch: Partial<ThemePalette>) => void;
   addPreset: (fromNodeId: string, name: string) => void;
@@ -698,6 +700,23 @@ export const useEditor = create<EditorState>()(
                   designSystem: {
                     ...p.designSystem,
                     tokens: { ...p.designSystem.tokens, ...patch },
+                  },
+                })
+              : p
+          ),
+        })),
+
+      importTokens: (raw) =>
+        set((s) => ({
+          projects: s.projects.map((p) =>
+            p.id === s.currentProjectId
+              ? touch({
+                  ...p,
+                  designSystem: {
+                    ...p.designSystem,
+                    // normalizeTokens accepts full or partial/legacy shapes and
+                    // backfills every palette key, so imports are always valid.
+                    tokens: normalizeTokens(raw),
                   },
                 })
               : p

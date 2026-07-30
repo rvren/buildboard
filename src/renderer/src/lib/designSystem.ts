@@ -129,3 +129,25 @@ export function ensureFontLoaded(font: string) {
   link.href = `https://fonts.googleapis.com/css2?family=${family}:wght@400;500;600;700&display=swap`;
   document.head.appendChild(link);
 }
+
+/**
+ * Serialize design tokens as CSS custom properties for a real Tailwind/shadcn
+ * project — `:root` (light) + `.dark` (dark) + `--radius`. Colors are emitted as
+ * `H S% L%` triples (shadcn convention). Used by the tokens "Copy CSS" export.
+ */
+export function tokensToCss(tokens: DesignTokens): string {
+  const keys = Object.keys(PALETTE_VARS) as (keyof ThemePalette)[];
+  const block = (pal: ThemePalette) =>
+    keys.map((k) => `  ${PALETTE_VARS[k]}: ${hexToHslTriple(pal[k])};`).join("\n");
+  return [
+    ":root {",
+    block(tokens.light),
+    `  --radius: ${tokens.radius}px;`,
+    "}",
+    "",
+    ".dark {",
+    block(tokens.dark),
+    "}",
+    "",
+  ].join("\n");
+}
