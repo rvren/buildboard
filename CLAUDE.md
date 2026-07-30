@@ -144,6 +144,20 @@ design system, and higher-fidelity code export.
 - [x] **B4-9** — DB version snapshots: save/restore/delete a per-project timeline (new `project_snapshots` table, no-cascade; works web + desktop) → `v0.1.45`
 - [x] **B4-10** — One-click alignment presets (left/center/right/space-between) that set up flexbox for you → `v0.1.37`
 
+### Next batch — Batch 5 (refill; Batch 4 = 10/10 → 75% refill fired)
+> Curated de-duped against everything shipped, balanced across themes and anchored to the vision
+> (designers → apps/websites → real, accessible code). New node types + export targets + safety.
+- [ ] **B5-1** — Icon node: insert lucide icons as a primitive (searchable), rendered + exported (authoring)
+- [ ] **B5-2** — Component library export / import as JSON — share reusable components between projects (design system)
+- [ ] **B5-3** — Static HTML export (framework-free): one self-contained .html per screen (real code)
+- [ ] **B5-4** — Elevation / shadow scale tokens in the design system (beyond color/radius)
+- [ ] **B5-5** — Per-node conditional visibility bound to data (dynamic apps)
+- [ ] **B5-6** — Canvas rulers + live selection dimensions / spacing readout (canvas UX)
+- [ ] **B5-7** — Duplicate project from the dashboard (deep-clone) (data ownership)
+- [ ] **B5-8** — Side-by-side multi-breakpoint preview (sm/md/lg at once) (responsive)
+- [ ] **B5-9** — Auto-snapshot before a restore + optional interval snapshots (safety; extends B4-9)
+- [ ] **B5-10** — Tab-order / focus-order overlay on the canvas (accessibility)
+
 ## Process architecture
 
 - **src/main/** (Node, privileged): app lifecycle + SQLite. `index.ts` (window, load renderer),
