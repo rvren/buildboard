@@ -557,6 +557,28 @@ export function SystemMain({ project }: { project: Project }) {
 }
 
 /* ---------------------------------------------------------- Components (defs) */
+/** Count instances of a component definition, and on how many screens they appear. */
+function componentUsage(
+  project: Project,
+  defId: string
+): { instances: number; screens: number } {
+  let instances = 0;
+  let screens = 0;
+  const countIn = (node: DesignNode): number => {
+    let n = node.instanceOf === defId ? 1 : 0;
+    for (const c of node.children ?? []) n += countIn(c);
+    return n;
+  };
+  for (const screen of project.screens) {
+    const n = countIn(screen.root);
+    if (n > 0) {
+      instances += n;
+      screens += 1;
+    }
+  }
+  return { instances, screens };
+}
+
 function ComponentsSection({ project }: { project: Project }) {
   const components = project.designSystem.components;
   const deleteComponentDefinition = useEditor(
@@ -607,7 +629,9 @@ function ComponentsSection({ project }: { project: Project }) {
         </div>
       ) : (
         <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3">
-          {components.map((c) => (
+          {components.map((c) => {
+            const usage = componentUsage(project, c.id);
+            return (
             <div
               key={c.id}
               className="group flex flex-col overflow-hidden rounded-xl border border-primary/30 bg-card shadow-soft"
@@ -620,6 +644,18 @@ function ComponentsSection({ project }: { project: Project }) {
                 <StaticNode node={c.root} />
                 <span className="absolute right-1.5 top-1.5 grid h-6 w-6 place-items-center rounded-md text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
                   <Pencil className="h-3 w-3" />
+                </span>
+                <span
+                  className="absolute left-1.5 top-1.5 rounded-md bg-muted/80 px-1.5 py-0.5 text-[10px] font-medium tabular-nums text-muted-foreground backdrop-blur-sm"
+                  title={
+                    usage.instances === 0
+                      ? "Not used on any screen yet"
+                      : `${usage.instances} instance${usage.instances === 1 ? "" : "s"} across ${usage.screens} screen${usage.screens === 1 ? "" : "s"}`
+                  }
+                >
+                  {usage.instances === 0
+                    ? "Unused"
+                    : `${usage.instances}× · ${usage.screens} screen${usage.screens === 1 ? "" : "s"}`}
                 </span>
               </button>
               <div className="flex items-center gap-1 border-t border-border/60 px-2 py-1.5">
@@ -646,7 +682,8 @@ function ComponentsSection({ project }: { project: Project }) {
                 </button>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </section>

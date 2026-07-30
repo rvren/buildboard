@@ -111,7 +111,7 @@ design system, and higher-fidelity code export.
 - [x] **B2-4** — Device-width presets → covered by the breakpoint switcher (resizes the active artboard sm/md/lg); per-screen device sizing deferred
 - [x] **B2-5** — Production export: per-component files + Tailwind/globals/package.json scaffold + Copy JSX → `v0.1.17`
 - [x] **B2-6** — Image upload → data URI (PNG/JPG/SVG/WebP/GIF, ≤2 MB) w/ thumbnail; self-contained so it bundles on export → `v0.1.20`
-- [ ] **B2-7** — Component usage insights ("N instances across M screens") (design system)
+- [x] **B2-7** — Component usage insights: per-component "N× · M screens" (or "Unused") badge in the components manager → `v0.1.21`
 - [ ] **B2-8** — Color-scale generator + contrast checker for tokens (design system)
 - [ ] **B2-9** — Keyboard-shortcuts cheatsheet (?) + more command-palette actions (app polish)
 - [ ] **B2-10** — Dashboard project templates / starter projects (getting started)
