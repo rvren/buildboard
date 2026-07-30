@@ -95,6 +95,8 @@ export interface DesignNode {
   action?: NodeAction;
   /** When set, this container repeats once per item of the bound array. */
   repeat?: Binding;
+  /** When set, the node renders only if this bound value is truthy (preview + export). */
+  visibleIf?: Binding;
   /**
    * When set, this node is an INSTANCE of a design-system ComponentDefinition
    * (`type` is "Instance"). It renders the definition's subtree; editing the

@@ -6,6 +6,7 @@ import { defFor } from "@/lib/nodeDefs";
 import { stylesToTailwind, sizeStyle, effectiveTokens } from "@/lib/styles";
 import {
   resolveBindingDisplay,
+  resolveBindingValue,
   resolveArray,
   runRequest,
   type BindingContext,
@@ -66,6 +67,16 @@ export function NodeRenderer({ node, isRoot = false }: Props) {
     data: { kind: "node", nodeId: node.id },
     disabled: isRoot || previewMode,
   });
+
+  // Conditional visibility (data-bound): hidden in preview when the value is
+  // falsy; always shown while editing so it stays selectable.
+  if (
+    previewMode &&
+    node.visibleIf &&
+    !resolveBindingValue(node.visibleIf, bindCtx)
+  ) {
+    return null;
+  }
 
   const setRef = (el: HTMLElement | null) => {
     if (previewMode) return;

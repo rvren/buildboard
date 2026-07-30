@@ -26,8 +26,9 @@ function sampleProject(): Project {
   const text: DesignNode = { id: "n-text", type: "Text", props: { text: "Hi" }, styles: {}, children: [], hidden: true };
   const inner: DesignNode = { id: "n-inner", type: "Container", props: {}, styles: { direction: "col", gap: 2 }, children: [text, input] };
   const button: DesignNode = {
-    id: "n-btn", type: "Button", props: { text: "Go" }, styles: {}, children: [], variant: "vp",
+    id: "n-btn", type: "Button", props: { text: "Go" }, styles: { opacity: 60 }, children: [], variant: "vp",
     action: { trigger: "click", type: "navigate", targetScreenId: "s1" },
+    visibleIf: { sourceId: "d1", path: "ready" },
   };
   const heading: DesignNode = { id: "n-h", type: "Heading", name: "Title", props: { text: "Welcome" }, styles: { fontSize: "2xl" }, children: [] };
   const root: DesignNode = { id: "n-root", type: "Container", props: {}, styles: { padding: 4 }, children: [heading, button, inner] };
@@ -106,6 +107,11 @@ export function runSmoke(): void {
     assert(root.children.length === 3, "root has 3 children (order preserved)");
     assert(root.children[0].type === "Heading" && root.children[0].name === "Title", "heading + name");
     assert(root.children[1].action?.type === "navigate", "button action survives");
+    assert(
+      root.children[1].visibleIf?.path === "ready" &&
+        root.children[1].styles.opacity === 60,
+      "conditional visibility + opacity survive",
+    );
     assert(root.children[2].children[0].hidden === true, "hidden flag survives");
     assert(root.children[2].children[1].type === "Input", "nested input at depth 3");
     assert(root.children[2].children[1].styles.width === "full", "nested styles survive");

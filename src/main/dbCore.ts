@@ -38,7 +38,7 @@ export const PALETTE_KEYS = [
   "brandTo",
 ] as const;
 
-const SCHEMA_VERSION = 7;
+const SCHEMA_VERSION = 8;
 
 export function openDb(path: string): Database.Database {
   const db = new DatabaseCtor(path);
@@ -104,7 +104,8 @@ export function ensureSchema(db: Database.Database): void {
       overrides TEXT,
       responsive TEXT,
       variant TEXT,
-      hidden INTEGER
+      hidden INTEGER,
+      visible_if TEXT
     );
     CREATE INDEX IF NOT EXISTS idx_nodes_owner ON nodes(project_id, owner_kind, owner_id);
 
@@ -268,6 +269,10 @@ export function ensureSchema(db: Database.Database): void {
     ).map((c) => c.name);
     if (!dsCols.includes("heading_font")) {
       db.exec("ALTER TABLE design_system ADD COLUMN heading_font TEXT");
+    }
+    // v8: per-node conditional visibility (data-bound).
+    if (!nodeCols.includes("visible_if")) {
+      db.exec("ALTER TABLE nodes ADD COLUMN visible_if TEXT");
     }
     db.pragma(`user_version = ${SCHEMA_VERSION}`);
   }

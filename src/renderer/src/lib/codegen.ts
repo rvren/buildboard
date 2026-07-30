@@ -263,16 +263,29 @@ function walk(node: DesignNode, depth: number, ctx: Ctx): WalkResult {
     el.push(`${pad}</${spec.tag}>`);
   }
 
-  if (!repeated) return { lines: el, imports };
+  let lines: string[];
+  if (!repeated) {
+    lines = el;
+  } else {
+    // Wrap in `{(arr ?? []).map((item, i) => ( … ))}`.
+    const outer = INDENT.repeat(depth);
+    const arrExpr = bindingExpr(node.repeat!, ctx) ?? "[]";
+    lines = [
+      `${outer}{(${arrExpr} ?? []).map((item, i) => (`,
+      ...el,
+      `${outer}))}`,
+    ];
+  }
 
-  // Wrap in `{(arr ?? []).map((item, i) => ( … ))}`.
-  const outer = INDENT.repeat(depth);
-  const arrExpr = bindingExpr(node.repeat!, ctx) ?? "[]";
-  const lines = [
-    `${outer}{(${arrExpr} ?? []).map((item, i) => (`,
-    ...el,
-    `${outer}))}`,
-  ];
+  // Conditional visibility: `{cond && ( … )}`.
+  if (node.visibleIf) {
+    const cond = bindingExpr(node.visibleIf, ctx);
+    if (cond) {
+      const pad = INDENT.repeat(depth);
+      lines = [`${pad}{${cond} && (`, ...lines, `${pad})}`];
+    }
+  }
+
   return { lines, imports };
 }
 

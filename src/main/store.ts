@@ -53,9 +53,9 @@ function insertNodeTree(
 ): void {
   db.prepare(
     `INSERT INTO nodes(id, project_id, owner_kind, owner_id, parent_id, order_index,
-       type, name, props, styles, bindings, action, repeat, instance_of, overrides, responsive, variant, hidden)
+       type, name, props, styles, bindings, action, repeat, instance_of, overrides, responsive, variant, hidden, visible_if)
      VALUES(@id,@project_id,@owner_kind,@owner_id,@parent_id,@order_index,
-       @type,@name,@props,@styles,@bindings,@action,@repeat,@instance_of,@overrides,@responsive,@variant,@hidden)`,
+       @type,@name,@props,@styles,@bindings,@action,@repeat,@instance_of,@overrides,@responsive,@variant,@hidden,@visible_if)`,
   ).run({
     id: node.id,
     project_id: projectId,
@@ -75,6 +75,7 @@ function insertNodeTree(
     responsive: j(node.responsive),
     variant: node.variant ?? null,
     hidden: node.hidden ? 1 : null,
+    visible_if: j(node.visibleIf),
   });
   const children = node.children ?? [];
   for (let i = 0; i < children.length; i++) {
@@ -98,6 +99,7 @@ interface NodeRow {
   responsive: string | null;
   variant: string | null;
   hidden: number | null;
+  visible_if: string | null;
 }
 
 function loadNodeTree(
@@ -130,6 +132,8 @@ function loadNodeTree(
     if (action) node.action = action;
     const repeat = pj<DesignNode["repeat"]>(r.repeat);
     if (repeat) node.repeat = repeat;
+    const visibleIf = pj<DesignNode["visibleIf"]>(r.visible_if);
+    if (visibleIf) node.visibleIf = visibleIf;
     if (r.instance_of != null) node.instanceOf = r.instance_of;
     const overrides = pj<DesignNode["overrides"]>(r.overrides);
     if (overrides) node.overrides = overrides;

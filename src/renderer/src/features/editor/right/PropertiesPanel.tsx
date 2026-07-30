@@ -80,6 +80,7 @@ export function PropertiesPanel() {
             <ScreenDataSection node={node} />
             <ContentSection node={node} />
             <RepeatSection node={node} />
+            <VisibilitySection node={node} />
             <LayoutSection node={node} />
             <SizeSection node={node} />
             <SpacingSection node={node} />
@@ -997,6 +998,66 @@ interface BindSource {
   id: string;
   name: string;
   fields: SchemaField[];
+}
+
+/** Conditional visibility: show the node only when a bound data field is truthy. */
+function VisibilitySection({ node }: { node: DesignNode }) {
+  const setVisibleIf = useEditor((s) => s.setNodeVisibleIf);
+  const sources = useBindSources(node);
+  const b = node.visibleIf;
+  if (sources.length === 0 && !b) return null;
+
+  const source = b ? sources.find((s) => s.id === b.sourceId) : undefined;
+  const paths = source?.fields.map((f) => f.path) ?? [];
+
+  return (
+    <Section title="Visibility">
+      {!b ? (
+        <button
+          onClick={() => {
+            const first = sources[0];
+            if (first)
+              setVisibleIf(node.id, {
+                sourceId: first.id,
+                path: first.fields[0]?.path ?? "",
+              });
+          }}
+          className="flex w-full items-center gap-1.5 rounded-md border px-2 py-1.5 text-[11px] text-muted-foreground hover:border-primary/40 hover:text-primary"
+        >
+          <Link2 className="h-3.5 w-3.5" />
+          Show only when a field is truthy
+        </button>
+      ) : (
+        <div className="space-y-2 rounded-lg border border-primary/30 bg-primary/5 p-2">
+          <Row label="Source">
+            <Dropdown
+              value={b.sourceId}
+              onChange={(v) =>
+                setVisibleIf(node.id, {
+                  sourceId: v,
+                  path: sources.find((s) => s.id === v)?.fields[0]?.path ?? "",
+                })
+              }
+              options={sources.map((s) => ({ value: s.id, label: s.name }))}
+            />
+          </Row>
+          <Row label="Field">
+            <Dropdown
+              value={b.path}
+              onChange={(v) => setVisibleIf(node.id, { sourceId: b.sourceId, path: v })}
+              options={paths.map((p) => ({ value: p, label: p }))}
+            />
+          </Row>
+          <button
+            onClick={() => setVisibleIf(node.id, null)}
+            className="text-[11px] text-muted-foreground underline underline-offset-2 hover:text-foreground"
+          >
+            Always visible
+          </button>
+        </div>
+      )}
+    </Section>
+  );
 }
 
 /** Build the list of bindable sources for a node: $item (if in a repeater),

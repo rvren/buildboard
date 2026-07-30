@@ -206,6 +206,10 @@ interface EditorState {
     nodeId: string,
     repeat: { sourceId: string; path: string } | null
   ) => void;
+  setNodeVisibleIf: (
+    nodeId: string,
+    binding: { sourceId: string; path: string } | null
+  ) => void;
   setScreenData: (screenId: string, sourceId: string | null) => void;
 
   // ----- design system (project-scoped)
@@ -1041,6 +1045,16 @@ export const useEditor = create<EditorState>()(
             updateNodeById(root, nodeId, (n) => ({
               ...n,
               repeat: repeat ?? undefined,
+            }))
+          )
+        ),
+
+      setNodeVisibleIf: (nodeId, binding) =>
+        set((s) =>
+          withActiveRoot(s, (root) =>
+            updateNodeById(root, nodeId, (n) => ({
+              ...n,
+              visibleIf: binding ?? undefined,
             }))
           )
         ),
