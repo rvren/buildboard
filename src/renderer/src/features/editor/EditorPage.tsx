@@ -588,6 +588,16 @@ function useKeyboardShortcuts() {
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "g") {
         e.preventDefault();
         store.wrapSelection(id);
+      } else if (
+        (e.metaKey || e.ctrlKey) &&
+        e.shiftKey &&
+        (e.key === "ArrowUp" || e.key === "ArrowDown")
+      ) {
+        // Move to first / last among siblings.
+        e.preventDefault();
+        const root = store.currentRoot();
+        const loc = root ? findParent(root, id) : null;
+        if (loc) store.moveNode(id, loc.parent.id, e.key === "ArrowUp" ? 0 : -1);
       } else if ((e.metaKey || e.ctrlKey) && e.key === "ArrowUp") {
         e.preventDefault();
         store.reorderNode(id, -1);

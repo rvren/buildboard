@@ -30,6 +30,7 @@ const GROUPS: { title: string; items: [string, string][] }[] = [
       [`${MOD} D`, "Duplicate selection"],
       [`${MOD} G`, "Group selection in a Container"],
       [`${MOD} ↑ / ↓`, "Move node up / down among siblings"],
+      [`${MOD} ⇧ ↑ / ↓`, "Move node to first / last"],
       ["← / →", "Select parent / first child"],
       ["↑ / ↓", "Select previous / next sibling"],
       ["Shift-click", "Add to multi-selection"],
