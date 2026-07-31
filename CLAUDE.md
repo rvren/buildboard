@@ -170,7 +170,7 @@ design system, and higher-fidelity code export.
 - [ ] **B6-7** — Node lock (prevent select/move/edit) with a Layers-panel toggle (authoring)
 - [ ] **B6-8** — Animation / transition presets (fade / slide / scale) on nodes, exported as CSS classes (real code)
 - [ ] **B6-9** — Color-blindness simulation preview overlay (accessibility)
-- [ ] **B6-10** — Keyboard canvas navigation: arrow keys select parent / child / sibling (canvas UX + a11y)
+- [x] **B6-10** — Keyboard canvas navigation: ←/→ select parent/first-child, ↑/↓ select prev/next sibling → `v0.1.56`
 
 ## Process architecture
 

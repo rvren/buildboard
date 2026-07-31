@@ -594,6 +594,40 @@ function useKeyboardShortcuts() {
       } else if ((e.metaKey || e.ctrlKey) && e.key === "ArrowDown") {
         e.preventDefault();
         store.reorderNode(id, 1);
+      } else if (
+        !e.metaKey &&
+        !e.ctrlKey &&
+        !e.altKey &&
+        (e.key === "ArrowLeft" ||
+          e.key === "ArrowRight" ||
+          e.key === "ArrowUp" ||
+          e.key === "ArrowDown")
+      ) {
+        // Keyboard canvas navigation: move the selection around the tree.
+        const root = store.currentRoot();
+        if (!root) return;
+        const loc = findParent(root, id);
+        const node = findNode(root, id);
+        if (e.key === "ArrowLeft") {
+          if (loc) {
+            e.preventDefault();
+            store.setSelected(loc.parent.id);
+          }
+        } else if (e.key === "ArrowRight") {
+          const child = node?.children?.find((c) => !c.hidden);
+          if (child) {
+            e.preventDefault();
+            store.setSelected(child.id);
+          }
+        } else if (loc) {
+          const sibs = loc.parent.children;
+          const idx = sibs.findIndex((c) => c.id === id);
+          const next = e.key === "ArrowUp" ? idx - 1 : idx + 1;
+          if (next >= 0 && next < sibs.length) {
+            e.preventDefault();
+            store.setSelected(sibs[next].id);
+          }
+        }
       } else if (e.key === "Escape") {
         // Step up the tree: select the parent, or deselect at the root.
         const root = store.currentRoot();
