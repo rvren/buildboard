@@ -148,6 +148,8 @@ interface EditorState {
   /** Color-blindness simulation applied over the canvas. */
   cbSim: CbSim;
   setCbSim: (v: CbSim) => void;
+  nodeSearchOpen: boolean;
+  setNodeSearchOpen: (v: boolean) => void;
   countTextMatches: (find: string, caseSensitive: boolean) => number;
   replaceTextEverywhere: (
     find: string,
@@ -599,6 +601,8 @@ export const useEditor = create<EditorState>()(
       setFocusOrderOpen: (v) => set({ focusOrderOpen: v }),
       cbSim: "none",
       setCbSim: (v) => set({ cbSim: v }),
+      nodeSearchOpen: false,
+      setNodeSearchOpen: (v) => set({ nodeSearchOpen: v }),
 
       countTextMatches: (find, caseSensitive) => {
         const project = get().currentProject();

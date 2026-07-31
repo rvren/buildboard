@@ -170,6 +170,13 @@ export function CommandPalette({ project }: { project: Project }) {
         run: () => s.setFindReplaceOpen(true),
       },
       {
+        id: "search-nodes",
+        label: "Search elements",
+        icon: Search,
+        keywords: "search find element node jump locate",
+        run: () => s.setNodeSearchOpen(true),
+      },
+      {
         id: "responsive-preview",
         label: "Responsive preview (sm / md / lg)",
         icon: MonitorSmartphone,

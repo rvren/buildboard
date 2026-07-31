@@ -59,6 +59,7 @@ import { FindReplaceDialog } from "./FindReplaceDialog";
 import { QuickInsertDialog } from "./QuickInsertDialog";
 import { ResponsivePreviewDialog } from "./ResponsivePreviewDialog";
 import { FocusOrderDialog } from "./FocusOrderDialog";
+import { NodeSearchDialog } from "./NodeSearchDialog";
 import { GettingStarted } from "./onboarding/GettingStarted";
 import { NavRail } from "./NavRail";
 import { ensureFontLoaded } from "@/lib/designSystem";
@@ -312,6 +313,7 @@ export default function EditorPage() {
       <QuickInsertDialog />
       <ResponsivePreviewDialog />
       <FocusOrderDialog />
+      <NodeSearchDialog />
 
       <DragOverlay dropAnimation={null}>
         {activeLabel ? (

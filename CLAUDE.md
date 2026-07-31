@@ -183,7 +183,7 @@ design system, and higher-fidelity code export.
 - [ ] **B7-6** — Export a component API README (props table per component) (real code docs)
 - [ ] **B7-7** — Per-screen background color / full-bleed section token (authoring)
 - [x] **B7-8** — Keyboard: ⌘⇧↑/↓ move node to first/last among siblings (duplicate-in-place already ⌘D) → `v0.1.65`
-- [ ] **B7-9** — Global search across nodes (find by text/type, jump to it) — read-only complement to find&replace (authoring)
+- [x] **B7-9** — Global element search (by text/type across all screens) → jump to the node → `v0.1.66`
 - [ ] **B7-10** — Theme: high-contrast palette preset + one-click WCAG-AA auto-fix suggestion (accessibility)
 
 ## Process architecture
