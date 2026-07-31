@@ -150,6 +150,9 @@ interface EditorState {
   setCbSim: (v: CbSim) => void;
   nodeSearchOpen: boolean;
   setNodeSearchOpen: (v: boolean) => void;
+  /** Canvas dot-grid visibility (declutter toggle). */
+  showGrid: boolean;
+  setShowGrid: (v: boolean) => void;
   countTextMatches: (find: string, caseSensitive: boolean) => number;
   replaceTextEverywhere: (
     find: string,
@@ -603,6 +606,8 @@ export const useEditor = create<EditorState>()(
       setCbSim: (v) => set({ cbSim: v }),
       nodeSearchOpen: false,
       setNodeSearchOpen: (v) => set({ nodeSearchOpen: v }),
+      showGrid: true,
+      setShowGrid: (v) => set({ showGrid: v }),
 
       countTextMatches: (find, caseSensitive) => {
         const project = get().currentProject();

@@ -179,7 +179,7 @@ design system, and higher-fidelity code export.
 - [ ] **B7-2** — Tabs / Accordion container node (interactive, exported) (new component)
 - [x] **B7-3** — Click-to-open-URL action (external link) alongside navigate/request → `window.open` on canvas + export → `v0.1.64`
 - [x] **B7-4** — Reshaped: typography spacing tokens — letter-spacing (tracking) + line-height (leading) styles, literal Tailwind classes (canvas + export) → `v0.1.70` _(custom p-[var] spacing scales deferred: would drift canvas vs export)_
-- [ ] **B7-5** — Canvas guides/snapping: align edges to sibling bounds while dragging (canvas UX)
+- [x] **B7-5** — Reshaped: canvas grid visibility toggle (declutter) → `v0.1.71` _(pixel snapping/smart-guides N/A for flow layout + drop-zones; placement precision already served by keyboard reorder + drop-target highlights)_
 - [x] **B7-6** — Export a `COMPONENTS.md` API reference (props table + variants per component) in every export zip → `v0.1.68`
 - [x] **B7-7** — Per-screen full-bleed background token (schema v10): colors the artboard + exported `min-h-screen` page wrapper → `v0.1.67`
 - [x] **B7-8** — Keyboard: ⌘⇧↑/↓ move node to first/last among siblings (duplicate-in-place already ⌘D) → `v0.1.65`

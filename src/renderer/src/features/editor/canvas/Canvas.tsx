@@ -97,6 +97,7 @@ function ScreensCanvas({ project }: { project: Project }) {
   const setViewport = useEditor((s) => s.setViewport);
   const setSelected = useEditor((s) => s.setSelected);
   const cbFilter = cbFilterId(useEditor((s) => s.cbSim));
+  const showGrid = useEditor((s) => s.showGrid);
   const containerRef = React.useRef<HTMLDivElement>(null);
   const pan = React.useRef<{
     active: boolean;
@@ -265,7 +266,8 @@ function ScreensCanvas({ project }: { project: Project }) {
       <div
         ref={containerRef}
         className={cn(
-          "canvas-grid absolute inset-0 [background-size:22px_22px]",
+          "absolute inset-0 [background-size:22px_22px]",
+          showGrid && "canvas-grid",
           panning ? "cursor-grabbing" : spaceHeld ? "cursor-grab" : "cursor-default"
         )}
         onWheel={onWheel}

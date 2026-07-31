@@ -19,6 +19,7 @@ import {
   Replace,
   MousePointer2,
   Eye,
+  LayoutGrid,
 } from "lucide-react";
 import { CB_SIMS } from "@/lib/colorBlind";
 import { useTheme } from "@/store/theme";
@@ -192,6 +193,13 @@ export function CommandPalette({ project }: { project: Project }) {
           const t = useTheme.getState();
           t.setTheme(t.theme === "dark" ? "light" : "dark");
         },
+      },
+      {
+        id: "toggle-grid",
+        label: s.showGrid ? "Hide canvas grid" : "Show canvas grid",
+        icon: LayoutGrid,
+        keywords: "grid guides canvas dots declutter",
+        run: () => s.setShowGrid(!s.showGrid),
       },
       {
         id: "data",
