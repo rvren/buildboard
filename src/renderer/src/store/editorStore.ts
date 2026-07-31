@@ -30,6 +30,7 @@ import {
   defaultTokens,
 } from "@/lib/factory";
 import { createProjectFromTemplate } from "@/lib/templates";
+import type { CbSim } from "@/lib/colorBlind";
 import { deriveServices, deriveSequence } from "@/lib/architecture";
 import {
   cloneNodeWithNewIds,
@@ -144,6 +145,9 @@ interface EditorState {
   setResponsivePreviewOpen: (v: boolean) => void;
   focusOrderOpen: boolean;
   setFocusOrderOpen: (v: boolean) => void;
+  /** Color-blindness simulation applied over the canvas. */
+  cbSim: CbSim;
+  setCbSim: (v: CbSim) => void;
   countTextMatches: (find: string, caseSensitive: boolean) => number;
   replaceTextEverywhere: (
     find: string,
@@ -592,6 +596,8 @@ export const useEditor = create<EditorState>()(
       setResponsivePreviewOpen: (v) => set({ responsivePreviewOpen: v }),
       focusOrderOpen: false,
       setFocusOrderOpen: (v) => set({ focusOrderOpen: v }),
+      cbSim: "none",
+      setCbSim: (v) => set({ cbSim: v }),
 
       countTextMatches: (find, caseSensitive) => {
         const project = get().currentProject();

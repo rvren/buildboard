@@ -7,6 +7,7 @@ import { tokenStyle } from "@/lib/designSystem";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ScreenFrame } from "./ScreenFrame";
+import { ColorBlindFilters, cbFilterId } from "@/lib/colorBlind";
 import { ComponentFrame } from "./ComponentFrame";
 import { NodeRenderer } from "./NodeRenderer";
 import { ComponentDefsProvider } from "./componentDefs";
@@ -95,6 +96,7 @@ function ScreensCanvas({ project }: { project: Project }) {
   const viewport = useEditor((s) => s.viewport);
   const setViewport = useEditor((s) => s.setViewport);
   const setSelected = useEditor((s) => s.setSelected);
+  const cbFilter = cbFilterId(useEditor((s) => s.cbSim));
   const containerRef = React.useRef<HTMLDivElement>(null);
   const pan = React.useRef<{
     active: boolean;
@@ -277,6 +279,7 @@ function ScreensCanvas({ project }: { project: Project }) {
           className="absolute left-0 top-0 origin-top-left"
           style={{
             transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
+            filter: cbFilter ? `url(#${cbFilter})` : undefined,
           }}
         >
           {project.screens.map((screen) => (
@@ -284,6 +287,8 @@ function ScreensCanvas({ project }: { project: Project }) {
           ))}
         </div>
       </div>
+
+      <ColorBlindFilters />
 
       {/* Live dimensions of the selected element */}
       <SelectionSizeBadge zoom={viewport.zoom} />

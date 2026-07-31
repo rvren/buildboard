@@ -18,7 +18,9 @@ import {
   SunMoon,
   Replace,
   MousePointer2,
+  Eye,
 } from "lucide-react";
+import { CB_SIMS } from "@/lib/colorBlind";
 import { useTheme } from "@/store/theme";
 import type { NodeType, Project } from "@/types";
 import {
@@ -150,6 +152,16 @@ export function CommandPalette({ project }: { project: Project }) {
         keywords: "focus tab order accessibility a11y keyboard",
         run: () => s.setFocusOrderOpen(true),
       },
+      ...CB_SIMS.map((sim) => ({
+        id: `cb-${sim.id}`,
+        label:
+          sim.id === "none"
+            ? "Color-blindness: off"
+            : `Simulate color-blindness: ${sim.label}`,
+        icon: Eye,
+        keywords: "color blindness colorblind simulate accessibility a11y vision",
+        run: () => s.setCbSim(sim.id),
+      })),
       {
         id: "find-replace",
         label: "Find & replace text",
