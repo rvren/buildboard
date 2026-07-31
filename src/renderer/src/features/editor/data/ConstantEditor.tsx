@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from "react";
-import { AlertTriangle, ListTree } from "lucide-react";
+import { AlertTriangle, ListTree, Wand2 } from "lucide-react";
 import type { DataSource } from "@/types";
-import { schemaFromBody } from "@/lib/dataSource";
+import { schemaFromBody, generateMockData } from "@/lib/dataSource";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
@@ -48,9 +48,22 @@ export function ConstantEditor({
         placeholder="Constant name"
       />
       <div>
-        <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-          JSON data
-        </p>
+        <div className="mb-1.5 flex items-center justify-between">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            JSON data
+          </p>
+          <button
+            type="button"
+            onClick={() =>
+              setData(JSON.stringify(generateMockData(ds.schema), null, 2))
+            }
+            className="flex items-center gap-1 text-[11px] font-medium text-primary hover:underline"
+            title="Fill with realistic sample data (from the schema, or a default shape)"
+          >
+            <Wand2 className="h-3 w-3" />
+            Generate sample
+          </button>
+        </div>
         <Textarea
           value={ds.data ?? ""}
           onChange={(e) => setData(e.target.value)}

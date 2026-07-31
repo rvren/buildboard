@@ -91,6 +91,60 @@ export function inferSchema(json: unknown): SchemaField[] {
 }
 
 /** Parse a response body string and infer its schema, or return null. */
+/** A realistic sample value for a field, keyed on its name then its type. */
+function mockValue(path: string, type: SchemaFieldType, i: number): unknown {
+  const key = path.toLowerCase();
+  if (type === "boolean") return i % 2 === 0;
+  if (type === "number") {
+    if (/price|amount|cost|total/.test(key)) return [19.99, 49, 8.5, 129, 12][i % 5];
+    if (/id/.test(key)) return i + 1;
+    if (/(rating|score|stars)/.test(key)) return [4.5, 3, 5, 4, 2][i % 5];
+    return [12, 340, 7, 88, 1024][i % 5];
+  }
+  // string-ish defaults by name
+  if (/email/.test(key)) return ["ada@example.com", "grace@example.com", "alan@example.com"][i % 3];
+  if (/(^|\W)(name|author|user|customer)/.test(key))
+    return ["Ada Lovelace", "Grace Hopper", "Alan Turing", "Katherine Johnson"][i % 4];
+  if (/title|headline|product/.test(key))
+    return ["Wireless Headphones", "Standing Desk", "Mechanical Keyboard", "Ceramic Mug"][i % 4];
+  if (/desc|body|summary|content/.test(key))
+    return "A short, realistic sample description for previewing your design.";
+  if (/url|link|href/.test(key)) return "https://example.com";
+  if (/image|img|avatar|photo|src/.test(key))
+    return `https://picsum.photos/seed/${i + 1}/400/300`;
+  if (/date|time|created|updated/.test(key)) return "2024-03-14";
+  if (/status|state/.test(key)) return ["active", "pending", "archived"][i % 3];
+  if (/(city|location|place)/.test(key)) return ["Austin", "Berlin", "Tokyo"][i % 3];
+  return ["Alpha", "Bravo", "Charlie", "Delta"][i % 4];
+}
+
+/**
+ * Generate a sample array of `count` objects from a schema's top-level scalar
+ * fields, so designers can preview repeaters/bindings without a live API.
+ */
+export function generateMockData(
+  schema: SchemaField[] | undefined,
+  count = 4
+): unknown {
+  // Use top-level scalar fields; ignore nested (a.b) and array (a[].b) paths.
+  const fields = (schema ?? []).filter(
+    (f) => !f.path.includes(".") && !f.path.includes("[") && f.type !== "object" && f.type !== "array"
+  );
+  const cols =
+    fields.length > 0
+      ? fields
+      : ([
+          { path: "id", type: "number" },
+          { path: "title", type: "string" },
+          { path: "description", type: "string" },
+        ] as SchemaField[]);
+  return Array.from({ length: count }, (_, i) => {
+    const row: Record<string, unknown> = {};
+    for (const f of cols) row[f.path] = mockValue(f.path, f.type, i);
+    return row;
+  });
+}
+
 export function schemaFromBody(body: string): SchemaField[] | null {
   try {
     return inferSchema(JSON.parse(body));
