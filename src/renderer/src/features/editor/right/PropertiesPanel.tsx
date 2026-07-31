@@ -1001,6 +1001,26 @@ function AppearanceSection({ node }: { node: DesignNode }) {
           </span>
         </div>
       </Row>
+      <Row label="Animation">
+        <Dropdown
+          value={s.animation ?? "none"}
+          onChange={(v) => set({ animation: v as typeof s.animation })}
+          options={["none", "spin", "ping", "pulse", "bounce"].map((v) => ({
+            value: v,
+            label: v,
+          }))}
+        />
+      </Row>
+      <Row label="Hover">
+        <Dropdown
+          value={s.hoverEffect ?? "none"}
+          onChange={(v) => set({ hoverEffect: v as typeof s.hoverEffect })}
+          options={["none", "lift", "grow", "darken", "glow"].map((v) => ({
+            value: v,
+            label: v,
+          }))}
+        />
+      </Row>
     </Section>
   );
 }

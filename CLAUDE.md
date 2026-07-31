@@ -163,12 +163,12 @@ design system, and higher-fidelity code export.
 > (designers → apps/websites → real, accessible code). New node types + interactions + portability.
 - [x] **B6-1** — Project export/import as a single `.buildboard.json` file (fresh-id deep clone on import) → `v0.1.55`
 - [ ] **B6-2** — Table node bound to array data → real `<table>` rows on export (dynamic apps)
-- [ ] **B6-3** — Per-node hover style variant → exported `hover:` Tailwind classes (design → real code)
+- [x] **B6-3** — Per-node hover effect preset (lift/grow/darken/glow) → literal `hover:` Tailwind classes (native on canvas + exported) → `v0.1.60`
 - [ ] **B6-4** — Canvas minimap for quick navigation of a busy board (canvas UX)
 - [x] **B6-5** — Breakpoint-specific visibility: "Hidden" toggle per active breakpoint → `display:none` → responsive `hidden` (e.g. `sm:hidden`) on export → `v0.1.57`
 - [ ] **B6-6** — Mock-data generator from a data source's schema, for previewing without a live API (dynamic)
 - [x] **B6-7** — Node lock (schema v9): a Layers-panel lock toggle disables dragging/moving the node → `v0.1.59`
-- [ ] **B6-8** — Animation / transition presets (fade / slide / scale) on nodes, exported as CSS classes (real code)
+- [x] **B6-8** — Reshaped: built-in animation presets (spin/ping/pulse/bounce) → `animate-*` classes (canvas + export) → `v0.1.60` _(custom fade/slide keyframes deferred: need CSS beyond Tailwind built-ins)_
 - [x] **B6-9** — Color-blindness simulation (protan/deutan/tritan/grayscale) via SVG filters over the canvas, from the command palette → `v0.1.58`
 - [x] **B6-10** — Keyboard canvas navigation: ←/→ select parent/first-child, ↑/↓ select prev/next sibling → `v0.1.56`
 

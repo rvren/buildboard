@@ -44,6 +44,9 @@ export interface StyleTokens {
   border?: boolean;
   shadow?: "none" | "sm" | "md" | "lg" | "xl";
   opacity?: number; // 0-100; snaps to Tailwind's opacity scale on export
+  animation?: "none" | "spin" | "ping" | "pulse" | "bounce";
+  /** Hover effect preset (maps to `hover:` Tailwind classes). */
+  hoverEffect?: "none" | "lift" | "grow" | "darken" | "glow";
 
   // typography
   fontSize?: "xs" | "sm" | "base" | "lg" | "xl" | "2xl" | "3xl" | "4xl";

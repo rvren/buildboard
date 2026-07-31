@@ -70,6 +70,25 @@ const OPACITY: Record<number, string> = {
   100: "opacity-100",
 };
 
+// Built-in Tailwind animations (literal classes → JIT-safe on canvas + export).
+const ANIM: Record<string, string> = {
+  none: "",
+  spin: "animate-spin",
+  ping: "animate-ping",
+  pulse: "animate-pulse",
+  bounce: "animate-bounce",
+};
+
+// Hover effect presets — literal `hover:` classes work natively on the canvas
+// (real :hover) and export unchanged.
+const HOVER: Record<string, string> = {
+  none: "",
+  lift: "transition-transform hover:-translate-y-0.5 hover:shadow-lg",
+  grow: "transition-transform hover:scale-105",
+  darken: "transition-opacity hover:opacity-80",
+  glow: "transition-shadow hover:shadow-xl hover:shadow-primary/30",
+};
+
 const FONT_SIZE: Record<string, string> = {
   xs: "text-xs",
   sm: "text-sm",
@@ -164,6 +183,8 @@ export function stylesToTailwind(s: StyleTokens): string {
   if (s.border) cls.push("border");
   if (s.radius && RADIUS[s.radius]) cls.push(RADIUS[s.radius]);
   if (s.shadow && SHADOW[s.shadow]) cls.push(SHADOW[s.shadow]);
+  if (s.animation && ANIM[s.animation]) cls.push(ANIM[s.animation]);
+  if (s.hoverEffect && HOVER[s.hoverEffect]) cls.push(HOVER[s.hoverEffect]);
   if (s.opacity != null && s.opacity < 100) {
     const snapped = Math.max(0, Math.min(100, Math.round(s.opacity / 5) * 5));
     if (OPACITY[snapped]) cls.push(OPACITY[snapped]);
