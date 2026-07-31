@@ -180,7 +180,7 @@ design system, and higher-fidelity code export.
 - [x] **B7-3** — Click-to-open-URL action (external link) alongside navigate/request → `window.open` on canvas + export → `v0.1.64`
 - [ ] **B7-4** — Design-system spacing scale as CSS-var tokens applied via `p-[var(--space-…)]` (design system, fidelity-safe)
 - [ ] **B7-5** — Canvas guides/snapping: align edges to sibling bounds while dragging (canvas UX)
-- [ ] **B7-6** — Export a component API README (props table per component) (real code docs)
+- [x] **B7-6** — Export a `COMPONENTS.md` API reference (props table + variants per component) in every export zip → `v0.1.68`
 - [x] **B7-7** — Per-screen full-bleed background token (schema v10): colors the artboard + exported `min-h-screen` page wrapper → `v0.1.67`
 - [x] **B7-8** — Keyboard: ⌘⇧↑/↓ move node to first/last among siblings (duplicate-in-place already ⌘D) → `v0.1.65`
 - [x] **B7-9** — Global element search (by text/type across all screens) → jump to the node → `v0.1.66`

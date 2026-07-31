@@ -4,6 +4,7 @@ import { generatePageCode, generateComponentCode } from "@/lib/codegen";
 import { hexToHslTriple, PALETTE_VARS } from "@/lib/designSystem";
 import { architectureMarkdown } from "@/lib/architecture";
 import { screenToHtml } from "@/lib/htmlExport";
+import { textSlots } from "@/lib/instance";
 
 /** Emit a `{ --var: H S% L%; … }` block body from a palette + radius. */
 function paletteVarBlock(palette: ThemePalette, radius: number): string {
@@ -28,6 +29,37 @@ function pascalCase(input: string): string {
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join("");
   return /^[A-Za-z]/.test(pascal) ? pascal : `Screen${pascal}`;
+}
+
+/**
+ * Markdown API reference for the exported design-system components: a props table
+ * (from the typed text slots each component file exposes) + its style variants.
+ */
+function componentDocsMarkdown(project: Project): string | null {
+  const comps = project.designSystem?.components ?? [];
+  if (!comps.length) return null;
+  const seen = new Map<string, number>();
+  const sections = comps.map((def) => {
+    let name = pascalCase(def.name) || "Component";
+    const k = seen.get(name) ?? 0;
+    seen.set(name, k + 1);
+    if (k > 0) name = `${name}${k + 1}`;
+    const slots = textSlots(def);
+    const propsTable = slots.length
+      ? [
+          "| Prop | Type | Default |",
+          "| --- | --- | --- |",
+          ...slots.map(
+            (s) => `| \`${s.label.replace(/\s+/g, "")}\` | string | ${JSON.stringify(s.defaultValue)} |`
+          ),
+        ].join("\n")
+      : "_No text props._";
+    const variants = def.variants?.length
+      ? `\n\n**Variants:** ${def.variants.map((v) => `\`${v.name}\``).join(", ")}`
+      : "";
+    return `### ${name}\n\n${propsTable}${variants}`;
+  });
+  return `# Components — ${project.name}\n\nAPI reference for the exported design-system components.\n\n${sections.join("\n\n")}\n`;
 }
 
 export function downloadText(filename: string, text: string) {
@@ -74,6 +106,9 @@ export async function exportProjectZip(project: Project) {
       cf.file(`${name}.tsx`, generateComponentCode(def.root, project));
     }
   }
+
+  const compDocs = componentDocsMarkdown(project);
+  if (compDocs) folder.file("COMPONENTS.md", compDocs);
 
   // Design-system tokens as CSS variables (import once at app root).
   const t = project.designSystem?.tokens;
@@ -244,6 +279,10 @@ export async function exportNextProjectZip(project: Project) {
   );
   root.file("tailwind.config.ts", nextTailwindConfig());
   root.file("tsconfig.json", nextTsconfig());
+  {
+    const compDocs = componentDocsMarkdown(project);
+    if (compDocs) root.file("COMPONENTS.md", compDocs);
+  }
   root.file(
     "README.md",
     `# ${project.name}\n\nExported from BuildBoard as a Next.js (App Router) app.\n\n` +
@@ -364,6 +403,10 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     `module.exports = { plugins: { tailwindcss: {}, autoprefixer: {} } };\n`
   );
   root.file("tsconfig.json", nextTsconfig());
+  {
+    const compDocs = componentDocsMarkdown(project);
+    if (compDocs) root.file("COMPONENTS.md", compDocs);
+  }
   root.file(
     "README.md",
     `# ${project.name}\n\nExported from BuildBoard as a Vite + React Router SPA.\n\n` +
