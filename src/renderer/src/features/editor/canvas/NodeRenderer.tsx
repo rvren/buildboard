@@ -101,6 +101,8 @@ export function NodeRenderer({ node, isRoot = false }: Props) {
     if (!action || action.type === "none") return;
     if (action.type === "navigate" && action.targetScreenId) {
       selectScreen(action.targetScreenId);
+    } else if (action.type === "openUrl" && action.url) {
+      window.open(action.url, "_blank", "noopener,noreferrer");
     } else if (action.type === "request" && action.dataSourceId) {
       const ds = project?.dataSources?.find(
         (d) => d.id === action.dataSourceId

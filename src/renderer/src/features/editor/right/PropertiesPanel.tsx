@@ -1412,12 +1412,22 @@ function ActionEditor({ node }: { node: DesignNode }) {
           options={[
             { value: "none", label: "None" },
             { value: "navigate", label: "Navigate to screen" },
+            { value: "openUrl", label: "Open external URL" },
             ...(isDynamic
               ? [{ value: "request", label: "Call data source" }]
               : []),
           ]}
         />
       </Row>
+      {action.type === "openUrl" && (
+        <Row label="URL">
+          <TextControl
+            value={action.url}
+            placeholder="https://example.com"
+            onChange={(v) => update({ url: v })}
+          />
+        </Row>
+      )}
       {action.type === "navigate" && (
         <Row label="Screen">
           <Dropdown

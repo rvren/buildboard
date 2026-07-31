@@ -72,9 +72,10 @@ export const SCREEN_SOURCE = "$screen";
 /** Interactive behavior attached to a node (currently Button onClick). */
 export interface NodeAction {
   trigger: "click";
-  type: "none" | "navigate" | "request";
+  type: "none" | "navigate" | "request" | "openUrl";
   targetScreenId?: string; // for navigate
   dataSourceId?: string; // for request
+  url?: string; // for openUrl (external link)
 }
 
 /** Responsive breakpoints (mobile-first): base < sm < md < lg. */

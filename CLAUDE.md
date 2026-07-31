@@ -177,7 +177,7 @@ design system, and higher-fidelity code export.
 > (designers → apps/websites → real, accessible code). Data-bound components + polish + portability.
 - [ ] **B7-1** — Data-bound Table: bind a Table's rows to an array source + column→field mapping → real `.map()` on export (dynamic apps)
 - [ ] **B7-2** — Tabs / Accordion container node (interactive, exported) (new component)
-- [ ] **B7-3** — Per-node click-to-open-URL action (external link) alongside navigate/request (interactions)
+- [x] **B7-3** — Click-to-open-URL action (external link) alongside navigate/request → `window.open` on canvas + export → `v0.1.64`
 - [ ] **B7-4** — Design-system spacing scale as CSS-var tokens applied via `p-[var(--space-…)]` (design system, fidelity-safe)
 - [ ] **B7-5** — Canvas guides/snapping: align edges to sibling bounds while dragging (canvas UX)
 - [ ] **B7-6** — Export a component API README (props table per component) (real code docs)

@@ -207,6 +207,10 @@ function walk(node: DesignNode, depth: number, ctx: Ctx): WalkResult {
         (s) => s.id === node.action!.targetScreenId
       );
       attrs.push(`onClick={() => goTo("${target ? target.name : "Screen"}")}`);
+    } else if (node.action.type === "openUrl" && node.action.url) {
+      attrs.push(
+        `onClick={() => window.open(${JSON.stringify(node.action.url)}, "_blank", "noopener,noreferrer")}`
+      );
     } else if (node.action.type === "request" && node.action.dataSourceId) {
       const entry = ctx.varMap.get(node.action.dataSourceId);
       if (entry) attrs.push(`onClick={() => call_${entry.varName.slice(5)}()}`);
