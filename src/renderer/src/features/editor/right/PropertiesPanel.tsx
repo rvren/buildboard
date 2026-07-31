@@ -1008,6 +1008,25 @@ function TypographySection({ node }: { node: DesignNode }) {
           ]}
         />
       </Row>
+      <Row label="Tracking">
+        <Dropdown
+          value={s.tracking ?? "normal"}
+          onChange={(v) => set({ tracking: v as typeof s.tracking })}
+          options={["tighter", "tight", "normal", "wide", "wider"].map((v) => ({
+            value: v,
+            label: v,
+          }))}
+        />
+      </Row>
+      <Row label="Leading">
+        <Dropdown
+          value={s.leading ?? "normal"}
+          onChange={(v) => set({ leading: v as typeof s.leading })}
+          options={["none", "tight", "snug", "normal", "relaxed", "loose"].map(
+            (v) => ({ value: v, label: v })
+          )}
+        />
+      </Row>
       <Row label="Color">
         <ColorControl
           kind="text"

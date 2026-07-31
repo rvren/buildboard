@@ -53,6 +53,8 @@ export interface StyleTokens {
   fontSize?: "xs" | "sm" | "base" | "lg" | "xl" | "2xl" | "3xl" | "4xl";
   fontWeight?: "normal" | "medium" | "semibold" | "bold";
   textAlign?: "left" | "center" | "right";
+  tracking?: "tighter" | "tight" | "normal" | "wide" | "wider"; // letter-spacing
+  leading?: "none" | "tight" | "snug" | "normal" | "relaxed" | "loose"; // line-height
 }
 
 /**

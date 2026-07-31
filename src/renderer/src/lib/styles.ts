@@ -89,6 +89,22 @@ const HOVER: Record<string, string> = {
   glow: "transition-shadow hover:shadow-xl hover:shadow-primary/30",
 };
 
+const TRACKING: Record<string, string> = {
+  tighter: "tracking-tighter",
+  tight: "tracking-tight",
+  normal: "",
+  wide: "tracking-wide",
+  wider: "tracking-wider",
+};
+const LEADING: Record<string, string> = {
+  none: "leading-none",
+  tight: "leading-tight",
+  snug: "leading-snug",
+  normal: "",
+  relaxed: "leading-relaxed",
+  loose: "leading-loose",
+};
+
 const FONT_SIZE: Record<string, string> = {
   xs: "text-xs",
   sm: "text-sm",
@@ -198,6 +214,8 @@ export function stylesToTailwind(s: StyleTokens): string {
     cls.push(TEXT_TOKENS[s.textColor]);
   if (s.textAlign && s.textAlign !== "left")
     cls.push(`text-${s.textAlign}`);
+  if (s.tracking && TRACKING[s.tracking]) cls.push(TRACKING[s.tracking]);
+  if (s.leading && LEADING[s.leading]) cls.push(LEADING[s.leading]);
 
   return cls.join(" ");
 }

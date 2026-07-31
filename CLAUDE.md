@@ -178,7 +178,7 @@ design system, and higher-fidelity code export.
 - [ ] **B7-1** — Data-bound Table: bind a Table's rows to an array source + column→field mapping → real `.map()` on export (dynamic apps)
 - [ ] **B7-2** — Tabs / Accordion container node (interactive, exported) (new component)
 - [x] **B7-3** — Click-to-open-URL action (external link) alongside navigate/request → `window.open` on canvas + export → `v0.1.64`
-- [ ] **B7-4** — Design-system spacing scale as CSS-var tokens applied via `p-[var(--space-…)]` (design system, fidelity-safe)
+- [x] **B7-4** — Reshaped: typography spacing tokens — letter-spacing (tracking) + line-height (leading) styles, literal Tailwind classes (canvas + export) → `v0.1.70` _(custom p-[var] spacing scales deferred: would drift canvas vs export)_
 - [ ] **B7-5** — Canvas guides/snapping: align edges to sibling bounds while dragging (canvas UX)
 - [x] **B7-6** — Export a `COMPONENTS.md` API reference (props table + variants per component) in every export zip → `v0.1.68`
 - [x] **B7-7** — Per-screen full-bleed background token (schema v10): colors the artboard + exported `min-h-screen` page wrapper → `v0.1.67`
