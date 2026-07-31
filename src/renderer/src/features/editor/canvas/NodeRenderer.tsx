@@ -2,6 +2,7 @@ import * as React from "react";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { toast } from "sonner";
 import type { DesignNode } from "@/types";
+import { ITEM_SOURCE } from "@/types";
 import { defFor } from "@/lib/nodeDefs";
 import { stylesToTailwind, sizeStyle, effectiveTokens } from "@/lib/styles";
 import {
@@ -86,6 +87,22 @@ export function NodeRenderer({ node, isRoot = false }: Props) {
 
   // Resolve bound props (content/src/label/…) from data for the live preview.
   const resolvedNode = React.useMemo(() => {
+    // Data-bound Table: fill headers/rows from the bound array + column mapping.
+    if (node.type === "Table" && node.repeat) {
+      const arr = resolveArray(node.repeat, bindCtx);
+      const cols = (node.props.columns as { header: string; field: string }[]) ?? [];
+      const headers = cols.map((c) => c.header);
+      const rows = arr.map((item) =>
+        cols.map((c) => {
+          const v = resolveBindingDisplay(
+            { sourceId: ITEM_SOURCE, path: c.field },
+            { ...bindCtx, item }
+          );
+          return v == null ? "" : String(v);
+        })
+      );
+      return { ...node, props: { ...node.props, headers, rows } };
+    }
     if (!hasBindings) return node;
     const props = { ...node.props };
     for (const [prop, b] of Object.entries(node.bindings!)) {

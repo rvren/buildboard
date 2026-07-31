@@ -172,6 +172,44 @@ function walk(node: DesignNode, depth: number, ctx: Ctx): WalkResult {
     return { lines: [`${pad}<${name} />`], imports: [] };
   }
 
+  // Data-bound Table: emit `<tbody>{(arr ?? []).map(...)}</tbody>` from columns.
+  if (node.type === "Table" && node.repeat) {
+    const pad = INDENT.repeat(depth);
+    const cols =
+      (node.props.columns as { header: string; field: string }[]) ?? [];
+    const arrExpr = bindingExpr(node.repeat, ctx) ?? "[]";
+    const cls = [
+      "w-full border-collapse text-sm",
+      responsiveClasses(node.styles, node.responsive),
+    ]
+      .filter(Boolean)
+      .join(" ");
+    const p2 = pad + INDENT;
+    const lines = [
+      `${pad}<table className="${cls}">`,
+      `${p2}<thead>`,
+      `${p2}${INDENT}<tr>`,
+      ...cols.map(
+        (c) =>
+          `${p2}${INDENT}${INDENT}<th className="border-b px-3 py-2 text-left font-semibold">${jsxText(c.header)}</th>`
+      ),
+      `${p2}${INDENT}</tr>`,
+      `${p2}</thead>`,
+      `${p2}<tbody>`,
+      `${p2}${INDENT}{(${arrExpr} ?? []).map((item, i) => (`,
+      `${p2}${INDENT}${INDENT}<tr key={i}>`,
+      ...cols.map(
+        (c) =>
+          `${p2}${INDENT}${INDENT}${INDENT}<td className="border-b px-3 py-2">{item.${c.field}}</td>`
+      ),
+      `${p2}${INDENT}${INDENT}</tr>`,
+      `${p2}${INDENT}))}`,
+      `${p2}</tbody>`,
+      `${pad}</table>`,
+    ];
+    return { lines, imports: [] };
+  }
+
   const def = defFor(node.type);
   const spec = def.codegen(node);
   const imports: ImportSpec[] = [...spec.imports];

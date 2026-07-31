@@ -175,7 +175,7 @@ design system, and higher-fidelity code export.
 ### Next batch — Batch 7 (refill; Batch 6 = 10/10 → 75% refill fired)
 > Curated de-duped against everything shipped, balanced across themes and anchored to the vision
 > (designers → apps/websites → real, accessible code). Data-bound components + polish + portability.
-- [ ] **B7-1** — Data-bound Table: bind a Table's rows to an array source + column→field mapping → real `.map()` on export (dynamic apps)
+- [x] **B7-1** — Data-bound Table: bind rows to a data array + column→field mapping → live rows on canvas + real `.map()` on export → `v0.1.73`
 - [x] **B7-2** — Reshaped: Collapsible container node (native `<details>/<summary>`, interactive, exported, zero JS state) → `v0.1.72` _(stateful Tabs deferred: per-node component state risks codegen collisions)_
 - [x] **B7-3** — Click-to-open-URL action (external link) alongside navigate/request → `window.open` on canvas + export → `v0.1.64`
 - [x] **B7-4** — Reshaped: typography spacing tokens — letter-spacing (tracking) + line-height (leading) styles, literal Tailwind classes (canvas + export) → `v0.1.70` _(custom p-[var] spacing scales deferred: would drift canvas vs export)_

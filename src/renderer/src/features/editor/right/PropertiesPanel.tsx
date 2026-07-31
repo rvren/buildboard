@@ -492,9 +492,87 @@ function NodeHeader({ node }: { node: DesignNode }) {
 }
 
 /* ------------------------------------------------------------------ Content */
-/** Editor for the Table node: headers (comma-separated) + editable cell grid. */
+/** Editor for the Table node: static headers/rows, or rows bound to a data array. */
 function TableEditor({ node }: { node: DesignNode }) {
   const setProps = useEditor((s) => s.updateNodeProps);
+  const setRepeat = useEditor((s) => s.setNodeRepeat);
+  const project = useEditor((s) => s.currentProject());
+  const sources = (project?.dataSources ?? []).filter((d) =>
+    project?.mode === "dynamic" ? true : d.kind === "constant"
+  );
+  const bound = !!node.repeat;
+  const columns: { header: string; field: string }[] = node.props.columns ?? [];
+
+  if (bound) {
+    const setCols = (cols: { header: string; field: string }[]) =>
+      setProps(node.id, { columns: cols });
+    return (
+      <Section title="Table · bound to data">
+        <Row label="Source">
+          <Dropdown
+            value={node.repeat!.sourceId}
+            onChange={(v) =>
+              setRepeat(node.id, { sourceId: v, path: node.repeat!.path })
+            }
+            options={sources.map((d) => ({ value: d.id, label: d.name }))}
+          />
+        </Row>
+        <Row label="Array path">
+          <TextControl
+            value={node.repeat!.path}
+            placeholder="(whole response) or e.g. items"
+            onChange={(v) =>
+              setRepeat(node.id, { sourceId: node.repeat!.sourceId, path: v })
+            }
+          />
+        </Row>
+        <div className="space-y-1.5">
+          <p className="text-[11px] font-medium text-muted-foreground">
+            Columns (header → field)
+          </p>
+          {columns.map((c, i) => (
+            <div key={i} className="flex items-center gap-1">
+              <input
+                value={c.header}
+                placeholder="Header"
+                onChange={(e) =>
+                  setCols(columns.map((x, j) => (j === i ? { ...x, header: e.target.value } : x)))
+                }
+                className="min-w-0 flex-1 rounded border border-border bg-transparent px-1.5 py-1 text-[11px] outline-none"
+              />
+              <input
+                value={c.field}
+                placeholder="field"
+                onChange={(e) =>
+                  setCols(columns.map((x, j) => (j === i ? { ...x, field: e.target.value } : x)))
+                }
+                className="min-w-0 flex-1 rounded border border-border bg-transparent px-1.5 py-1 font-mono text-[11px] outline-none"
+              />
+              <button
+                onClick={() => setCols(columns.filter((_, j) => j !== i))}
+                className="grid h-6 w-6 shrink-0 place-items-center rounded text-muted-foreground hover:text-destructive"
+              >
+                <Trash2 className="h-3 w-3" />
+              </button>
+            </div>
+          ))}
+          <button
+            onClick={() => setCols([...columns, { header: "Column", field: "field" }])}
+            className="text-[11px] font-medium text-primary hover:underline"
+          >
+            + Add column
+          </button>
+        </div>
+        <button
+          onClick={() => setRepeat(node.id, null)}
+          className="mt-1 text-[11px] text-muted-foreground underline underline-offset-2 hover:text-foreground"
+        >
+          Use static rows instead
+        </button>
+      </Section>
+    );
+  }
+
   const headers: string[] = node.props.headers ?? [];
   const rows: string[][] = node.props.rows ?? [];
 
@@ -521,6 +599,22 @@ function TableEditor({ node }: { node: DesignNode }) {
 
   return (
     <Section title="Table">
+      {sources.length > 0 && (
+        <button
+          onClick={() => {
+            setProps(node.id, {
+              columns: headers.length
+                ? headers.map((h) => ({ header: h, field: h.toLowerCase().replace(/\s+/g, "") }))
+                : [{ header: "Name", field: "name" }],
+            });
+            setRepeat(node.id, { sourceId: sources[0].id, path: "" });
+          }}
+          className="flex w-full items-center gap-1.5 rounded-md border px-2 py-1.5 text-[11px] text-muted-foreground hover:border-primary/40 hover:text-primary"
+        >
+          <Link2 className="h-3.5 w-3.5" />
+          Bind rows to a data source
+        </button>
+      )}
       <Row label="Columns">
         <TextControl
           value={headers.join(", ")}

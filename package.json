@@ -1,6 +1,6 @@
 {
   "name": "buildboard",
-  "version": "0.1.72",
+  "version": "0.1.73",
   "description": "A local-first, design-to-code studio desktop app.",
   "author": "Renjith Rajendran Viswalekshmi",
   "private": true,
