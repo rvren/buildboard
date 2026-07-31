@@ -186,6 +186,20 @@ design system, and higher-fidelity code export.
 - [x] **B7-9** — Global element search (by text/type across all screens) → jump to the node → `v0.1.66`
 - [x] **B7-10** — High-contrast palette preset + per-pair "Fix" button that auto-nudges the text color to pass WCAG AA → `v0.1.69`
 
+### Next batch — Batch 8 (refill; Batch 7 = 10/10 → 75% refill fired)
+> Curated de-duped against everything shipped, balanced across themes and anchored to the vision
+> (designers → apps/websites → real, accessible code). Deeper data, richer primitives, export reach.
+- [ ] **B8-1** — Data-bound Image/List: bind an Image src or a repeater to array fields via the picker (dynamic apps)
+- [ ] **B8-2** — Progress / Slider / Rating primitives (new display nodes, exported)
+- [ ] **B8-3** — Gradient fill token for backgrounds (beyond flat color), canvas + export (design system)
+- [ ] **B8-4** — Per-node max-width / container constraint style (`max-w-*`) (authoring)
+- [ ] **B8-5** — Export a single-file React component (copy the whole screen as one `.tsx`) (real code)
+- [ ] **B8-6** — Design-system "Reset to preset" + unsaved-token diff indicator (design system)
+- [ ] **B8-7** — Canvas: zoom-to-selection (frame the selected node) (canvas UX)
+- [ ] **B8-8** — Skeleton/loading-state variant for data-bound nodes, exported (dynamic apps)
+- [ ] **B8-9** — Reduced-motion + prefers-color-scheme notes emitted in exported globals (accessibility)
+- [ ] **B8-10** — Per-project favicon auto-generate from a letter + brand color (apps/websites)
+
 ## Process architecture
 
 - **src/main/** (Node, privileged): app lifecycle + SQLite. `index.ts` (window, load renderer),
