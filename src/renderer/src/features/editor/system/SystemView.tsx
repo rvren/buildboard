@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Copy, Plus, Trash2, Component, Pencil, Download, Upload } from "lucide-react";
-import type { DesignNode, NodeType, Project, ThemePalette } from "@/types";
+import type { DesignNode, NodeType, Project, ThemePalette, ThemeMode } from "@/types";
 import { createNode } from "@/lib/factory";
 import { nodeDefList, categoryOrder } from "@/lib/nodeDefs";
 import { StaticNode } from "@/features/editor/canvas/renderTree";
@@ -345,7 +345,37 @@ const CONTRAST_PAIRS: { label: string; fg: keyof ThemePalette; bg: keyof ThemePa
 ];
 
 /** Reads each fg/bg token pair and flags WCAG AA/AAA (normal-text) contrast. */
-function ContrastChecker({ palette }: { palette: ThemePalette }) {
+function rgbToHex([r, g, b]: [number, number, number]): string {
+  const h = (n: number) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, "0");
+  return `#${h(r)}${h(g)}${h(b)}`;
+}
+/** Nudge a foreground toward black/white (by bg lightness) until it passes AA. */
+function autoFixForeground(fg: string, bg: string): string {
+  const bgRgb = hexToRgb(bg);
+  const fgRgb = hexToRgb(fg);
+  if (!bgRgb || !fgRgb) return fg;
+  const target: [number, number, number] = relLuminance(bgRgb) > 0.4 ? [0, 0, 0] : [255, 255, 255];
+  for (let t = 0; t <= 1.0001; t += 0.1) {
+    const cand: [number, number, number] = [
+      fgRgb[0] + (target[0] - fgRgb[0]) * t,
+      fgRgb[1] + (target[1] - fgRgb[1]) * t,
+      fgRgb[2] + (target[2] - fgRgb[2]) * t,
+    ];
+    const hex = rgbToHex(cand);
+    const r = contrastRatio(hex, bg);
+    if (r != null && r >= 4.5) return hex;
+  }
+  return rgbToHex(target);
+}
+
+function ContrastChecker({
+  palette,
+  theme,
+}: {
+  palette: ThemePalette;
+  theme: ThemeMode;
+}) {
+  const updateThemeToken = useEditor((s) => s.updateThemeToken);
   return (
     <div className="space-y-1.5">
       <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">
@@ -381,6 +411,19 @@ function ContrastChecker({ palette }: { palette: ThemePalette }) {
               <span className={cn("w-8 text-right text-[10px] font-semibold", tone)}>
                 {grade}
               </span>
+              {grade === "Fail" && (
+                <button
+                  onClick={() =>
+                    updateThemeToken(theme, {
+                      [p.fg]: autoFixForeground(palette[p.fg], palette[p.bg]),
+                    })
+                  }
+                  className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary hover:bg-primary/20"
+                  title="Auto-adjust the text color to pass AA"
+                >
+                  Fix
+                </button>
+              )}
             </div>
           );
         })}
@@ -440,6 +483,39 @@ function TokensPanel({ project }: { project: Project }) {
             Theme presets
           </p>
           <div className="flex flex-wrap gap-1.5">
+            <button
+              type="button"
+              title="Apply a maximum-contrast black/white palette (WCAG AAA)"
+              onClick={() => {
+                updateThemeToken("light", {
+                  background: "#ffffff",
+                  foreground: "#000000",
+                  card: "#ffffff",
+                  cardForeground: "#000000",
+                  muted: "#f2f2f2",
+                  mutedForeground: "#1a1a1a",
+                  border: "#000000",
+                  primary: "#000000",
+                  primaryForeground: "#ffffff",
+                });
+                updateThemeToken("dark", {
+                  background: "#000000",
+                  foreground: "#ffffff",
+                  card: "#000000",
+                  cardForeground: "#ffffff",
+                  muted: "#141414",
+                  mutedForeground: "#e6e6e6",
+                  border: "#ffffff",
+                  primary: "#ffffff",
+                  primaryForeground: "#000000",
+                });
+                toast.success("High-contrast theme applied");
+              }}
+              className="flex items-center gap-1.5 rounded-md border border-border/70 bg-card px-2 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <span className="h-3 w-3 rounded-full border border-black/10 bg-[conic-gradient(#000_0_50%,#fff_50%_100%)]" />
+              High contrast
+            </button>
             {THEME_PRESETS.map((preset) => (
               <button
                 key={preset.id}
@@ -529,7 +605,7 @@ function TokensPanel({ project }: { project: Project }) {
           </div>
         </div>
 
-        <ContrastChecker palette={palette} />
+        <ContrastChecker palette={palette} theme={theme} />
 
         {/* live preview of the active mode */}
         <div

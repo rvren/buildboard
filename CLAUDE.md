@@ -184,7 +184,7 @@ design system, and higher-fidelity code export.
 - [x] **B7-7** — Per-screen full-bleed background token (schema v10): colors the artboard + exported `min-h-screen` page wrapper → `v0.1.67`
 - [x] **B7-8** — Keyboard: ⌘⇧↑/↓ move node to first/last among siblings (duplicate-in-place already ⌘D) → `v0.1.65`
 - [x] **B7-9** — Global element search (by text/type across all screens) → jump to the node → `v0.1.66`
-- [ ] **B7-10** — Theme: high-contrast palette preset + one-click WCAG-AA auto-fix suggestion (accessibility)
+- [x] **B7-10** — High-contrast palette preset + per-pair "Fix" button that auto-nudges the text color to pass WCAG AA → `v0.1.69`
 
 ## Process architecture
 
