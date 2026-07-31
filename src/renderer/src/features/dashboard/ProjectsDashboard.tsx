@@ -1,4 +1,7 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { Upload } from "lucide-react";
 import {
   Plus,
   Sparkles,
@@ -81,6 +84,7 @@ export default function ProjectsDashboard() {
           <Logo />
           <div className="flex items-center gap-1.5">
             <ThemeToggle />
+            <ImportProjectButton />
             <NewProjectDialog />
           </div>
         </div>
@@ -284,5 +288,49 @@ function EmptyState() {
         }
       />
     </div>
+  );
+}
+
+/** Import a project from a `.json` file exported by BuildBoard (fresh ids). */
+function ImportProjectButton() {
+  const importProject = useEditor((s) => s.importProject);
+  const openProject = useEditor((s) => s.openProject);
+  const navigate = useNavigate();
+  const ref = useRef<HTMLInputElement>(null);
+
+  const onFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    void file.text().then((text) => {
+      try {
+        const id = importProject(JSON.parse(text));
+        if (id) {
+          openProject(id);
+          navigate(`/project/${id}/overview`);
+          toast.success("Project imported");
+        } else {
+          toast.error("That file isn't a BuildBoard project");
+        }
+      } catch {
+        toast.error("Couldn't read that file");
+      }
+    });
+  };
+
+  return (
+    <>
+      <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => ref.current?.click()}>
+        <Upload className="h-4 w-4" />
+        Import
+      </Button>
+      <input
+        ref={ref}
+        type="file"
+        accept="application/json,.json"
+        className="hidden"
+        onChange={onFile}
+      />
+    </>
   );
 }

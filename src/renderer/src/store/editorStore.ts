@@ -152,6 +152,8 @@ interface EditorState {
   ) => number;
   deleteProject: (id: string) => void;
   duplicateProject: (id: string) => void;
+  /** Import a project from a parsed `.json` file (fresh ids); returns its id. */
+  importProject: (raw: unknown) => string | null;
   setProjectMode: (id: string, mode: ProjectMode) => void;
 
   // ----- navigation
@@ -370,6 +372,65 @@ function replaceOccurrences(
   // Case-insensitive replace preserving non-matched text.
   const esc = needle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   return { result: hay.replace(new RegExp(esc, "gi"), repl), n };
+}
+
+/** Deep-clone a project with fresh ids everywhere (instances stay linked to their
+ *  remapped component definitions). Used by duplicate + import. */
+function cloneProjectDeep(src: Project, name: string): Project {
+  const defIdMap = new Map<string, string>();
+  const components = (src.designSystem?.components ?? []).map((c) => {
+    const nid = uid("cmp");
+    defIdMap.set(c.id, nid);
+    return { ...c, id: nid, root: cloneNodeWithNewIds(c.root, uid) };
+  });
+  const remapInstances = (node: DesignNode): DesignNode => ({
+    ...node,
+    instanceOf: node.instanceOf
+      ? defIdMap.get(node.instanceOf) ?? node.instanceOf
+      : node.instanceOf,
+    children: (node.children ?? []).map(remapInstances),
+  });
+  return {
+    ...src,
+    id: uid("proj"),
+    name,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    screens: src.screens.map((sc) => ({
+      ...sc,
+      id: uid("screen"),
+      root: remapInstances(cloneNodeWithNewIds(sc.root, uid)),
+    })),
+    dataSources: (src.dataSources ?? []).map((d) => ({
+      ...d,
+      id: uid("ds"),
+      headers: (d.headers ?? []).map((h) => ({ ...h })),
+    })),
+    designSystem: src.designSystem
+      ? {
+          tokens: {
+            ...src.designSystem.tokens,
+            light: { ...src.designSystem.tokens.light },
+            dark: { ...src.designSystem.tokens.dark },
+          },
+          presets: (src.designSystem.presets ?? []).map((pr) => ({
+            ...pr,
+            id: uid("preset"),
+          })),
+          components,
+        }
+      : defaultDesignSystem(),
+    architecture: src.architecture
+      ? {
+          services: src.architecture.services.map((sv) => ({ ...sv })),
+          interactions: src.architecture.interactions.map((i) => ({ ...i })),
+          sequences: src.architecture.sequences.map((sq) => ({
+            ...sq,
+            steps: sq.steps.map((st) => ({ ...st })),
+          })),
+        }
+      : defaultArchitecture(),
+  };
 }
 
 function withActiveRoot(
@@ -603,65 +664,17 @@ export const useEditor = create<EditorState>()(
         set((s) => {
           const src = s.projects.find((p) => p.id === id);
           if (!src) return {};
-          // Remap component-definition ids so duplicated instances stay linked.
-          const defIdMap = new Map<string, string>();
-          const components = (src.designSystem?.components ?? []).map((c) => {
-            const nid = uid("cmp");
-            defIdMap.set(c.id, nid);
-            return { ...c, id: nid, root: cloneNodeWithNewIds(c.root, uid) };
-          });
-          const remapInstances = (node: DesignNode): DesignNode => ({
-            ...node,
-            instanceOf: node.instanceOf
-              ? defIdMap.get(node.instanceOf) ?? node.instanceOf
-              : node.instanceOf,
-            children: node.children.map(remapInstances),
-          });
-          const copy: Project = {
-            ...src,
-            id: uid("proj"),
-            name: `${src.name} copy`,
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
-            screens: src.screens.map((sc) => ({
-              ...sc,
-              id: uid("screen"),
-              root: remapInstances(cloneNodeWithNewIds(sc.root, uid)),
-            })),
-            dataSources: (src.dataSources ?? []).map((d) => ({
-              ...d,
-              id: uid("ds"),
-              headers: d.headers.map((h) => ({ ...h })),
-            })),
-            designSystem: src.designSystem
-              ? {
-                  tokens: {
-                    ...src.designSystem.tokens,
-                    light: { ...src.designSystem.tokens.light },
-                    dark: { ...src.designSystem.tokens.dark },
-                  },
-                  presets: src.designSystem.presets.map((pr) => ({
-                    ...pr,
-                    id: uid("preset"),
-                  })),
-                  components,
-                }
-              : defaultDesignSystem(),
-            architecture: src.architecture
-              ? {
-                  services: src.architecture.services.map((sv) => ({ ...sv })),
-                  interactions: src.architecture.interactions.map((i) => ({
-                    ...i,
-                  })),
-                  sequences: src.architecture.sequences.map((sq) => ({
-                    ...sq,
-                    steps: sq.steps.map((st) => ({ ...st })),
-                  })),
-                }
-              : defaultArchitecture(),
-          };
-          return { projects: [copy, ...s.projects] };
+          return { projects: [cloneProjectDeep(src, `${src.name} copy`), ...s.projects] };
         }),
+
+      importProject: (raw) => {
+        if (!raw || typeof raw !== "object") return null;
+        const src = raw as Project;
+        if (!Array.isArray(src.screens) || !src.designSystem) return null;
+        const copy = cloneProjectDeep(src, src.name || "Imported project");
+        set((s) => ({ projects: [copy, ...s.projects] }));
+        return copy.id;
+      },
 
       openProject: (id) => {
         const project = get().projects.find((p) => p.id === id);

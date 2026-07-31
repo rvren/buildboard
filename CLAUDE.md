@@ -161,7 +161,7 @@ design system, and higher-fidelity code export.
 ### Next batch — Batch 6 (refill; Batch 5 = 10/10 → 75% refill fired)
 > Curated de-duped against everything shipped, balanced across themes and anchored to the vision
 > (designers → apps/websites → real, accessible code). New node types + interactions + portability.
-- [ ] **B6-1** — Project export / import as a single `.json` file (full-project round-trip) (data ownership)
+- [x] **B6-1** — Project export/import as a single `.buildboard.json` file (fresh-id deep clone on import) → `v0.1.55`
 - [ ] **B6-2** — Table node bound to array data → real `<table>` rows on export (dynamic apps)
 - [ ] **B6-3** — Per-node hover style variant → exported `hover:` Tailwind classes (design → real code)
 - [ ] **B6-4** — Canvas minimap for quick navigation of a busy board (canvas UX)

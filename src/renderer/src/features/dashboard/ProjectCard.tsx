@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   MoreHorizontal,
   Copy,
+  Download,
   Pencil,
   Trash2,
   Layers,
@@ -30,6 +31,7 @@ import {
 } from "@/components/ui/dialog";
 import { useEditor } from "@/store/editorStore";
 import { formatRelativeTime, cn } from "@/lib/utils";
+import { downloadText } from "@/lib/export";
 import { MiniPreview } from "./MiniPreview";
 
 export function ProjectCard({ project }: { project: Project }) {
@@ -98,6 +100,20 @@ export function ProjectCard({ project }: { project: Project }) {
                 >
                   <Copy className="h-4 w-4" />
                   Duplicate
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    const slug =
+                      project.name.replace(/\s+/g, "-").toLowerCase() || "project";
+                    downloadText(
+                      `${slug}.buildboard.json`,
+                      JSON.stringify(project, null, 2)
+                    );
+                    toast.success("Project exported");
+                  }}
+                >
+                  <Download className="h-4 w-4" />
+                  Export as file
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
