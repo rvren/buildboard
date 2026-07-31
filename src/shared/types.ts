@@ -12,6 +12,7 @@ export type NodeType =
   | "Avatar"
   | "Image"
   | "Icon"
+  | "Table"
   | "Divider"
   | "Switch"
   | "Checkbox"

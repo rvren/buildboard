@@ -478,6 +478,74 @@ function NodeHeader({ node }: { node: DesignNode }) {
 }
 
 /* ------------------------------------------------------------------ Content */
+/** Editor for the Table node: headers (comma-separated) + editable cell grid. */
+function TableEditor({ node }: { node: DesignNode }) {
+  const setProps = useEditor((s) => s.updateNodeProps);
+  const headers: string[] = node.props.headers ?? [];
+  const rows: string[][] = node.props.rows ?? [];
+
+  const resize = (row: string[], n: number) =>
+    Array.from({ length: n }, (_, i) => row[i] ?? "");
+
+  const setHeaders = (text: string) => {
+    const hs = text.split(",").map((h) => h.trim());
+    setProps(node.id, {
+      headers: hs,
+      rows: rows.map((r) => resize(r, hs.length)),
+    });
+  };
+  const setCell = (ri: number, ci: number, v: string) => {
+    const next = rows.map((r, i) =>
+      i === ri ? r.map((c, j) => (j === ci ? v : c)) : r
+    );
+    setProps(node.id, { rows: next });
+  };
+  const addRow = () =>
+    setProps(node.id, { rows: [...rows, headers.map(() => "")] });
+  const removeRow = (ri: number) =>
+    setProps(node.id, { rows: rows.filter((_, i) => i !== ri) });
+
+  return (
+    <Section title="Table">
+      <Row label="Columns">
+        <TextControl
+          value={headers.join(", ")}
+          placeholder="Name, Role, Status"
+          onChange={setHeaders}
+        />
+      </Row>
+      <div className="space-y-1.5">
+        <p className="text-[11px] font-medium text-muted-foreground">Rows</p>
+        {rows.map((r, ri) => (
+          <div key={ri} className="flex items-center gap-1">
+            {r.map((c, ci) => (
+              <input
+                key={ci}
+                value={c}
+                onChange={(e) => setCell(ri, ci, e.target.value)}
+                className="min-w-0 flex-1 rounded border border-border bg-transparent px-1.5 py-1 text-[11px] outline-none focus:ring-1 focus:ring-ring"
+              />
+            ))}
+            <button
+              onClick={() => removeRow(ri)}
+              className="grid h-6 w-6 shrink-0 place-items-center rounded text-muted-foreground hover:text-destructive"
+              title="Remove row"
+            >
+              <Trash2 className="h-3 w-3" />
+            </button>
+          </div>
+        ))}
+        <button
+          onClick={addRow}
+          className="text-[11px] font-medium text-primary hover:underline"
+        >
+          + Add row
+        </button>
+      </div>
+    </Section>
+  );
+}
+
 /** Searchable icon picker for the Icon node (writes the lucide export name). */
 function IconPicker({
   value,
@@ -702,6 +770,8 @@ function ContentSection({ node }: { node: DesignNode }) {
           <IconPicker value={p.icon} onChange={(v) => set({ icon: v })} />
         </Section>
       );
+    case "Table":
+      return <TableEditor node={node} />;
     case "Avatar":
       return (
         <Section title="Content">

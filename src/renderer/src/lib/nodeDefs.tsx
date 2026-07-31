@@ -17,6 +17,7 @@ import {
   CheckSquare,
   Component,
   Sparkles,
+  Table as TableIcon,
   type LucideIcon,
 } from "lucide-react";
 import type { DesignNode, NodeType, StyleTokens } from "@/types";
@@ -483,6 +484,81 @@ export const nodeDefs: Record<NodeType, NodeDef> = {
         attrs: [],
         extraClass: "h-6 w-6",
         selfClosing: true,
+      };
+    },
+  },
+
+  Table: {
+    type: "Table",
+    label: "Table",
+    category: "Display",
+    icon: TableIcon,
+    canHaveChildren: false,
+    defaultProps: {
+      headers: ["Name", "Role", "Status"],
+      rows: [
+        ["Ada Lovelace", "Engineer", "Active"],
+        ["Grace Hopper", "Admiral", "Active"],
+        ["Alan Turing", "Researcher", "Pending"],
+      ],
+    },
+    defaultStyles: { width: "full" },
+    render: ({ node, className, rootProps }) => {
+      const headers: string[] = node.props.headers ?? [];
+      const rows: string[][] = node.props.rows ?? [];
+      return (
+        <table
+          className={cn("w-full border-collapse text-sm", className)}
+          {...rootProps}
+        >
+          <thead>
+            <tr>
+              {headers.map((h, i) => (
+                <th
+                  key={i}
+                  className="border-b border-border px-3 py-2 text-left font-semibold"
+                >
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r, ri) => (
+              <tr key={ri}>
+                {r.map((c, ci) => (
+                  <td key={ci} className="border-b border-border px-3 py-2">
+                    {c}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      );
+    },
+    codegen: (node) => {
+      const headers: string[] = node.props.headers ?? [];
+      const rows: string[][] = node.props.rows ?? [];
+      const esc = (s: string) =>
+        String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/[{}]/g, (m) => `{'${m}'}`);
+      const thead = `<thead>\n  <tr>\n${headers
+        .map((h) => `    <th className="border-b px-3 py-2 text-left font-semibold">${esc(h)}</th>`)
+        .join("\n")}\n  </tr>\n</thead>`;
+      const tbody = `<tbody>\n${rows
+        .map(
+          (r) =>
+            `  <tr>\n${r
+              .map((c) => `    <td className="border-b px-3 py-2">${esc(c)}</td>`)
+              .join("\n")}\n  </tr>`
+        )
+        .join("\n")}\n</tbody>`;
+      return {
+        tag: "table",
+        imports: [],
+        attrs: [],
+        extraClass: "w-full border-collapse text-sm",
+        innerJSX: `${thead}\n${tbody}`,
       };
     },
   },
