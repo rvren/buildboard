@@ -941,8 +941,21 @@ function AppearanceSection({ node }: { node: DesignNode }) {
   const activeBreakpoint = useEditor((s) => s.activeBreakpoint);
   const s = effectiveTokens(node, activeBreakpoint);
   const set = (patch: Partial<typeof s>) => setStyles(node.id, patch);
+  // Breakpoint-aware hide: writes display:none at the active breakpoint. Un-hiding
+  // restores the base display so the node's layout returns (e.g. `md:flex`).
+  const baseDisplay = effectiveTokens(node, "base").display;
   return (
     <Section title="Appearance">
+      <Row
+        label={
+          activeBreakpoint === "base" ? "Hidden" : `Hidden (${activeBreakpoint})`
+        }
+      >
+        <Switch
+          checked={s.display === "none"}
+          onCheckedChange={(c) => set({ display: c ? "none" : baseDisplay })}
+        />
+      </Row>
       <Row label="Fill">
         <ColorControl kind="bg" value={s.bg} onChange={(v) => set({ bg: v })} />
       </Row>

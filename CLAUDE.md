@@ -165,7 +165,7 @@ design system, and higher-fidelity code export.
 - [ ] **B6-2** — Table node bound to array data → real `<table>` rows on export (dynamic apps)
 - [ ] **B6-3** — Per-node hover style variant → exported `hover:` Tailwind classes (design → real code)
 - [ ] **B6-4** — Canvas minimap for quick navigation of a busy board (canvas UX)
-- [ ] **B6-5** — Breakpoint-specific visibility (show/hide per sm/md/lg) → responsive `hidden`/`block` (responsive)
+- [x] **B6-5** — Breakpoint-specific visibility: "Hidden" toggle per active breakpoint → `display:none` → responsive `hidden` (e.g. `sm:hidden`) on export → `v0.1.57`
 - [ ] **B6-6** — Mock-data generator from a data source's schema, for previewing without a live API (dynamic)
 - [ ] **B6-7** — Node lock (prevent select/move/edit) with a Layers-panel toggle (authoring)
 - [ ] **B6-8** — Animation / transition presets (fade / slide / scale) on nodes, exported as CSS classes (real code)

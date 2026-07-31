@@ -124,6 +124,8 @@ export function stylesToTailwind(s: StyleTokens): string {
     if (s.gridCols) cls.push(`grid-cols-${s.gridCols}`);
   } else if (s.display === "block") {
     cls.push("block");
+  } else if (s.display === "none") {
+    cls.push("hidden");
   }
 
   if (s.display === "flex") {

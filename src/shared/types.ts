@@ -24,7 +24,7 @@ export type NodeType =
  */
 export interface StyleTokens {
   // layout
-  display?: "flex" | "grid" | "block";
+  display?: "flex" | "grid" | "block" | "none";
   direction?: "row" | "col";
   align?: "start" | "center" | "end" | "stretch";
   justify?: "start" | "center" | "end" | "between" | "around";
