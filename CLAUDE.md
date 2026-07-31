@@ -164,7 +164,7 @@ design system, and higher-fidelity code export.
 - [x] **B6-1** — Project export/import as a single `.buildboard.json` file (fresh-id deep clone on import) → `v0.1.55`
 - [x] **B6-2** — Table node: editable headers + cell grid, rendered + exported as a real `<table>` → `v0.1.62` _(data-bound rows deferred: needs data-context plumbing in the core renderer)_
 - [x] **B6-3** — Per-node hover effect preset (lift/grow/darken/glow) → literal `hover:` Tailwind classes (native on canvas + exported) → `v0.1.60`
-- [ ] **B6-4** — Canvas minimap for quick navigation of a busy board (canvas UX)
+- [x] **B6-4** — Canvas minimap: proportional overview of all screens, click a screen to pan to it → `v0.1.63`
 - [x] **B6-5** — Breakpoint-specific visibility: "Hidden" toggle per active breakpoint → `display:none` → responsive `hidden` (e.g. `sm:hidden`) on export → `v0.1.57`
 - [x] **B6-6** — Mock-data generator: "Generate sample" fills a constant source with realistic rows (name-aware, from the schema) → `v0.1.61`
 - [x] **B6-7** — Node lock (schema v9): a Layers-panel lock toggle disables dragging/moving the node → `v0.1.59`

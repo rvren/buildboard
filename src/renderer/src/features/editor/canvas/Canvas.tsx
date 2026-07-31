@@ -290,6 +290,13 @@ function ScreensCanvas({ project }: { project: Project }) {
 
       <ColorBlindFilters />
 
+      {/* Minimap: proportional overview of all screens, click to jump */}
+      <MinimapPanel
+        project={project}
+        viewport={viewport}
+        setViewport={setViewport}
+      />
+
       {/* Live dimensions of the selected element */}
       <SelectionSizeBadge zoom={viewport.zoom} />
 
@@ -367,6 +374,76 @@ function ComponentEditCanvas({
       <div className="canvas-grid absolute inset-0 flex items-center justify-center overflow-auto p-10 pt-16 [background-size:22px_22px]">
         <ComponentFrame definition={definition} />
       </div>
+    </div>
+  );
+}
+
+/** Minimap overview of all screens; click a screen to pan to it. */
+function MinimapPanel({
+  project,
+  viewport,
+  setViewport,
+}: {
+  project: Project;
+  viewport: { x: number; y: number; zoom: number };
+  setViewport: (v: { x: number; y: number; zoom: number }) => void;
+}) {
+  const currentScreenId = useEditor((s) => s.currentScreenId);
+  const selectScreen = useEditor((s) => s.selectScreen);
+  const screens = project.screens;
+  if (screens.length < 2) return null; // not worth it for a single screen
+
+  const W = 168;
+  const H = 116;
+  const pad = 8;
+  const minX = Math.min(...screens.map((s) => s.x));
+  const minY = Math.min(...screens.map((s) => s.y));
+  const maxX = Math.max(...screens.map((s) => s.x + s.width));
+  const maxY = Math.max(...screens.map((s) => s.y + s.height));
+  const scale = Math.min(
+    (W - pad * 2) / Math.max(1, maxX - minX),
+    (H - pad * 2) / Math.max(1, maxY - minY)
+  );
+  const tx = (x: number) => pad + (x - minX) * scale;
+  const ty = (y: number) => pad + (y - minY) * scale;
+
+  const jumpTo = (s: (typeof screens)[number]) => {
+    selectScreen(s.id);
+    // Pan so the screen sits near the top-left of the viewport at current zoom.
+    setViewport({
+      x: -s.x * viewport.zoom + 100,
+      y: -s.y * viewport.zoom + 100,
+      zoom: viewport.zoom,
+    });
+  };
+
+  return (
+    <div
+      className="absolute right-4 top-4 overflow-hidden rounded-lg border border-border/70 bg-card/85 shadow-soft backdrop-blur"
+      style={{ width: W, height: H }}
+    >
+      {screens.map((s) => {
+        const active = s.id === currentScreenId;
+        return (
+          <button
+            key={s.id}
+            onClick={() => jumpTo(s)}
+            title={s.name}
+            className={cn(
+              "absolute rounded-[2px] border transition-colors",
+              active
+                ? "border-primary bg-primary/20"
+                : "border-border bg-muted hover:bg-primary/10"
+            )}
+            style={{
+              left: tx(s.x),
+              top: ty(s.y),
+              width: Math.max(6, s.width * scale),
+              height: Math.max(6, s.height * scale),
+            }}
+          />
+        );
+      })}
     </div>
   );
 }
