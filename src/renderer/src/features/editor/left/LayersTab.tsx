@@ -8,6 +8,8 @@ import {
   Trash2,
   Eye,
   EyeOff,
+  Lock,
+  Unlock,
 } from "lucide-react";
 import { listRow } from "@/lib/motion";
 import { defFor } from "@/lib/nodeDefs";
@@ -46,6 +48,7 @@ function LayerRow({
   const deleteNode = useEditor((s) => s.deleteNode);
   const renameNode = useEditor((s) => s.renameNode);
   const toggleNodeHidden = useEditor((s) => s.toggleNodeHidden);
+  const toggleNodeLocked = useEditor((s) => s.toggleNodeLocked);
   const selected = selectedId === node.id;
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(node.name || def.label);
@@ -98,6 +101,16 @@ function LayerRow({
           >
             {node.name || def.label}
           </span>
+        )}
+
+        {!isRoot && (
+          <IconBtn
+            onClick={() => toggleNodeLocked(node.id)}
+            title={node.locked ? "Unlock" : "Lock (prevent moving)"}
+            className={node.locked ? "opacity-100" : "opacity-0 group-hover:opacity-100"}
+          >
+            {node.locked ? <Lock className="h-3.5 w-3.5" /> : <Unlock className="h-3.5 w-3.5" />}
+          </IconBtn>
         )}
 
         {!isRoot && (

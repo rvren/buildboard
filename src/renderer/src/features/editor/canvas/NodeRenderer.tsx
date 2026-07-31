@@ -65,7 +65,7 @@ export function NodeRenderer({ node, isRoot = false }: Props) {
   } = useDraggable({
     id: node.id,
     data: { kind: "node", nodeId: node.id },
-    disabled: isRoot || previewMode,
+    disabled: isRoot || previewMode || !!node.locked,
   });
 
   // Conditional visibility (data-bound): hidden in preview when the value is
@@ -255,7 +255,7 @@ function InstanceNode({ node, isRoot }: Props) {
   } = useDraggable({
     id: node.id,
     data: { kind: "node", nodeId: node.id },
-    disabled: isRoot || previewMode,
+    disabled: isRoot || previewMode || !!node.locked,
   });
   const setRef = (el: HTMLElement | null) => {
     if (previewMode) return;

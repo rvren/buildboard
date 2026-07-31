@@ -167,7 +167,7 @@ design system, and higher-fidelity code export.
 - [ ] **B6-4** — Canvas minimap for quick navigation of a busy board (canvas UX)
 - [x] **B6-5** — Breakpoint-specific visibility: "Hidden" toggle per active breakpoint → `display:none` → responsive `hidden` (e.g. `sm:hidden`) on export → `v0.1.57`
 - [ ] **B6-6** — Mock-data generator from a data source's schema, for previewing without a live API (dynamic)
-- [ ] **B6-7** — Node lock (prevent select/move/edit) with a Layers-panel toggle (authoring)
+- [x] **B6-7** — Node lock (schema v9): a Layers-panel lock toggle disables dragging/moving the node → `v0.1.59`
 - [ ] **B6-8** — Animation / transition presets (fade / slide / scale) on nodes, exported as CSS classes (real code)
 - [x] **B6-9** — Color-blindness simulation (protan/deutan/tritan/grayscale) via SVG filters over the canvas, from the command palette → `v0.1.58`
 - [x] **B6-10** — Keyboard canvas navigation: ←/→ select parent/first-child, ↑/↓ select prev/next sibling → `v0.1.56`

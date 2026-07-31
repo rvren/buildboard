@@ -109,6 +109,8 @@ export interface DesignNode {
   variant?: string;
   /** Hidden from the canvas, preview, and export (toggled in the Layers panel). */
   hidden?: boolean;
+  /** Locked: can't be dragged/moved on the canvas (toggled in the Layers panel). */
+  locked?: boolean;
 }
 
 export interface Screen {

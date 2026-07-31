@@ -23,7 +23,7 @@ function palette(hex: string): ThemePalette {
 
 function sampleProject(): Project {
   const input: DesignNode = { id: "n-input", type: "Input", props: { placeholder: "Email" }, styles: { width: "full" }, responsive: { md: { width: "1/2" }, lg: { width: "1/3" } }, children: [] };
-  const text: DesignNode = { id: "n-text", type: "Text", props: { text: "Hi" }, styles: {}, children: [], hidden: true };
+  const text: DesignNode = { id: "n-text", type: "Text", props: { text: "Hi" }, styles: {}, children: [], hidden: true, locked: true };
   const inner: DesignNode = { id: "n-inner", type: "Container", props: {}, styles: { direction: "col", gap: 2 }, children: [text, input] };
   const button: DesignNode = {
     id: "n-btn", type: "Button", props: { text: "Go" }, styles: { opacity: 60 }, children: [], variant: "vp",
@@ -112,7 +112,11 @@ export function runSmoke(): void {
         root.children[1].styles.opacity === 60,
       "conditional visibility + opacity survive",
     );
-    assert(root.children[2].children[0].hidden === true, "hidden flag survives");
+    assert(
+      root.children[2].children[0].hidden === true &&
+        root.children[2].children[0].locked === true,
+      "hidden + locked flags survive",
+    );
     assert(root.children[2].children[1].type === "Input", "nested input at depth 3");
     assert(root.children[2].children[1].styles.width === "full", "nested styles survive");
     assert(

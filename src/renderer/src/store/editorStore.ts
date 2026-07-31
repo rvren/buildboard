@@ -200,6 +200,7 @@ interface EditorState {
   wrapSelection: (nodeId: string) => void;
   /** Toggle a node's hidden flag (Layers panel show/hide). */
   toggleNodeHidden: (nodeId: string) => void;
+  toggleNodeLocked: (nodeId: string) => void;
   /** Copy / cut a node to the app clipboard; paste into the selection or root. */
   copyNode: (nodeId: string) => void;
   cutNode: (nodeId: string) => void;
@@ -956,6 +957,13 @@ export const useEditor = create<EditorState>()(
         set((s) =>
           withActiveRoot(s, (root) =>
             updateNodeById(root, nodeId, (n) => ({ ...n, hidden: !n.hidden }))
+          )
+        ),
+
+      toggleNodeLocked: (nodeId) =>
+        set((s) =>
+          withActiveRoot(s, (root) =>
+            updateNodeById(root, nodeId, (n) => ({ ...n, locked: !n.locked }))
           )
         ),
 
