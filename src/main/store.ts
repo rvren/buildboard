@@ -180,10 +180,10 @@ const saveTx = (db: Database.Database, p: Project) => {
   // screens + their node trees
   p.screens.forEach((s, i) => {
     db.prepare(
-      `INSERT INTO screens(id, project_id, name, title, description, path, width, height, x, y, data_source_id, order_index)
-       VALUES(?,?,?,?,?,?,?,?,?,?,?,?)`,
+      `INSERT INTO screens(id, project_id, name, title, description, path, background, width, height, x, y, data_source_id, order_index)
+       VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)`,
     ).run(
-      s.id, p.id, s.name, s.title ?? null, s.description ?? null, s.path ?? null,
+      s.id, p.id, s.name, s.title ?? null, s.description ?? null, s.path ?? null, s.background ?? null,
       s.width, s.height, s.x, s.y, s.dataSourceId ?? null, i,
     );
     if (s.root) insertNodeTree(db, p.id, "screen", s.id, s.root, null, 0);
@@ -376,6 +376,7 @@ export function getProject(db: Database.Database, id: string): Project | null {
     if (s.title != null) screen.title = s.title;
     if (s.description != null) screen.description = s.description;
     if (s.path != null) screen.path = s.path;
+    if (s.background != null) screen.background = s.background;
     if (s.data_source_id != null) screen.dataSourceId = s.data_source_id;
     return screen;
   });

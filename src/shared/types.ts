@@ -126,6 +126,8 @@ export interface Screen {
   description?: string;
   /** Route path for this page, e.g. "/" or "/about". */
   path?: string;
+  /** Full-bleed page background (a palette token key); wraps the page on export. */
+  background?: string;
   width: number;
   height: number;
   x: number;

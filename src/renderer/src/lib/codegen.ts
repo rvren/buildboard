@@ -7,7 +7,7 @@ import type {
   Screen,
 } from "@/types";
 import { ITEM_SOURCE, SCREEN_SOURCE } from "@/types";
-import { responsiveClasses } from "@/lib/styles";
+import { responsiveClasses, BG_TOKENS } from "@/lib/styles";
 import { resolveInstanceTree } from "@/lib/instance";
 import { defFor, type ImportSpec } from "@/lib/nodeDefs";
 
@@ -408,10 +408,11 @@ function assemble(
   fnName: string,
   node: DesignNode,
   ctx: Ctx,
-  metaBlock = ""
+  metaBlock = "",
+  wrapperClass = ""
 ): string {
   ctx.defNames.add(fnName);
-  const { lines, imports } = walk(node, 3, ctx);
+  const { lines, imports } = walk(node, wrapperClass ? 4 : 3, ctx);
   // Component definitions used by any instances (emitted before the page fn).
   const comps = buildComponentDefs(ctx);
   const data = buildDataBlock(ctx);
@@ -430,7 +431,13 @@ function assemble(
   if (data.lines.length) body.push(...data.lines, "");
   if (handlers.length) body.push(...handlers, "");
   body.push(`${INDENT}return (`);
-  body.push(...lines);
+  if (wrapperClass) {
+    body.push(`${INDENT.repeat(2)}<div className="${wrapperClass}">`);
+    body.push(...lines);
+    body.push(`${INDENT.repeat(2)}</div>`);
+  } else {
+    body.push(...lines);
+  }
   body.push(`${INDENT});`);
 
   const compBlock = comps.fns.length ? comps.fns.join("\n") + "\n" : "";
@@ -489,7 +496,18 @@ export function generatePageCode(screen: Screen, project?: Project): string {
     screen.root,
     screen.dataSourceId
   );
-  return assemble("default function", fnName, screen.root, ctx, pageMetaBlock(screen));
+  const wrapperClass =
+    screen.background && BG_TOKENS[screen.background]
+      ? `min-h-screen ${BG_TOKENS[screen.background]}`
+      : "";
+  return assemble(
+    "default function",
+    fnName,
+    screen.root,
+    ctx,
+    pageMetaBlock(screen),
+    wrapperClass
+  );
 }
 
 /** Self-contained snippet for a single selected node/subtree. */

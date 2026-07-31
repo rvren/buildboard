@@ -181,7 +181,7 @@ design system, and higher-fidelity code export.
 - [ ] **B7-4** — Design-system spacing scale as CSS-var tokens applied via `p-[var(--space-…)]` (design system, fidelity-safe)
 - [ ] **B7-5** — Canvas guides/snapping: align edges to sibling bounds while dragging (canvas UX)
 - [ ] **B7-6** — Export a component API README (props table per component) (real code docs)
-- [ ] **B7-7** — Per-screen background color / full-bleed section token (authoring)
+- [x] **B7-7** — Per-screen full-bleed background token (schema v10): colors the artboard + exported `min-h-screen` page wrapper → `v0.1.67`
 - [x] **B7-8** — Keyboard: ⌘⇧↑/↓ move node to first/last among siblings (duplicate-in-place already ⌘D) → `v0.1.65`
 - [x] **B7-9** — Global element search (by text/type across all screens) → jump to the node → `v0.1.66`
 - [ ] **B7-10** — Theme: high-contrast palette preset + one-click WCAG-AA auto-fix suggestion (accessibility)

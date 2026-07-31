@@ -3,7 +3,7 @@ import { LayoutTemplate } from "lucide-react";
 import type { Screen } from "@/types";
 import { cn } from "@/lib/utils";
 import { STARTERS, type Starter } from "@/lib/starters";
-import { BREAKPOINT_WIDTHS } from "@/lib/styles";
+import { BREAKPOINT_WIDTHS, BG_TOKENS } from "@/lib/styles";
 import { useEditor } from "@/store/editorStore";
 import { spring } from "@/lib/motion";
 import { tokenStyle } from "@/lib/designSystem";
@@ -78,7 +78,10 @@ export function ScreenFrame({ screen }: { screen: Screen }) {
         onClick={() => setSelected(null)}
       >
         <div
-          className="h-full w-full overflow-auto scrollbar-thin"
+          className={cn(
+            "h-full w-full overflow-auto scrollbar-thin",
+            screen.background && BG_TOKENS[screen.background]
+          )}
           style={tokens ? tokenStyle(tokens, theme) : undefined}
         >
           <ComponentDefsProvider components={components ?? []}>

@@ -38,7 +38,7 @@ export const PALETTE_KEYS = [
   "brandTo",
 ] as const;
 
-const SCHEMA_VERSION = 9;
+const SCHEMA_VERSION = 10;
 
 export function openDb(path: string): Database.Database {
   const db = new DatabaseCtor(path);
@@ -80,6 +80,7 @@ export function ensureSchema(db: Database.Database): void {
       x REAL NOT NULL,
       y REAL NOT NULL,
       data_source_id TEXT,
+      background TEXT,
       order_index INTEGER NOT NULL
     );
 
@@ -252,6 +253,9 @@ export function ensureSchema(db: Database.Database): void {
       if (!screenCols.includes(col)) {
         db.exec(`ALTER TABLE screens ADD COLUMN ${col} TEXT`);
       }
+    }
+    if (!screenCols.includes("background")) {
+      db.exec("ALTER TABLE screens ADD COLUMN background TEXT");
     }
     // v5: per-node hidden flag (Layers panel show/hide).
     if (!nodeCols.includes("hidden")) {

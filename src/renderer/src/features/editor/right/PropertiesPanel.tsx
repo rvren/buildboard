@@ -367,6 +367,20 @@ function PageSettings({ screen }: { screen: Screen }) {
             </div>
           </div>
         </Section>
+        <Section title="Page background">
+          <Row label="Fill">
+            <ColorControl
+              kind="bg"
+              value={screen.background}
+              onChange={(v) => updateScreenMeta(screen.id, { background: v })}
+            />
+          </Row>
+          <p className="px-0.5 text-[11px] text-muted-foreground">
+            Full-bleed background behind the page; exported as a
+            <code className="mx-1 rounded bg-muted px-1">min-h-screen</code>
+            wrapper.
+          </p>
+        </Section>
       </ScrollArea>
     </div>
   );

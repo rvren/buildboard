@@ -46,7 +46,7 @@ function sampleProject(): Project {
     createdAt: 1000,
     updatedAt: 2000,
     screens: [
-      { id: "s1", name: "Home", title: "Welcome", description: "The home page", path: "/", width: 1200, height: 800, x: 10, y: 20, root, dataSourceId: "d1" },
+      { id: "s1", name: "Home", title: "Welcome", description: "The home page", path: "/", background: "muted", width: 1200, height: 800, x: 10, y: 20, root, dataSourceId: "d1" },
     ],
     dataSources: [
       {
@@ -147,8 +147,9 @@ export function runSmoke(): void {
     assert(
       p!.screens[0].title === "Welcome" &&
         p!.screens[0].description === "The home page" &&
-        p!.screens[0].path === "/",
-      "page metadata survives",
+        p!.screens[0].path === "/" &&
+        p!.screens[0].background === "muted",
+      "page metadata + background survive",
     );
     // architecture
     assert(p!.architecture.sequences[0].steps.length === 2, "sequence steps");

@@ -179,7 +179,7 @@ interface EditorState {
   /** Update a page's metadata (title / description / path). */
   updateScreenMeta: (
     id: string,
-    patch: Partial<Pick<Screen, "title" | "description" | "path">>
+    patch: Partial<Pick<Screen, "title" | "description" | "path" | "background">>
   ) => void;
   deleteScreen: (id: string) => void;
   /** Deep-clone a screen (fresh node ids) and select the copy. */
