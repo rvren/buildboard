@@ -172,6 +172,20 @@ design system, and higher-fidelity code export.
 - [x] **B6-9** — Color-blindness simulation (protan/deutan/tritan/grayscale) via SVG filters over the canvas, from the command palette → `v0.1.58`
 - [x] **B6-10** — Keyboard canvas navigation: ←/→ select parent/first-child, ↑/↓ select prev/next sibling → `v0.1.56`
 
+### Next batch — Batch 7 (refill; Batch 6 = 10/10 → 75% refill fired)
+> Curated de-duped against everything shipped, balanced across themes and anchored to the vision
+> (designers → apps/websites → real, accessible code). Data-bound components + polish + portability.
+- [ ] **B7-1** — Data-bound Table: bind a Table's rows to an array source + column→field mapping → real `.map()` on export (dynamic apps)
+- [ ] **B7-2** — Tabs / Accordion container node (interactive, exported) (new component)
+- [ ] **B7-3** — Per-node click-to-open-URL action (external link) alongside navigate/request (interactions)
+- [ ] **B7-4** — Design-system spacing scale as CSS-var tokens applied via `p-[var(--space-…)]` (design system, fidelity-safe)
+- [ ] **B7-5** — Canvas guides/snapping: align edges to sibling bounds while dragging (canvas UX)
+- [ ] **B7-6** — Export a component API README (props table per component) (real code docs)
+- [ ] **B7-7** — Per-screen background color / full-bleed section token (authoring)
+- [ ] **B7-8** — Keyboard: nudge selected node's order to first/last (⌘⇧↑/↓) + duplicate-in-place (canvas UX)
+- [ ] **B7-9** — Global search across nodes (find by text/type, jump to it) — read-only complement to find&replace (authoring)
+- [ ] **B7-10** — Theme: high-contrast palette preset + one-click WCAG-AA auto-fix suggestion (accessibility)
+
 ## Process architecture
 
 - **src/main/** (Node, privileged): app lifecycle + SQLite. `index.ts` (window, load renderer),
