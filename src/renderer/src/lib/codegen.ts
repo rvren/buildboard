@@ -258,6 +258,12 @@ function walk(node: DesignNode, depth: number, ctx: Ctx): WalkResult {
     el.push(`${pad}<${spec.tag}${attrStr} />`);
   } else {
     el.push(`${pad}<${spec.tag}${attrStr}>`);
+    // Collapsible emits a <summary> (its title) before its child panel.
+    if (node.type === "Collapsible" && spec.text != null) {
+      el.push(
+        `${pad}${INDENT}<summary className="cursor-pointer list-none font-medium marker:hidden">${jsxText(spec.text)}</summary>`
+      );
+    }
     for (const child of node.children) {
       if (child.hidden) continue; // hidden nodes are omitted from export
       const res = walk(child, elDepth + 1, ctx);

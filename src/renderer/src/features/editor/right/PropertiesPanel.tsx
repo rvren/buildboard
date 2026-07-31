@@ -786,6 +786,14 @@ function ContentSection({ node }: { node: DesignNode }) {
       );
     case "Table":
       return <TableEditor node={node} />;
+    case "Collapsible":
+      return (
+        <Section title="Content">
+          <Row label="Title">
+            <TextControl value={p.title} onChange={(v) => set({ title: v })} />
+          </Row>
+        </Section>
+      );
     case "Avatar":
       return (
         <Section title="Content">

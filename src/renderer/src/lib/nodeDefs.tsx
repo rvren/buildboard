@@ -18,6 +18,7 @@ import {
   Component,
   Sparkles,
   Table as TableIcon,
+  ChevronsUpDown,
   type LucideIcon,
 } from "lucide-react";
 import type { DesignNode, NodeType, StyleTokens } from "@/types";
@@ -461,6 +462,32 @@ export const nodeDefs: Record<NodeType, NodeDef> = {
       attrs: [`src="${node.props.src}"`, `alt="${node.props.alt}"`],
       extraClass: "object-cover",
       selfClosing: true,
+    }),
+  },
+
+  Collapsible: {
+    type: "Collapsible",
+    label: "Collapsible",
+    category: "Layout",
+    icon: ChevronsUpDown,
+    canHaveChildren: true,
+    defaultProps: { title: "Details" },
+    defaultStyles: { width: "full", border: true, radius: "lg", padding: 3 },
+    render: ({ node, className, children, rootProps }) => (
+      <details open className={cn("group", className)} {...rootProps}>
+        <summary className="cursor-pointer list-none font-medium marker:hidden">
+          {node.props.title ?? "Details"}
+        </summary>
+        <div className="pt-2">{children}</div>
+      </details>
+    ),
+    // Custom child handling (summary + panel) is emitted in codegen's walk().
+    codegen: (node) => ({
+      tag: "details",
+      imports: [],
+      attrs: ["open"],
+      extraClass: "group",
+      text: node.props.title ?? "Details",
     }),
   },
 

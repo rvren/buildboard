@@ -8,6 +8,7 @@ export type NodeType =
   | "Input"
   | "Textarea"
   | "Card"
+  | "Collapsible"
   | "Badge"
   | "Avatar"
   | "Image"
