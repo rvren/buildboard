@@ -291,14 +291,23 @@ migrations (it stores the same `Project` JSON; `normalizeTokens`/`hydrateProject
 - **CSP** (`src/renderer/index.html`) allows `'unsafe-eval'` — Mermaid (Architecture view) needs it —
   and `https:`/`http:` `connect-src` for data-source requests + web fonts. It's a local-first app that
   only loads its own bundle; keep the policy as tight as those two needs allow.
-- **macOS signing (un-notarized)**: no paid Apple Developer account, so builds are **ad-hoc signed**,
-  not notarized. `build.mac.identity` is `null` (electron-builder skips its own signing) and
-  `build/afterPack.js` applies a deterministic ad-hoc signature (`codesign --force --deep --sign -`)
-  to the `.app` for **every** arch. This is **required on Apple Silicon**: macOS refuses to launch an
-  arm64 app with a missing/invalid signature ("app is damaged"), and no `xattr` clears that — the
-  problem is the signature, not just quarantine. Users still clear the download flag once
-  (`xattr -cr /Applications/BuildBoard.app`). `release.yml` sets `CSC_IDENTITY_AUTO_DISCOVERY=false`
-  and verifies the arm64 app is `Signature=adhoc` before publishing.
+- **macOS signing (un-notarized, multi-arch)**: no paid Apple Developer account, so builds are
+  **ad-hoc signed**, not notarized. Two things must both hold or the Apple Silicon build is broken:
+  1. **Ad-hoc signature** — `build.mac.identity` is `null` (electron-builder skips its own signing) and
+     `build/afterSign.js` applies a deterministic ad-hoc signature (`codesign --force --deep --sign -`)
+     to the `.app`. It runs in **afterSign** (not afterPack) because electron-builder's asar-integrity
+     finalize step runs after afterPack and would invalidate the seal ("a sealed resource is missing or
+     invalid"). Required on Apple Silicon: macOS won't launch an arm64 app with a missing/invalid
+     signature ("app is damaged"), and `xattr` can't fix a *signature* problem.
+  2. **`USE_HARD_LINKS=false`** (release.yml env) — electron-builder hardlinks native modules
+     (`better_sqlite3.node`) from `node_modules` into each arch's app. In a multi-arch run the x64
+     rebuild rewrites that shared inode *after* arm64 is packaged+signed, which both breaks the arm64
+     seal **and** ships the x64 `.node` inside the arm64 app (→ crash on SQLite). Forcing real copies
+     makes each arch independent.
+
+  `release.yml` also sets `CSC_IDENTITY_AUTO_DISCOVERY=false` and **verifies** the arm64 app passes
+  `codesign --verify --deep --strict` + is `Signature=adhoc` before publishing. Users still clear the
+  download quarantine once: `xattr -cr /Applications/BuildBoard.app`.
 - **Native module**: `better-sqlite3` must be rebuilt for Electron's ABI (`postinstall`
   `electron-rebuild`) and shipped unpacked from asar (`build.asarUnpack` in `package.json`).
   **Gotcha:** `npm run package` rebuilds the native binding for each target arch and leaves

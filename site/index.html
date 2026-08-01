@@ -237,7 +237,9 @@
           </div>
 
           <p class="subtle">
-            <a id="all-releases" href="https://github.com/rvren/buildboard/releases/latest" target="_blank" rel="noreferrer">All releases &amp; notes</a>
+            <a id="release-link" href="https://github.com/rvren/buildboard/releases/latest" target="_blank" rel="noreferrer">View this release on GitHub →</a>
+            &nbsp;·&nbsp;
+            <a id="all-releases" href="https://github.com/rvren/buildboard/releases" target="_blank" rel="noreferrer">All releases &amp; notes</a>
             &nbsp;·&nbsp; Prefer no install? <a href="./app/">Use the web app →</a>
           </p>
         </div>
@@ -294,6 +296,12 @@
           if (version) {
             document.getElementById("hero-version").textContent = "Latest · " + version;
             document.getElementById("dl-version").innerHTML = '<span class="dot"></span>Latest release · ' + version;
+          }
+          // Point "View this release" at this exact version's GitHub release page.
+          if (rel.html_url) {
+            const rl = document.getElementById("release-link");
+            rl.href = rel.html_url;
+            rl.textContent = "View " + (version || "this release") + " on GitHub →";
           }
           const pkgs = (rel.assets || [])
             .filter((a) => a.name.toLowerCase().endsWith(".dmg"))

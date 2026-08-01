@@ -34,6 +34,12 @@ jobs:
         run: npx electron-builder --mac --publish never
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
+          # CRITICAL for multi-arch: electron-builder hardlinks native modules
+          # (better_sqlite3) from node_modules into each arch's app. Building x64
+          # after arm64 rebuilds that shared inode, which both breaks the arm64
+          # ad-hoc signature AND ships the wrong-arch .node in the arm64 build.
+          # Force real copies so each arch is independent.
+          USE_HARD_LINKS: "false"
       - name: List artifacts
         run: ls -lh dist/*.dmg dist/*.zip
       - name: Verify arm64 app is ad-hoc signed
