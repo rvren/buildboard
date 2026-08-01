@@ -1,6 +1,6 @@
 {
   "name": "buildboard",
-  "version": "0.1.74",
+  "version": "0.1.75",
   "description": "A local-first, design-to-code studio desktop app.",
   "author": "Renjith Rajendran Viswalekshmi",
   "private": true,
@@ -71,7 +71,7 @@
   "build": {
     "appId": "com.buildboard.app",
     "productName": "BuildBoard",
-    "afterPack": "build/afterPack.js",
+    "afterSign": "build/afterSign.js",
     "directories": {
       "buildResources": "build"
     },

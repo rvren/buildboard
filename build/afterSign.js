@@ -1,4 +1,4 @@
-// electron-builder afterPack hook.
+// electron-builder afterSign hook (runs after electron-builder finalizes the app — later than afterPack, so the seal is not invalidated by asar-integrity or other post-pack steps).
 //
 // We ship UN-NOTARIZED builds (no paid Apple Developer account). On Apple
 // Silicon (M1/M2/M3) macOS will not launch an arm64 app that lacks a valid
@@ -15,13 +15,13 @@
 const path = require("node:path");
 const { execFileSync } = require("node:child_process");
 
-exports.default = async function afterPack(context) {
+exports.default = async function afterSign(context) {
   if (context.electronPlatformName !== "darwin") return;
 
   const appName = context.packager.appInfo.productFilename; // "BuildBoard"
   const appPath = path.join(context.appOutDir, `${appName}.app`);
 
-  console.log(`[afterPack] ad-hoc signing ${appPath} (${context.arch})`);
+  console.log(`[afterSign] ad-hoc signing ${appPath} (${context.arch})`);
   try {
     execFileSync(
       "codesign",
@@ -32,9 +32,9 @@ exports.default = async function afterPack(context) {
     execFileSync("codesign", ["--verify", "--deep", "--strict", appPath], {
       stdio: "inherit",
     });
-    console.log("[afterPack] ad-hoc signature applied + verified");
+    console.log("[afterSign] ad-hoc signature applied + verified");
   } catch (err) {
-    console.error("[afterPack] ad-hoc signing failed:", err.message);
+    console.error("[afterSign] ad-hoc signing failed:", err.message);
     throw err;
   }
 };
