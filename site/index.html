@@ -220,16 +220,19 @@
           <div class="note">
             <h4>macOS says the app is “damaged” or from an unidentified developer?</h4>
             <p>
-              That's expected for a free, un-notarized app. It's ad-hoc signed and safe — macOS just
-              quarantines apps downloaded from the web. Clear the quarantine flag once, then open it:
+              That's expected for a free, un-notarized app — it's ad-hoc signed and safe; macOS just
+              quarantines anything downloaded from the web. <b>Drag BuildBoard into your Applications
+              folder first</b>, then clear the quarantine flag once in Terminal:
             </p>
             <div class="copy">
               <code id="xattr-cmd">xattr -cr /Applications/BuildBoard.app</code>
               <button type="button" onclick="copyCmd(this)">Copy</button>
             </div>
             <p style="margin-top:10px">
-              Or: right-click the app → <b>Open</b>, or allow it under System Settings → Privacy &amp;
-              Security → <b>Open Anyway</b>.
+              <b>Apple Silicon (M1/M2/M3):</b> run the command above — it's required, because macOS
+              won't launch a quarantined Apple-Silicon app until the flag is cleared. Then open it
+              normally. (Alternatively: right-click the app → <b>Open</b>, or allow it under System
+              Settings → Privacy &amp; Security → <b>Open Anyway</b>.)
             </p>
           </div>
 
